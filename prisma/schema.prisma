@@ -246,10 +246,10 @@ model Piece {
   poItems        PoItem[]
   stockMovements StockMovement[]
 
-  @@unique([workshopId, sku])
   @@index([workshopId, deletedAt])
   @@index([workshopId, codeBarre])
   @@index([workshopId, legacyCode])
+  @@index([workshopId, sku])
   @@map("piece")
 }
 
