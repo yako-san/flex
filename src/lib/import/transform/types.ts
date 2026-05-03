@@ -42,3 +42,18 @@ export type V2MarqueDraft = {
   workshopId: string;
   nom: string; // slug canonique (case-insensitive en DB via Citext)
 };
+
+export type V2EquipeMemberDraft = {
+  id: string;
+  workshopId: string;
+  prenom: string;
+  nom: string;
+  surnom: string;
+  courriel: string | null;
+  telephone: string | null;
+  indicatif: string | null;
+  lang: string; // BCP 47
+  role: string | null;
+  active: boolean;
+  notes: string | null;
+};
