@@ -69,7 +69,7 @@ describe('generateId', () => {
         'translation',
         'log',
         'map',
-        'fs',
+        'ftt',
       ]);
     });
   });

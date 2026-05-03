@@ -24,7 +24,7 @@ export const ID_PREFIXES = [
   'translation',
   'log',
   'map',
-  'fs',
+  'ftt',
 ] as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[number];
