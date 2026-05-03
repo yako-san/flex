@@ -247,6 +247,7 @@ function buildBdcDraft(
     totalServices: String(raw.totalServices ?? 0),
     totalPieces: String(raw.totalPieces ?? 0),
     notes: normalizeNonValue(noteRaw ?? ''),
+    legacyRawV1: raw as unknown as Record<string, unknown>,
   };
 }
 

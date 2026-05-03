@@ -141,6 +141,7 @@ export function transformVelos(
       noteClientEval: normalizeNonValue(raw.noteClientEval),
       noteClientFacture: normalizeNonValue(raw.noteClientFacture),
       notes: normalizeNonValue(raw.notes),
+      legacyRawV1: raw as unknown as Record<string, unknown>,
     });
   }
 

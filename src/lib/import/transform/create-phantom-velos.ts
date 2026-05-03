@@ -130,6 +130,7 @@ function buildPhantomFromArchive(
     noteClientEval: null,
     noteClientFacture: normalizeNonValue(arch.noteClientFacture),
     notes: normalizeNonValue(arch.noteInterne),
+    legacyRawV1: arch as unknown as Record<string, unknown>,
   };
 }
 
@@ -164,6 +165,7 @@ function buildPhantomFromActif(
     noteClientEval: null,
     noteClientFacture: normalizeNonValue(bdc.noteClientFacture),
     notes: null,
+    legacyRawV1: bdc as unknown as Record<string, unknown>,
   };
 }
 

@@ -119,6 +119,7 @@ describe('persistImportV1', () => {
         remiseDefault: null,
         adressePostale: null,
         notes: null,
+        legacyRawV1: null,
       },
     ];
     r.velos = [
@@ -143,6 +144,7 @@ describe('persistImportV1', () => {
         noteClientEval: null,
         noteClientFacture: null,
         notes: null,
+        legacyRawV1: null,
       },
     ];
     r.bdcs = [
@@ -163,6 +165,7 @@ describe('persistImportV1', () => {
         totalServices: '0',
         totalPieces: '0',
         notes: null,
+        legacyRawV1: null,
       },
     ];
     r.bdcItems = [

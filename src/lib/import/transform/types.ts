@@ -101,6 +101,7 @@ export type V2ClientDraft = {
   remiseDefault: string | null; // Decimal stringifié, % (ex "15" pour 15%)
   adressePostale: Record<string, unknown> | null;
   notes: string | null;
+  legacyRawV1: Record<string, unknown> | null;
 };
 
 export type V2VeloDraft = {
@@ -124,6 +125,7 @@ export type V2VeloDraft = {
   noteClientEval: string | null;
   noteClientFacture: string | null;
   notes: string | null;
+  legacyRawV1: Record<string, unknown> | null;
 };
 
 export type V2BdcEvalStatus = 'EN_ATTENTE' | 'APPROUVE' | 'REDUX' | 'REFUSE';
@@ -154,6 +156,7 @@ export type V2BdcDraft = {
   totalServices: string;
   totalPieces: string;
   notes: string | null;
+  legacyRawV1: Record<string, unknown> | null;
 };
 
 export type V2BdcItemKind = 'SERVICE' | 'PIECE' | 'FORFAIT';

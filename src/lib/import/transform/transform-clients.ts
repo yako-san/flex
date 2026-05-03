@@ -81,6 +81,7 @@ export function transformClients(
       remiseDefault: remise,
       adressePostale: null, // v1 n'a pas d'adresse structurée
       notes: normalizeNonValue(raw.notes),
+      legacyRawV1: raw as unknown as Record<string, unknown>,
     });
   }
 

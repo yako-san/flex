@@ -31,6 +31,13 @@ function toDate(s: string | null | undefined): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+// Convertit un Record<string, unknown> (ou null) en valeur Prisma JSON utilisable
+// pour les colonnes JSONB nullables (Prisma exige JsonNull pour stocker null SQL).
+function toJson(obj: Record<string, unknown> | null | undefined): Prisma.InputJsonValue | typeof Prisma.JsonNull {
+  if (!obj) return Prisma.JsonNull;
+  return obj as Prisma.InputJsonValue;
+}
+
 type Tx = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
 
 async function chunkedCreateMany<T>(
@@ -100,6 +107,7 @@ export async function persistImportV1(
           adressePostale: c.adressePostale
             ? (c.adressePostale as Prisma.InputJsonValue)
             : Prisma.JsonNull,
+          legacyRawV1: toJson(c.legacyRawV1),
         })),
       }),
     );
@@ -120,12 +128,20 @@ export async function persistImportV1(
           date1: toDate(v.date1),
           date2: toDate(v.date2),
           date3: toDate(v.date3),
+          legacyRawV1: toJson(v.legacyRawV1),
         })),
       }),
     );
 
     // 5. Bdcs / Ventes / Pos (entêtes)
-    await chunkedCreateMany(result.bdcs, (data) => tx.bdc.createMany({ data }));
+    await chunkedCreateMany(result.bdcs, (data) =>
+      tx.bdc.createMany({
+        data: data.map((b) => ({
+          ...b,
+          legacyRawV1: toJson(b.legacyRawV1),
+        })),
+      }),
+    );
     await chunkedCreateMany(result.ventes, (data) =>
       tx.venteDirecte.createMany({
         data: data.map((vt) => ({

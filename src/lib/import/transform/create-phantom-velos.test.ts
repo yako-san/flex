@@ -29,6 +29,7 @@ const client = (overrides: Partial<V2ClientDraft>): V2ClientDraft => ({
   remiseDefault: null,
   adressePostale: null,
   notes: null,
+  legacyRawV1: null,
   ...overrides,
 });
 
@@ -164,6 +165,7 @@ describe('createPhantomVelosForOrphanedBdcs', () => {
       noteClientEval: null,
       noteClientFacture: null,
       notes: null,
+      legacyRawV1: null,
     };
 
     const result = createPhantomVelosForOrphanedBdcs(

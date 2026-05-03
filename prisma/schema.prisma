@@ -331,6 +331,10 @@ model Client {
   adressePostale Json?   @map("adresse_postale")
   notes          String?
 
+  // Snapshot brut de la ligne v1 source pour traçabilité totale (champs
+  // v1 non mappés en colonnes propres : googleResourceName, dateIn, dateOut...)
+  legacyRawV1 Json? @map("legacy_raw_v1")
+
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
@@ -392,6 +396,9 @@ model Velo {
   noteClientEval    String? @map("note_client_eval") // affiché PDF éval
   noteClientFacture String? @map("note_client_facture") // affiché PDF facture
   notes             String? // libre interne
+
+  // Snapshot brut de la ligne v1 source (services/pieces concaténés, dates v1, etc.)
+  legacyRawV1 Json? @map("legacy_raw_v1")
 
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
@@ -477,6 +484,9 @@ model Bdc {
   totalPieces   Decimal @default(0) @map("total_pieces") @db.Decimal(12, 2)
 
   notes String?
+
+  // Snapshot brut de la ligne v1 source (note_client/note_facture, items raw, etc.)
+  legacyRawV1 Json? @map("legacy_raw_v1")
 
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
