@@ -222,6 +222,37 @@ export type V2VenteDirecteItemDraft = {
   total: string;
 };
 
+export type V2PoStatus = 'EN_ATTENTE' | 'PARTIEL' | 'RECU' | 'ANNULE';
+
+export type V2PoDraft = {
+  id: string;
+  workshopId: string;
+  poNumero: string;
+  fournisseur: string;
+  dateCommande: string;
+  dateReception: string | null;
+  status: V2PoStatus;
+  notes: string | null;
+};
+
+export type V2PoItemDraft = {
+  id: string;
+  poId: string;
+  pieceId: string | null;
+  position: number;
+  skuSnapshot: string | null;
+  nomSnapshot: string;
+  qtyCommandee: string;
+  qtyRecue: string;
+  unitPrice: string;
+};
+
+export type PosImportResult = {
+  pos: V2PoDraft[];
+  items: V2PoItemDraft[];
+  skipped: SkippedItem[];
+};
+
 export type VentesImportResult = {
   ventes: V2VenteDirecteDraft[];
   items: V2VenteDirecteItemDraft[];
