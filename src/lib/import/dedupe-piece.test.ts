@@ -100,4 +100,37 @@ describe('dedupePieces', () => {
     expect(p1Mappings).toHaveLength(2);
     expect(p1Mappings[0]?.newId).toBe(p1Mappings[1]?.newId);
   });
+
+  describe('mapping inclut legacySku + legacyNom (désambiguïsation)', () => {
+    it('chaque mapping conserve sku et nom raw pour retrouver le bon newId', () => {
+      const input = [
+        piece({ pieceId: 'P00035', sku: '46-600', nom: 'KMC, Chaînes Z6 5/6/7 vitesses' }),
+        piece({ pieceId: 'P00035', sku: '46-635', nom: 'KMC, Chaînes Z7 5/6/7 vitesses' }),
+      ];
+      const r = dedupePieces(input);
+      expect(r.mapping).toHaveLength(2);
+      expect(r.mapping[0]).toMatchObject({
+        legacyPieceId: 'P00035',
+        legacySku: '46-600',
+        legacyNom: 'KMC, Chaînes Z6 5/6/7 vitesses',
+      });
+      expect(r.mapping[1]).toMatchObject({
+        legacyPieceId: 'P00035',
+        legacySku: '46-635',
+        legacyNom: 'KMC, Chaînes Z7 5/6/7 vitesses',
+      });
+    });
+
+    it('legacySku/legacyNom préservent la valeur raw même si dédupliqué', () => {
+      const input = [
+        piece({ pieceId: 'P00040', sku: 'SKU-Z', nom: 'Pneu 700x32c' }),
+        piece({ pieceId: 'P00040', sku: 'sku-z', nom: '  Pneu 700x32c  ' }),
+      ];
+      const r = dedupePieces(input);
+      // 1 pièce canonique mais 2 mappings, chacun avec son raw
+      expect(r.mapping[0]?.legacySku).toBe('SKU-Z');
+      expect(r.mapping[1]?.legacySku).toBe('sku-z');
+      expect(r.mapping[1]?.legacyNom).toBe('  Pneu 700x32c  ');
+    });
+  });
 });

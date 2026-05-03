@@ -17,6 +17,8 @@ export type DedupedPiece = {
 
 export type IdMapping = {
   legacyPieceId: string;
+  legacySku: string;
+  legacyNom: string;
   newId: string;
 };
 
@@ -45,7 +47,12 @@ export function dedupePieces(input: LegacyPiece[]): DedupeResult {
       };
       byKey.set(key, canonical);
     }
-    mapping.push({ legacyPieceId: raw.pieceId, newId: canonical.id });
+    mapping.push({
+      legacyPieceId: raw.pieceId,
+      legacySku: raw.sku,
+      legacyNom: raw.nom,
+      newId: canonical.id,
+    });
   }
 
   return { pieces: Array.from(byKey.values()), mapping };
