@@ -103,6 +103,42 @@ export type V2ClientDraft = {
   notes: string | null;
 };
 
+export type V2VeloDraft = {
+  id: string;
+  workshopId: string;
+  clientId: string;
+  marqueId: string | null;
+  veloNumero: number;
+  status: V2VeloStatus;
+  date1: string | null; // ISO YYYY-MM-DD
+  date2: string | null;
+  date3: string | null;
+  modele: string | null;
+  couleur: string | null;
+  taille: string | null;
+  numeroSerie: string | null;
+  evalMecanoId: string | null;
+  mecaMecanoId: string | null;
+  ctrlMecanoId: string | null;
+  noteVelo: string | null;
+  noteClientEval: string | null;
+  noteClientFacture: string | null;
+  notes: string | null;
+};
+
+export type V2VeloStatus =
+  | 'RV'
+  | 'RECU'
+  | 'EN_ATTENTE'
+  | 'EVAL'
+  | 'APPROUVE'
+  | 'ON_BENCH'
+  | 'CTRL_QLTE'
+  | 'FINI'
+  | 'LIVRE'
+  | 'FACTURER'
+  | 'FACTURE';
+
 export type V2PieceDraft = {
   id: string;
   workshopId: string;
