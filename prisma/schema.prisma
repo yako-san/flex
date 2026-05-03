@@ -336,6 +336,7 @@ model Client {
 enum VeloStatus {
   RV // rendez-vous fixé
   RECU // vélo reçu à l'atelier
+  EN_ATTENTE // en attente d'action (équivalent v1 "EN ATTENTE")
   EVAL // en évaluation
   APPROUVE // évaluation approuvée par le client
   ON_BENCH // sur le banc, en cours de réparation
@@ -412,9 +413,13 @@ enum BdcEvalStatus {
 }
 
 enum BdcArchiveStatus {
-  ACTIF
-  ARCHIVE_FACTURE // facturé, archivé
-  ARCHIVE_ABANDONNE // client n'est jamais revenu
+  ACTIF // en cours, pas encore archivé
+  ARCHIVE_FACTURE // facturé, archivé (v1 "FACTURÉ")
+  ARCHIVE_A_FACTURER // archivé en attente de facturation (v1 "FACTURER")
+  ARCHIVE_REFUSE // client a refusé l'évaluation (v1 "REFUSÉ")
+  ARCHIVE_CTRL_QLTE // archivé en contrôle qualité (v1 "CTRL QLTÉ")
+  ARCHIVE_EVAL // archivé en évaluation (v1 "ÉVAL.")
+  ARCHIVE_LEGACY // archive sans détail (v1 "ARCHIVÉ" générique)
 
   @@map("bdc_archive_status")
 }
@@ -434,14 +439,16 @@ model Bdc {
   evalStatus    BdcEvalStatus    @default(EN_ATTENTE) @map("eval_status")
   archiveStatus BdcArchiveStatus @default(ACTIF) @map("archive_status")
 
-  // Workflow checkboxes (cocher au fil de l'avancement)
-  cbEvalEnvoye      Boolean @default(false) @map("cb_eval_envoye")
-  cbEvalApprouve    Boolean @default(false) @map("cb_eval_approuve")
-  cbCommandePiece   Boolean @default(false) @map("cb_commande_piece")
-  cbPieceRecue      Boolean @default(false) @map("cb_piece_recue")
-  cbReparationFinie Boolean @default(false) @map("cb_reparation_finie")
-  cbCtrlOk          Boolean @default(false) @map("cb_ctrl_ok")
-  cbClientPrevenu   Boolean @default(false) @map("cb_client_prevenu")
+  // Workflow v1 : 4 checkboxes + 1 enum eval_status (cascade UI gérée côté app).
+  // Mapping v1 → v2 :
+  //   v1.checkEval → cbEvalEnvoye  (évaluation envoyée au client)
+  //   v1.checkOk   → cbEval        (évaluation faite côté mecano)
+  //   v1.checkBds  → cbBonSortie   (bon de sortie imprimé)
+  //   v1.checkOut  → cbArchiver    (archivage déclenché)
+  cbEvalEnvoye Boolean @default(false) @map("cb_eval_envoye")
+  cbEval       Boolean @default(false) @map("cb_eval")
+  cbBonSortie  Boolean @default(false) @map("cb_bon_sortie")
+  cbArchiver   Boolean @default(false) @map("cb_archiver")
 
   remiseSvcType  RemiseType? @map("remise_svc_type")
   remiseSvcValue Decimal?    @map("remise_svc_value") @db.Decimal(12, 2)
@@ -893,10 +900,16 @@ model LegacyIdMapping {
   id         String @id // map_<ulid>
   workshopId String @map("workshop_id")
 
-  entityType String  @map("entity_type") // 'piece', 'service', 'velo', 'client', 'facture'...
-  legacyId   String  @map("legacy_id")
-  newId      String  @map("new_id")
-  notes      String?
+  entityType String @map("entity_type") // 'piece', 'service', 'velo', 'client', 'facture'...
+  legacyId   String @map("legacy_id")
+  newId      String @map("new_id")
+
+  // Désambiguïsation : v1 réutilise certains pieceId (P00004 ×3, P00035 ×2,
+  // P00040, P00042, P00550 ×2). Le tuple (legacy_id, legacy_sku, legacy_nom)
+  // permet de retrouver le bon newId quand un BDT/Vente référence l'ancien ID.
+  legacySku String? @map("legacy_sku")
+  legacyNom String? @map("legacy_nom")
+  notes     String?
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -904,5 +917,6 @@ model LegacyIdMapping {
 
   @@index([workshopId, entityType, legacyId])
   @@index([workshopId, entityType, newId])
+  @@index([workshopId, entityType, legacyId, legacySku])
   @@map("legacy_id_mapping")
 }
