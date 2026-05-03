@@ -6,6 +6,11 @@ type Props = {
   params: Promise<{ locale: string }>;
 };
 
+// auth() lit la session via cookies/headers : la page doit être dynamique,
+// sinon Next.js essaie de la prérendre au build et Clerk explose (pas de
+// contexte request).
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
