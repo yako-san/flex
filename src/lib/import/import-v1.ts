@@ -19,6 +19,7 @@ import {
   type V1VenteArchiveRaw,
 } from './transform/transform-ventes';
 import { transformPos, type V1Po } from './transform/transform-pos';
+import { createPhantomVelosForOrphanedBdcs } from './transform/create-phantom-velos';
 import type {
   ImportContext,
   SkippedItem,
@@ -206,7 +207,23 @@ export function importV1(dump: V1Dump, options: ImportV1Options = {}): ImportV1R
     equipe: equipeResult.records,
   });
   skipped.push(...velosResult.skipped);
-  for (const v of velosResult.records) {
+
+  // 6b. Phantom velos pour les BDC orphelins (vélos archivés v1 absents de
+  // la liste velos courante). Sans ça, ~50% de l'historique facturation
+  // serait skip.
+  const phantomVelosResult = createPhantomVelosForOrphanedBdcs(
+    { actifs: dump.bdcs, archives: dump.bdcsArchives },
+    velosResult.records,
+    ctx,
+    {
+      clients: clientsResult.records,
+      marques: marquesResult.records,
+      equipe: equipeResult.records,
+    },
+  );
+  skipped.push(...phantomVelosResult.skipped);
+  const allVelos = [...velosResult.records, ...phantomVelosResult.phantoms];
+  for (const v of allVelos) {
     legacyMappings.push(
       buildLegacyMapping(workshopId, 'velo', String(v.veloNumero), v.id),
     );
@@ -217,7 +234,7 @@ export function importV1(dump: V1Dump, options: ImportV1Options = {}): ImportV1R
     { actifs: dump.bdcs, archives: dump.bdcsArchives },
     ctx,
     {
-      velos: velosResult.records,
+      velos: allVelos,
       services: catalogueResult.services,
       forfaits: catalogueResult.forfaits,
       taskTemplates: catalogueResult.taskTemplates,
@@ -257,7 +274,7 @@ export function importV1(dump: V1Dump, options: ImportV1Options = {}): ImportV1R
     taskTemplates: catalogueResult.taskTemplates,
     pieces: piecesResult.records,
     clients: clientsResult.records,
-    velos: velosResult.records,
+    velos: allVelos,
     bdcs: bdcsResult.bdcs,
     bdcItems: bdcsResult.items,
     bdcItemTasks: bdcsResult.tasks,
@@ -275,7 +292,7 @@ export function importV1(dump: V1Dump, options: ImportV1Options = {}): ImportV1R
       forfaits: catalogueResult.forfaits.length,
       pieces: piecesResult.records.length,
       clients: clientsResult.records.length,
-      velos: velosResult.records.length,
+      velos: allVelos.length,
       bdcs: bdcsResult.bdcs.length,
       ventes: ventesResult.ventes.length,
       pos: posResult.pos.length,
