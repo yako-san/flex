@@ -45,6 +45,7 @@ Thumbs.db
 # Vercel
 .vercel
 
-# Imports v1 (dumps temporaires)
+# Imports v1 (dumps temporaires + fixtures e2e contenant des PII)
 tmp/
 *.dump.json
+src/lib/import/__fixtures__/v1-dump.json
