@@ -23,6 +23,14 @@ import type { ImportV1Result } from './import-v1';
 
 const CHUNK_SIZE = 1000;
 
+// Convertit une string ISO (YYYY-MM-DD ou ISO complet) en Date.
+// Les transformeurs émettent des strings ; Prisma DateTime requiert des Date.
+function toDate(s: string | null | undefined): Date | null {
+  if (!s) return null;
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 type Tx = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
 
 async function chunkedCreateMany<T>(
@@ -105,12 +113,37 @@ export async function persistImportV1(
     );
 
     // 4. Velos (FK client + marque + equipe)
-    await chunkedCreateMany(result.velos, (data) => tx.velo.createMany({ data }));
+    await chunkedCreateMany(result.velos, (data) =>
+      tx.velo.createMany({
+        data: data.map((v) => ({
+          ...v,
+          date1: toDate(v.date1),
+          date2: toDate(v.date2),
+          date3: toDate(v.date3),
+        })),
+      }),
+    );
 
     // 5. Bdcs / Ventes / Pos (entêtes)
     await chunkedCreateMany(result.bdcs, (data) => tx.bdc.createMany({ data }));
-    await chunkedCreateMany(result.ventes, (data) => tx.venteDirecte.createMany({ data }));
-    await chunkedCreateMany(result.pos, (data) => tx.po.createMany({ data }));
+    await chunkedCreateMany(result.ventes, (data) =>
+      tx.venteDirecte.createMany({
+        data: data.map((vt) => ({
+          ...vt,
+          date: toDate(vt.date) ?? new Date(0),
+          factureDate: toDate(vt.factureDate),
+        })),
+      }),
+    );
+    await chunkedCreateMany(result.pos, (data) =>
+      tx.po.createMany({
+        data: data.map((p) => ({
+          ...p,
+          dateCommande: toDate(p.dateCommande) ?? new Date(0),
+          dateReception: toDate(p.dateReception),
+        })),
+      }),
+    );
 
     // 6. Items (FK entête)
     await chunkedCreateMany(result.bdcItems, (data) => tx.bdcItem.createMany({ data }));
