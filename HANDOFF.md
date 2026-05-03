@@ -1,94 +1,109 @@
 # Handoff — état actuel flex-app v2
 
-Dernière session : 2026-05-03 (PM). Branche : `claude/resume-from-handoff-HginU`.
+Dernière session : 2026-05-03 (PM/soir). Branche : `claude/resume-from-handoff-HginU`.
 
 ## ✅ Fait (cette session)
 
-### Étape I — Auth Clerk (LIVE en production)
+### Étape I — Auth Clerk (live prod)
 
-- Compte Clerk créé, app `flex` configurée
-- 7 vars d'env Vercel : `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, 4 URLs (`SIGN_IN_URL`, `SIGN_UP_URL`, `AFTER_SIGN_IN_URL`, `AFTER_SIGN_UP_URL`), `IMPORT_V1_ADMIN_TOKEN`
-- Pages : `src/app/[locale]/sign-in/[[...sign-in]]/page.tsx`, idem sign-up, et `dashboard/page.tsx` (server component, `auth()` + redirect)
-- Dashboard `export const dynamic = 'force-dynamic'` (sinon prerender → crash Clerk au build)
-- Middleware `PUBLIC_ROUTES` exporté + 14 tests sur le matcher
-- 1er user créé : `user_3DE1bOni4wBKXux7CpyHPYgNuE0` (yako-san)
-- ✅ Vérifié live : `/fr-CA/sign-in`, `/fr-CA/sign-up`, `/fr-CA/dashboard` (redirect anon → sign-in, signed → dashboard)
+- Compte Clerk + 7 vars Vercel (publishable/secret + URLs + IMPORT_V1_ADMIN_TOKEN)
+- Pages sign-in / sign-up / dashboard
+- Middleware avec `PUBLIC_ROUTES` exporté + 14 tests
+- 1er user : yako-san (`user_3DE1bOni4wBKXux7CpyHPYgNuE0`)
 
-### Étape J — Endpoint admin import v1 (code prêt, pas testé live)
+### Étape J — Import dump v1 (live prod, dump réel persisté)
 
-- `src/lib/import/persist-import-v1.ts` : transaction Prisma unique par workshop, inserts chunkés à 1000, ordre FKs respecté
-- `src/lib/import/import-v1-handler.ts` : handler découplé Next.js, double garde (Clerk userId + token admin via header `x-admin-token`), validation Zod
-- `src/app/api/admin/import-v1/route.ts` : thin wrapper Next.js
-- 13 nouveaux tests (6 persist + 7 handler)
+**Code livré :**
+- `persistImportV1` : transaction Prisma unique, inserts chunkés à 1000, ordre FKs
+- `handleImportV1` : double garde Clerk userId + token admin
+- `/api/admin/import-v1` (REST) + `/admin/import` (UI upload)
+- `createPhantomVelosForOrphanedBdcs` : crée des vélos virtuels à partir des BDC archivés v1 dont les vélos n'apparaissent plus dans la liste actifs (sinon ~50% historique facturation perdu)
+- Dédup BDC dans `transformBdcs` : si même id en actifs+archives, garde l'archive
 
-### Cleanup / fixes
+**Schéma assoupli (4 unique constraints retirées) :**
+- `Piece(workshop_id, legacy_code)` : la dédup v1→v2 produit N pièces v2 pour 1 pieceId v1 → multiplicité légitime
+- `Piece(workshop_id, sku)` : SKU = ref fournisseur, doublons légitimes (même SKU pour 2 items distincts)
+- `Bdc.velo_id` : un vélo peut avoir plusieurs BDC dans son historique (cycles de visites)
+- `Velo.bdc` : `Bdc?` → `bdcs Bdc[]` (one-to-many)
 
-- `prisma/schema.prisma` : `directUrl = env("DATABASE_URL_UNPOOLED")` (alignement Vercel Marketplace Neon)
-- `package.json` : `build = prisma generate && next build` + `postinstall = prisma generate` (sinon Vercel cache → `PrismaClientInitializationError` au runtime)
+**Migrations Prisma créées (mais NON auto-appliquées au build cf P3005) :**
+- `20260503184000_piece_legacy_code_not_unique`
+- `20260503190000_piece_sku_not_unique`
+- `20260503193000_bdc_velo_id_not_unique`
+- Toutes appliquées **manuellement** via Neon SQL editor (DROP UNIQUE INDEX + CREATE INDEX)
 
-### État global
+**Bugs fixés :**
+- `prisma generate` ajouté au build script (Vercel cache layout sinon → PrismaClientInitializationError)
+- Dashboard `force-dynamic` (sinon prerender + auth() crash au build)
+- `directUrl = env("DATABASE_URL_UNPOOLED")` (alignement Vercel Marketplace)
+- String ISO → Date conversion dans persist (Velo/VenteDirecte/Po)
 
-- 28 test files, **515 tests passing**, 16 e2e skipped
-- Production : https://flex-tan.vercel.app — actuellement sur commit `a227d8a`
+**Résultat import live (dump yako-cyclo) :**
+- 1 workshop, 26 clients, 25 vélos (12 actifs + 13 phantoms), 25 BDCs (12 actifs + 13 archives), 51+43=94 BDC items, 87 tasks
+- 252 pièces, 70 services, 3 forfaits, 28 task templates
+- 10 ventes, 7 POs, 64 PO items, 356 translations, 353 legacy mappings
+- 37 entrées invalides ignorées (sous-tâches forfait, BDC 0106 client absent, etc.)
 
-## 🔜 Prochaines étapes possibles
+### Étape K — UI dashboard admin (in this push)
 
-### Option A — Tester l'import v1 end-to-end
-1. Récupérer un vrai dump v1 (export depuis l'app v1 actuelle de l'atelier)
-2. POST `/api/admin/import-v1` avec :
-   - Header `x-admin-token: <IMPORT_V1_ADMIN_TOKEN>`
-   - Body : le JSON du dump
-3. Vérifier en DB Neon (via `prisma studio` ou requête SQL) que le workshop + entités sont créés
-4. Vérifier le `skippedCount` dans la réponse
+- `/admin/layout.tsx` : sidebar nav + Clerk UserButton
+- `/admin` : dashboard avec stats du workshop (10 cartes)
+- `/admin/clients` : table clients avec count vélos
+- `/admin/velos` : table vélos avec status badges + count BDCs
+- `/admin/bdcs` : table BDCs avec archive status badges + totals
+- `/admin/import` : (existant) refactored sans auth check duplicate
+- `/dashboard` : redirect vers `/admin` (l'env var Clerk pointe encore sur /dashboard)
 
-### Option B — UI minimale du dashboard
-- Layout admin (sidebar locales, sign-out button via `<UserButton />` Clerk)
-- Liste workshops/clients/velos depuis Prisma
-- Forms basiques
+## 🔜 Suite possible
 
-### Option C — Multi-tenant via Clerk Organizations
-- Un User Clerk peut appartenir à plusieurs Workshops via WorkshopMember
-- Activer Organizations dans Clerk dashboard, mapper Org Clerk ↔ Workshop Prisma
-- Middleware : injecter le `workshopId` actif dans les server components via `auth()`
+### Reste sur l'import
+- Investiguer les 37 skipped (ne sont sans doute pas critiques mais utile de savoir)
+- Soft delete cleanup : si on veut re-importer, `TRUNCATE TABLE workshop CASCADE` puis upload
+- L'email markdown bracket (`[a@venir.ca](mailto:...)`) n'est pas nettoyé. Le normalisateur `strip-markdown-email` existe mais n'est pas appliqué dans `transformClients`. À ajouter.
 
-### Option D — Migration Prisma sur prod
-- Vérifier que la migration init (`20260503133427_init`) est bien appliquée sur Neon prod
-  (déjà fait à la dernière session, mais à confirmer après le changement `directUrl`)
+### UI à étoffer
+- Pages détail (cliquer sur un client → ses vélos + BDCs)
+- Recherche / filtres
+- Inventaire pièces avec stock
+- Forms CRUD (créer un client, enregistrer une vente comptoir, etc.)
 
-## 📋 Cleanup restant
-
-- **Supprimer ancien projet Neon** `flex-v2` (créé manuellement avant le branchement Vercel — devenu obsolète, le projet utile est `flex-prod` / Neon ID `summer-butterfly-58315203`)
-- Branche `claude/resume-from-handoff-HginU` : à merger sur `main` éventuellement (pour l'instant, prod tracke directement cette branche via les rebuilds manuels)
+### Infra
+- **Baseline Prisma migrations** : une fois la prod alignée, lancer `prisma migrate resolve --applied <init>` puis ré-activer `prisma migrate deploy` au build pour automatiser. Évite les SQL manuels.
+- **Multi-tenant via Clerk Organizations** : pour l'instant un seul workshop, les pages admin font `findFirst()`. À refactor quand plusieurs ateliers.
+- **Suppression vieux Neon project** `flex-v2` (créé manuellement avant l'intégration Vercel, obsolète).
 
 ## 🚨 Méthodologie utilisateur
 
-L'utilisateur n'est pas développeur. Feedback explicite :
+L'utilisateur n'est pas développeur :
 
-> « tu me donnes des informations partielles, quand tu as besoin que je fasse quelque chose, donne plus d'infos sur la façon d'y arriver et **confirme avant que l'élément d'interface est tjrs à l'endroit que tu suggères** »
+> « tu me donnes des informations partielles, quand tu as besoin que je fasse quelque chose, donne plus d'infos sur la façon d'y arriver et confirme avant que l'élément d'interface est tjrs à l'endroit que tu suggères »
 
-→ Avant de dire « clique sur X », demander à l'utilisateur ce qu'il voit. Ne pas spéculer sur les UI externes (Vercel, Clerk, Neon) — leur design change.
+Règles :
+- Avant un clic destructif (SQL, delete) : **demander d'abord ce que l'utilisateur voit**, attendre la réponse, **puis** envoyer la commande dans un message séparé. Ne jamais mettre la commande dans le même message que la demande de vérif.
+- Mode **autopilote** : l'utilisateur peut le demander pour les phases longues. Dans ce mode, on bundle toutes les actions en une seule liste finale et on évite les questions intermédiaires.
+- WebFetch + curl bloqués par le sandbox → toujours demander à l'utilisateur de copier-coller les erreurs Vercel/Neon.
+- Vercel "Promote to Production" pas accessible API → toujours demander à l'utilisateur de cliquer.
 
-→ WebFetch + curl bloqués par le sandbox (403). Pas d'accès aux URLs externes ni aux logs Vercel directement. **Toujours demander à l'utilisateur de copier-coller les erreurs / écrans Vercel.**
+## 🐛 Pièges rencontrés
 
-→ « Promote to Production » sur Vercel ne se fait pas via API depuis le sandbox — toujours demander à l'utilisateur de cliquer.
-
-## 🐛 Pièges rencontrés (à se rappeler)
-
-1. **Bouton "Copy" Clerk** copie `KEY=value` complet, pas juste la valeur. Toujours préciser à l'utilisateur de ne coller que la partie après le `=` dans le champ Value de Vercel.
-2. **Vercel cache + Prisma** : sans `prisma generate` au build, Prisma client est outdated → crash runtime. Fix : modifier `package.json` (`build` + `postinstall`).
-3. **Server components + Clerk `auth()`** : tout server component qui appelle `auth()` DOIT avoir `export const dynamic = 'force-dynamic'`, sinon prerender au build crashe.
-4. **`Redeploy of X` sur Vercel** = même code source que X, pas le commit le plus récent. Pour avoir le dernier code, il faut soit un nouveau push (auto Preview) soit "Promote" un Preview spécifique en Production.
+1. **Bouton "Copy" Clerk** copie `KEY=value`, pas juste la valeur
+2. **Vercel cache + Prisma** : `prisma generate` requis au build
+3. **Server components + Clerk auth()** : `force-dynamic` obligatoire
+4. **Vercel "Redeploy of X"** = même code source, pas le commit le plus récent. Pour mettre à jour, push un commit OU promote un Preview spécifique
+5. **Prisma migrate deploy** échoue P3005 si DB non baselinée → SQL manuels en attendant
+6. **DateTime Prisma** ≠ string ISO : conversion explicite en `Date` requise
+7. **v1 export inclut souvent un BDC en double** (snapshot actif + archive) → dédup nécessaire
+8. **Vélos archivés v1 absents de la liste velos** → phantom velos requis pour préserver historique BDC
 
 ## 🔧 Stack courte référence
 
-- Next.js 15.1 + React 19 + App Router + typedRoutes
+- Next.js 15.5 + React 19 + App Router + typedRoutes
 - next-intl 3.26 (locales: fr-CA, en-CA, prefix always)
-- Clerk 6.12 (multi-tenant via Organizations à terme)
+- Clerk 6.12
 - Prisma 5.22 + Postgres Neon (pgbouncer pooled via DATABASE_URL, direct via DATABASE_URL_UNPOOLED)
 - Zod 3.23 pour validation API
-- Vitest + tests TDD strict (515 tests)
+- Vitest, **524 tests passing**
 - Vercel deploy auto sur push (Preview), Production via promote manuel
 
 Repo : https://github.com/yako-san/flex
-Branche active : `claude/resume-from-handoff-HginU`
 Production URL : https://flex-tan.vercel.app/
