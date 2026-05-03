@@ -87,6 +87,22 @@ export type V2ForfaitTaskTemplateDraft = {
   position: number;
 };
 
+export type V2ClientDraft = {
+  id: string;
+  workshopId: string;
+  prenom: string;
+  nom: string;
+  telephone: string | null;
+  indicatif: string | null;
+  courriel: string | null;
+  commPref: 'EMAIL' | 'SMS' | 'TELEPHONE' | 'AUCUN';
+  lang: string; // BCP 47
+  lead: string | null;
+  remiseDefault: string | null; // Decimal stringifié, % (ex "15" pour 15%)
+  adressePostale: Record<string, unknown> | null;
+  notes: string | null;
+};
+
 export type V2PieceDraft = {
   id: string;
   workshopId: string;

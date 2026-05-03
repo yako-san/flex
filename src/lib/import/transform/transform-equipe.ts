@@ -2,6 +2,7 @@ import { generateId } from '../../ids/generate-id';
 import { normalizeNonValue } from '../../normalize/normalize-non-value';
 import { stripMarkdownEmail } from '../../normalize/strip-markdown-email';
 import { parsePhoneE164 } from '../../normalize/parse-phone-e164';
+import { mapV1LangToBcp47 } from './map-v1-lang';
 import type { ImportContext, ImportResult, V2EquipeMemberDraft } from './types';
 
 export type V1EquipeMember = {
@@ -27,23 +28,6 @@ function parseActive(raw: boolean | string | undefined): boolean {
   if (TRUE_STRINGS.has(lower)) return true;
   if (FALSE_STRINGS.has(lower)) return false;
   return true; // default si non reconnu
-}
-
-function mapV1LangToBcp47(rawLang: string, ctx: ImportContext): string {
-  const lang = rawLang.trim();
-  if (lang === '') return ctx.defaultLocale;
-
-  // Locale BCP 47 déjà fournie (ex 'fr-CA', 'es-MX') → utiliser tel quel
-  // si présente dans activeLocales, sinon defaultLocale.
-  if (lang.includes('-')) {
-    return ctx.activeLocales.includes(lang) ? lang : ctx.defaultLocale;
-  }
-
-  // Code ISO 639-1 simple ('FR', 'EN', 'ES'...) → cherche la 1ère locale
-  // active qui commence par ce code.
-  const lower = lang.toLowerCase();
-  const found = ctx.activeLocales.find((l) => l.toLowerCase().startsWith(`${lower}-`));
-  return found ?? ctx.defaultLocale;
 }
 
 export function transformEquipe(
