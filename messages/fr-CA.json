@@ -1,0 +1,17 @@
+{
+  "App": {
+    "title": "Flex",
+    "tagline": "SaaS pour ateliers vélo"
+  },
+  "Home": {
+    "welcome": "Bienvenue sur Flex",
+    "intro": "Plateforme de gestion d'atelier vélo : clients, vélos, bons de travail, facturation, inventaire.",
+    "signIn": "Se connecter",
+    "signUp": "Créer un compte"
+  },
+  "Common": {
+    "loading": "Chargement…",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer"
+  }
+}

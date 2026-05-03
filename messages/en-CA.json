@@ -1,0 +1,17 @@
+{
+  "App": {
+    "title": "Flex",
+    "tagline": "SaaS for bike workshops"
+  },
+  "Home": {
+    "welcome": "Welcome to Flex",
+    "intro": "Bike workshop management platform: clients, bikes, work orders, invoicing, inventory.",
+    "signIn": "Sign in",
+    "signUp": "Sign up"
+  },
+  "Common": {
+    "loading": "Loading…",
+    "error": "An error occurred",
+    "retry": "Try again"
+  }
+}
