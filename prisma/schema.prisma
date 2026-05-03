@@ -14,7 +14,10 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  directUrl  = env("DIRECT_URL")
+  // Vercel Marketplace (Neon) injecte DATABASE_URL (pooled, pgbouncer) et
+  // DATABASE_URL_UNPOOLED (direct, requis pour migrations/introspection).
+  // On aligne directUrl sur ce que Vercel fournit nativement.
+  directUrl  = env("DATABASE_URL_UNPOOLED")
   extensions = [pg_trgm, citext]
 }
 
