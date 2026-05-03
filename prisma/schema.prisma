@@ -210,7 +210,10 @@ model Piece {
 
   // Slug canonique. Affichage via Translation.value.
   nomCanonical String  @map("nom_canonical")
-  sku          String
+  // Optionnel : v1 a des entrées sans sku réel ("page Babac", "lien", vide).
+  // L'@@unique([workshopId, sku]) reste effectif : Postgres considère chaque
+  // NULL comme distinct, donc plusieurs pièces sans sku peuvent coexister.
+  sku          String?
   codeBarre    String? @map("code_barre")
   categorie    String?
   fournisseur  String?
