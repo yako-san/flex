@@ -87,6 +87,25 @@ export type V2ForfaitTaskTemplateDraft = {
   position: number;
 };
 
+export type V2PieceDraft = {
+  id: string;
+  workshopId: string;
+  legacyCode: string | null;
+  nomCanonical: string;
+  sku: string | null;
+  codeBarre: string | null;
+  categorie: string | null;
+  fournisseur: string | null;
+  prixAchat: string | null;
+  prixBase: string | null;
+  prixVente: string;
+  prixCost: string | null;
+  prixBdc: string | null;
+  taxable: boolean;
+  stockPhysique: number;
+  stockReserve: number;
+};
+
 export type CatalogueImportResult = {
   services: V2ServiceDraft[];
   forfaits: V2ForfaitDraft[];
