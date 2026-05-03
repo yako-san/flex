@@ -247,6 +247,28 @@ export type V2PoItemDraft = {
   unitPrice: string;
 };
 
+export type V2LegacyIdMappingDraft = {
+  id: string;
+  workshopId: string;
+  entityType: string;
+  legacyId: string;
+  newId: string;
+  legacySku: string | null;
+  legacyNom: string | null;
+  notes: string | null;
+};
+
+export type V2WorkshopDraft = {
+  id: string;
+  slug: string;
+  name: string;
+  country: string;
+  currency: string;
+  timezone: string;
+  defaultLocale: string;
+  activeLocales: string[];
+};
+
 export type PosImportResult = {
   pos: V2PoDraft[];
   items: V2PoItemDraft[];
