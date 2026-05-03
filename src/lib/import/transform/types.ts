@@ -192,6 +192,42 @@ export type BdcsImportResult = {
   skipped: SkippedItem[];
 };
 
+export type V2ModePaiement = 'COMPTANT' | 'INTERAC' | 'CARTE' | 'AUTRE';
+
+export type V2VenteDirecteDraft = {
+  id: string;
+  workshopId: string;
+  clientId: string | null;
+  date: string; // ISO
+  factureNumero: string | null;
+  factureDate: string | null;
+  factureUrl: string | null;
+  modePaiement: V2ModePaiement | null;
+  remiseType: 'PCT' | 'FIXED' | null;
+  remiseValue: string | null;
+  totalPieces: string;
+  notes: string | null;
+};
+
+export type V2VenteDirecteItemDraft = {
+  id: string;
+  venteId: string;
+  pieceId: string | null;
+  position: number;
+  skuSnapshot: string | null;
+  nomSnapshot: string;
+  qty: string;
+  unitPriceSnapshot: string;
+  taxableSnapshot: boolean;
+  total: string;
+};
+
+export type VentesImportResult = {
+  ventes: V2VenteDirecteDraft[];
+  items: V2VenteDirecteItemDraft[];
+  skipped: SkippedItem[];
+};
+
 export type V2VeloStatus =
   | 'RV'
   | 'RECU'
