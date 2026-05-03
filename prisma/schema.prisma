@@ -405,7 +405,9 @@ model Velo {
   evalMecano EquipeMember? @relation("VeloEvalMecano", fields: [evalMecanoId], references: [id], onDelete: SetNull)
   mecaMecano EquipeMember? @relation("VeloMecaMecano", fields: [mecaMecanoId], references: [id], onDelete: SetNull)
   ctrlMecano EquipeMember? @relation("VeloCtrlMecano", fields: [ctrlMecanoId], references: [id], onDelete: SetNull)
-  bdc        Bdc?
+  // Plusieurs BDC dans l'historique d'un même vélo (cycles de visites).
+  // En v1 export, un BDC actif peut coexister avec ses archives.
+  bdcs       Bdc[]
 
   @@unique([workshopId, veloNumero])
   @@index([workshopId, status])
@@ -449,7 +451,7 @@ enum RemiseType {
 model Bdc {
   id         String @id // bdc_<ulid>
   workshopId String @map("workshop_id")
-  veloId     String @unique @map("velo_id")
+  veloId     String @map("velo_id")
 
   evalStatus    BdcEvalStatus    @default(EN_ATTENTE) @map("eval_status")
   archiveStatus BdcArchiveStatus @default(ACTIF) @map("archive_status")
@@ -490,6 +492,7 @@ model Bdc {
   @@index([workshopId, evalStatus])
   @@index([workshopId, archiveStatus])
   @@index([workshopId, deletedAt])
+  @@index([veloId])
   @@map("bdc")
 }
 

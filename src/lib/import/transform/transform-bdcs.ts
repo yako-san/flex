@@ -301,7 +301,14 @@ export function transformBdcs(
     }
   }
 
-  for (const a of input.actifs) {
+  // Dédup : un BDC dont l'id existe à la fois en actifs et archives
+  // représente le même BDC à 2 états (le v1 export inclut souvent un
+  // snapshot de l'actif avant son archivage). On privilégie l'archive
+  // (statut/dateOut/mecano résolus, items finaux).
+  const archivedIds = new Set(input.archives.map((a) => a.id));
+  const dedupedActifs = input.actifs.filter((a) => !archivedIds.has(a.id));
+
+  for (const a of dedupedActifs) {
     handleBdc(a, 'ACTIF');
   }
   for (const a of input.archives) {
