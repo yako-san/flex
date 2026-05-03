@@ -7,6 +7,7 @@ describe('parseLegacyFactureNumero', () => {
       expect(parseLegacyFactureNumero('V0001')).toEqual({
         prefix: 'V',
         sequence: 1,
+        dateSuffix: null,
         raw: 'V0001',
       });
     });
@@ -15,6 +16,7 @@ describe('parseLegacyFactureNumero', () => {
       expect(parseLegacyFactureNumero('V0042')).toEqual({
         prefix: 'V',
         sequence: 42,
+        dateSuffix: null,
         raw: 'V0042',
       });
     });
@@ -23,6 +25,7 @@ describe('parseLegacyFactureNumero', () => {
       expect(parseLegacyFactureNumero('V12345')).toEqual({
         prefix: 'V',
         sequence: 12345,
+        dateSuffix: null,
         raw: 'V12345',
       });
     });
@@ -31,7 +34,26 @@ describe('parseLegacyFactureNumero', () => {
       expect(parseLegacyFactureNumero('v0001')).toEqual({
         prefix: 'V',
         sequence: 1,
+        dateSuffix: null,
         raw: 'v0001',
+      });
+    });
+  });
+
+  describe('format v1 étendu "V####-YYYY-MM-DD" (vues sur ventes archivées)', () => {
+    it.each([
+      ['V0001-2026-04-15', 1, '2026-04-15'], // vente Yacono
+      ['V0002-2026-04-23', 2, '2026-04-23'], // vente Martin Savard
+      ['V0003-2026-04-28', 3, '2026-04-28'], // vente Cyclo Flex
+      ['V0004-2026-04-28', 4, '2026-04-28'], // vente Walk-in
+      ['V0005-2026-04-29', 5, '2026-04-29'], // vente Walk-in
+      ['V0006-2026-04-29', 6, '2026-04-29'], // vente Walk-in
+    ])('"%s" → sequence=%d, dateSuffix=%s', (input, sequence, dateSuffix) => {
+      expect(parseLegacyFactureNumero(input)).toEqual({
+        prefix: 'V',
+        sequence,
+        dateSuffix,
+        raw: input,
       });
     });
   });
@@ -41,6 +63,7 @@ describe('parseLegacyFactureNumero', () => {
       expect(parseLegacyFactureNumero('42')).toEqual({
         prefix: null,
         sequence: 42,
+        dateSuffix: null,
         raw: '42',
       });
     });
@@ -49,6 +72,7 @@ describe('parseLegacyFactureNumero', () => {
       expect(parseLegacyFactureNumero('0001')).toEqual({
         prefix: null,
         sequence: 1,
+        dateSuffix: null,
         raw: '0001',
       });
     });
@@ -59,7 +83,17 @@ describe('parseLegacyFactureNumero', () => {
       expect(parseLegacyFactureNumero('  V0001  ')).toEqual({
         prefix: 'V',
         sequence: 1,
+        dateSuffix: null,
         raw: '  V0001  ',
+      });
+    });
+
+    it('strip whitespace avec dateSuffix', () => {
+      expect(parseLegacyFactureNumero('  V0007-2026-04-30  ')).toEqual({
+        prefix: 'V',
+        sequence: 7,
+        dateSuffix: '2026-04-30',
+        raw: '  V0007-2026-04-30  ',
       });
     });
   });
@@ -70,7 +104,11 @@ describe('parseLegacyFactureNumero', () => {
       ['   ', 'whitespace seul'],
       ['V', 'préfixe sans séquence'],
       ['VV0001', 'double préfixe'],
-      ['V00-01', 'tiret au milieu'],
+      ['V00-01', 'tiret au milieu sans date suffixe valide'],
+      ['V0001-2026', 'date suffixe incomplète'],
+      ['V0001-2026-13-01', 'mois invalide'],
+      ['V0001-2026-04-32', 'jour invalide'],
+      ['V0001-26-04-15', 'année 2 chiffres'],
       ['foo', 'lettres seules'],
       ['V0001A', 'suffixe alphabétique'],
       ['-1', 'séquence négative'],
