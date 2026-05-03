@@ -126,6 +126,72 @@ export type V2VeloDraft = {
   notes: string | null;
 };
 
+export type V2BdcEvalStatus = 'EN_ATTENTE' | 'APPROUVE' | 'REDUX' | 'REFUSE';
+
+export type V2BdcArchiveStatus =
+  | 'ACTIF'
+  | 'ARCHIVE_FACTURE'
+  | 'ARCHIVE_A_FACTURER'
+  | 'ARCHIVE_REFUSE'
+  | 'ARCHIVE_CTRL_QLTE'
+  | 'ARCHIVE_EVAL'
+  | 'ARCHIVE_LEGACY';
+
+export type V2BdcDraft = {
+  id: string;
+  workshopId: string;
+  veloId: string; // FK requise
+  evalStatus: V2BdcEvalStatus;
+  archiveStatus: V2BdcArchiveStatus;
+  cbEvalEnvoye: boolean;
+  cbEval: boolean;
+  cbBonSortie: boolean;
+  cbArchiver: boolean;
+  remiseSvcType: 'PCT' | 'FIXED' | null;
+  remiseSvcValue: string | null;
+  remisePceType: 'PCT' | 'FIXED' | null;
+  remisePceValue: string | null;
+  totalServices: string;
+  totalPieces: string;
+  notes: string | null;
+};
+
+export type V2BdcItemKind = 'SERVICE' | 'PIECE' | 'FORFAIT';
+
+export type V2BdcItemDraft = {
+  id: string;
+  workshopId: string;
+  bdcId: string;
+  kind: V2BdcItemKind;
+  position: number;
+  serviceId: string | null;
+  pieceId: string | null;
+  forfaitId: string | null;
+  labelSnapshot: string;
+  unitPriceSnapshot: string;
+  taxableSnapshot: boolean;
+  qty: string;
+  total: string;
+};
+
+export type V2BdcItemTaskStatus = 'TODO' | 'DONE' | 'SKIPPED';
+
+export type V2BdcItemTaskDraft = {
+  id: string;
+  bdcItemId: string;
+  position: number;
+  labelSnapshot: string;
+  status: V2BdcItemTaskStatus;
+  notes: string | null;
+};
+
+export type BdcsImportResult = {
+  bdcs: V2BdcDraft[];
+  items: V2BdcItemDraft[];
+  tasks: V2BdcItemTaskDraft[];
+  skipped: SkippedItem[];
+};
+
 export type V2VeloStatus =
   | 'RV'
   | 'RECU'
