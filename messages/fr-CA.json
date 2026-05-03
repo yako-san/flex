@@ -13,5 +13,9 @@
     "loading": "Chargement…",
     "error": "Une erreur s'est produite",
     "retry": "Réessayer"
+  },
+  "Dashboard": {
+    "signedInAs": "Connecté en tant que {userId}",
+    "placeholder": "Tableau de bord — fonctionnalités à venir."
   }
 }

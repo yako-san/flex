@@ -13,5 +13,9 @@
     "loading": "Loading…",
     "error": "An error occurred",
     "retry": "Try again"
+  },
+  "Dashboard": {
+    "signedInAs": "Signed in as {userId}",
+    "placeholder": "Dashboard — features coming soon."
   }
 }

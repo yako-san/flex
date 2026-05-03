@@ -6,13 +6,16 @@ import { routing } from './i18n/routing';
 const intlMiddleware = createIntlMiddleware(routing);
 
 // Routes publiques (pas besoin de session Clerk).
-const isPublicRoute = createRouteMatcher([
+// Exporté pour permettre tests unitaires sans bootstrap complet du middleware.
+export const PUBLIC_ROUTES = [
   '/',
   '/:locale',
   '/:locale/sign-in(.*)',
   '/:locale/sign-up(.*)',
   '/api/health',
-]);
+] as const;
+
+const isPublicRoute = createRouteMatcher([...PUBLIC_ROUTES]);
 
 const CLERK_KEY = process.env['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'];
 
