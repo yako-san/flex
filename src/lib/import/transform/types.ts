@@ -57,3 +57,40 @@ export type V2EquipeMemberDraft = {
   active: boolean;
   notes: string | null;
 };
+
+export type V2ServiceDraft = {
+  id: string;
+  workshopId: string;
+  legacyCode: string | null; // ex 'S00001'
+  labelCanonical: string;
+  categorie: string | null;
+  categoriePrio: string | null;
+  dureeMinutes: number | null;
+  prix: string; // Decimal stringifié
+  taxable: boolean;
+};
+
+export type V2ForfaitDraft = {
+  id: string;
+  workshopId: string;
+  legacyCode: string | null;
+  labelCanonical: string;
+  prix: string; // Decimal stringifié
+  dureeMinutes: number | null;
+  taxable: boolean;
+};
+
+export type V2ForfaitTaskTemplateDraft = {
+  id: string;
+  forfaitId: string;
+  labelCanonical: string;
+  position: number;
+};
+
+export type CatalogueImportResult = {
+  services: V2ServiceDraft[];
+  forfaits: V2ForfaitDraft[];
+  taskTemplates: V2ForfaitTaskTemplateDraft[];
+  translations: V2TranslationDraft[];
+  skipped: SkippedItem[];
+};
