@@ -181,7 +181,9 @@ model Service {
   // Slug canonique. Affichage via Translation.value.
   labelCanonical String  @map("label_canonical")
   categorie      String?
-  categoriePrio  Int?    @map("categorie_prio")
+  // Chemin hiérarchique de catégorie v1 (ex "2. Transmission, Cartouches BB")
+  // sert à matcher les services aux pièces dans les BDT.
+  categoriePrio  String? @map("categorie_prio")
 
   dureeMinutes Int?    @map("duree_minutes")
   prix         Decimal @db.Decimal(12, 2)
@@ -193,10 +195,8 @@ model Service {
   createdById String?   @map("created_by_id")
   updatedById String?   @map("updated_by_id")
 
-  workshop     Workshop         @relation(fields: [workshopId], references: [id], onDelete: Cascade)
-  forfaitLinks ForfaitService[]
-  bdcItems     BdcItem[]
-  bdcItemTasks BdcItemTask[]
+  workshop Workshop  @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  bdcItems BdcItem[]
 
   @@unique([workshopId, legacyCode])
   @@index([workshopId, deletedAt])
@@ -263,27 +263,36 @@ model Forfait {
   createdById String?   @map("created_by_id")
   updatedById String?   @map("updated_by_id")
 
-  workshop     Workshop         @relation(fields: [workshopId], references: [id], onDelete: Cascade)
-  serviceLinks ForfaitService[]
-  bdcItems     BdcItem[]
+  workshop      Workshop              @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  taskTemplates ForfaitTaskTemplate[]
+  bdcItems      BdcItem[]
 
   @@unique([workshopId, legacyCode])
   @@index([workshopId, deletedAt])
   @@map("forfait")
 }
 
-model ForfaitService {
-  id        String @id // fs_<ulid>
-  forfaitId String @map("forfait_id")
-  serviceId String @map("service_id")
-  position  Int // ordre d'affichage dans l'UI
+// Template de sous-tâche d'un forfait (workflow mecano).
+// Au moment d'ajouter un Forfait à un BDT, les templates sont copiés en
+// BdcItemTask avec labelSnapshot. Permet de cocher la progression sans casser
+// l'unité facturable du forfait (1 ligne sur la facture, N tâches workflow).
+//
+// Ces tâches NE SONT PAS des Services facturables individuellement — elles
+// vivent dans une table dédiée pour préserver la sémantique.
+model ForfaitTaskTemplate {
+  id             String @id // ftt_<ulid>
+  forfaitId      String @map("forfait_id")
+  labelCanonical String @map("label_canonical")
+  position       Int
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   forfait Forfait @relation(fields: [forfaitId], references: [id], onDelete: Cascade)
-  service Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
 
-  @@unique([forfaitId, serviceId])
-  @@index([serviceId])
-  @@map("forfait_service")
+  @@unique([forfaitId, position])
+  @@map("forfait_task_template")
 }
 
 // =============================================================================
@@ -528,12 +537,12 @@ enum BdcItemTaskStatus {
   @@map("bdc_item_task_status")
 }
 
-// Sous-tâches d'un item kind=FORFAIT (1 ligne par service constituant).
-// Permet au mecano de cocher la progression sans casser l'unité facturable.
+// Sous-tâches d'un item kind=FORFAIT (instanciées au moment de l'ajout au BDT
+// depuis ForfaitTaskTemplate). Permet au mecano de cocher la progression sans
+// casser l'unité facturable du forfait. labelSnapshot fige le texte du template.
 model BdcItemTask {
   id            String            @id // task_<ulid>
   bdcItemId     String            @map("bdc_item_id")
-  serviceId     String            @map("service_id")
   position      Int
   labelSnapshot String            @map("label_snapshot")
   status        BdcItemTaskStatus @default(TODO)
@@ -545,7 +554,6 @@ model BdcItemTask {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   bdcItem BdcItem @relation(fields: [bdcItemId], references: [id], onDelete: Cascade)
-  service Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
 
   @@index([bdcItemId, position])
   @@map("bdc_item_task")
