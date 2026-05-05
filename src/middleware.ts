@@ -19,14 +19,29 @@ const isPublicRoute = createRouteMatcher([...PUBLIC_ROUTES]);
 
 const CLERK_KEY = process.env['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'];
 
+// Les routes /api/* n'ont pas de préfixe locale et ne passent PAS par le
+// middleware next-intl (sinon redirigées vers /fr-CA/api/... → 404).
+function isApiRoute(req: NextRequest): boolean {
+  return req.nextUrl.pathname.startsWith('/api/');
+}
+
 // Middleware composé : i18n + auth Clerk (Clerk sauté si non configuré).
 const middleware = CLERK_KEY
   ? clerkMiddleware(async (auth, req) => {
+      // Pour les routes API : pas d'intl, juste l'auth Clerk
+      if (isApiRoute(req)) {
+        if (!isPublicRoute(req)) await auth.protect();
+        return; // laisse Next router vers la route handler
+      }
+      // Pour le reste : i18n + auth combinés
       const intlResponse = intlMiddleware(req);
       if (!isPublicRoute(req)) await auth.protect();
       return intlResponse;
     })
-  : (req: NextRequest) => intlMiddleware(req);
+  : (req: NextRequest) => {
+      if (isApiRoute(req)) return;
+      return intlMiddleware(req);
+    };
 
 export default middleware;
 
