@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
+import { getActiveWorkshop } from '@/lib/workshop';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,10 +12,7 @@ export default async function AdminDashboardPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const workshop = await prisma.workshop.findFirst({
-    where: { deletedAt: null },
-    orderBy: { createdAt: 'asc' },
-  });
+  const workshop = await getActiveWorkshop();
 
   if (!workshop) {
     return (

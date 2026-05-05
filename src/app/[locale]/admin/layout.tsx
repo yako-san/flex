@@ -1,10 +1,10 @@
 import { auth } from '@clerk/nextjs/server';
-import { UserButton } from '@clerk/nextjs';
+import { OrganizationSwitcher, UserButton } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
-import { prisma } from '@/lib/db';
+import { getActiveWorkshop } from '@/lib/workshop';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +19,7 @@ const navItems = [
   { href: 'admin/velos', label: 'Vélos' },
   { href: 'admin/bdcs', label: 'Bons de commande' },
   { href: 'admin/import', label: 'Import v1' },
+  { href: 'admin/settings', label: 'Paramètres' },
 ];
 
 export default async function AdminLayout({ children, params }: Props) {
@@ -28,11 +29,7 @@ export default async function AdminLayout({ children, params }: Props) {
   const { userId } = await auth();
   if (!userId) redirect(`/${locale}/sign-in`);
 
-  // Récupère le 1er workshop (multi-tenant à venir via Clerk Organizations).
-  const workshop = await prisma.workshop.findFirst({
-    where: { deletedAt: null },
-    orderBy: { createdAt: 'asc' },
-  });
+  const workshop = await getActiveWorkshop();
 
   return (
     <div
@@ -52,10 +49,17 @@ export default async function AdminLayout({ children, params }: Props) {
           flexDirection: 'column',
         }}
       >
-        <div style={{ marginBottom: '2rem' }}>
-          <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Flex</div>
-          <div style={{ fontSize: '0.85rem', color: '#666' }}>
-            {workshop?.name ?? 'Aucun workshop'}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.5rem' }}>Flex</div>
+          <OrganizationSwitcher
+            hidePersonal
+            createOrganizationMode="modal"
+            appearance={{
+              elements: { rootBox: { width: '100%' }, organizationSwitcherTrigger: { width: '100%', justifyContent: 'flex-start' } },
+            }}
+          />
+          <div style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem' }}>
+            {workshop ? `Workshop : ${workshop.name}` : 'Aucun workshop lié'}
           </div>
         </div>
 

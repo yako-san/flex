@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
+import { getActiveWorkshop } from '@/lib/workshop';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,11 +12,8 @@ export default async function VelosPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const workshop = await prisma.workshop.findFirst({
-    where: { deletedAt: null },
-    orderBy: { createdAt: 'asc' },
-  });
-  if (!workshop) return <p>Aucun workshop.</p>;
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return <p>Aucun workshop actif.</p>;
 
   const velos = await prisma.velo.findMany({
     where: { workshopId: workshop.id, deletedAt: null },
