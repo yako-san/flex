@@ -233,7 +233,7 @@ export default async function BdcDetailPage({ params }: Props) {
             existingFactureNumero={factureLog?.factureNumero ?? null}
           />
           <h2 style={{ ...h2Style, marginTop: '2rem' }}>Workflow</h2>
-          <WorkflowForm bdc={bdc} />
+          <WorkflowForm bdc={bdc} key={bdc.updatedAt.toISOString()} />
         </div>
       </div>
     </div>

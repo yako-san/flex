@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { updateBdtWorkflowAction, type BdtFormState } from '../actions';
 import type { Bdc } from '@prisma/client';
 
@@ -19,10 +20,16 @@ type Props = {
 };
 
 export function WorkflowForm({ bdc }: Props) {
+  const router = useRouter();
   const [state, formAction, pending] = useActionState<BdtFormState | null, FormData>(
     updateBdtWorkflowAction,
     null,
   );
+
+  // Refresh server data après un save réussi (sinon defaultValue gardé en UI).
+  useEffect(() => {
+    if (state && !state.error) router.refresh();
+  }, [state, router]);
 
   return (
     <form action={formAction}>
