@@ -8,6 +8,7 @@ import { RemoveItemButton } from './remove-item-button';
 import { TaskStatusButton } from './task-status-button';
 import { WorkflowForm } from './workflow-form';
 import { DeleteBdtButton } from './delete-button';
+import { PdfButtons } from './pdf-buttons';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,7 @@ export default async function BdcDetailPage({ params }: Props) {
   const workshop = await getActiveWorkshop();
   if (!workshop) return <p>Aucun workshop actif.</p>;
 
-  const [bdc, services, pieces, forfaits] = await Promise.all([
+  const [bdc, services, pieces, forfaits, factureLog] = await Promise.all([
     prisma.bdc.findFirst({
       where: { id, workshopId: workshop.id, deletedAt: null },
       include: {
@@ -57,6 +58,11 @@ export default async function BdcDetailPage({ params }: Props) {
       where: { workshopId: workshop.id, deletedAt: null },
       orderBy: { labelCanonical: 'asc' },
       select: { id: true, labelCanonical: true, prix: true, legacyCode: true },
+    }),
+    prisma.factureLog.findFirst({
+      where: { bdcId: id, workshopId: workshop.id },
+      orderBy: { date: 'desc' },
+      select: { id: true, factureNumero: true },
     }),
   ]);
 
@@ -218,9 +224,15 @@ export default async function BdcDetailPage({ params }: Props) {
           ) : null}
         </div>
 
-        {/* Colonne droite : workflow */}
+        {/* Colonne droite : documents PDF + workflow */}
         <div>
-          <h2 style={h2Style}>Workflow</h2>
+          <h2 style={h2Style}>Documents</h2>
+          <PdfButtons
+            bdcId={bdc.id}
+            existingFactureLogId={factureLog?.id ?? null}
+            existingFactureNumero={factureLog?.factureNumero ?? null}
+          />
+          <h2 style={{ ...h2Style, marginTop: '2rem' }}>Workflow</h2>
           <WorkflowForm bdc={bdc} />
         </div>
       </div>
