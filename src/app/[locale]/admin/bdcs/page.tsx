@@ -1,4 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
+import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 
@@ -24,7 +25,7 @@ export default async function BdcsPage({ params }: Props) {
           veloNumero: true,
           modele: true,
           couleur: true,
-          client: { select: { prenom: true, nom: true } },
+          client: { select: { id: true, prenom: true, nom: true } },
           marque: { select: { nom: true } },
         },
       },
@@ -34,8 +35,8 @@ export default async function BdcsPage({ params }: Props) {
 
   return (
     <div>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Bons de commande</h1>
-      <p style={{ color: '#666', marginBottom: '1.5rem' }}>{bdcs.length} BDCs</p>
+      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Bons de travail</h1>
+      <p style={{ color: '#666', marginBottom: '1.5rem' }}>{bdcs.length} BDT</p>
 
       <table style={tableStyle}>
         <thead>
@@ -54,12 +55,24 @@ export default async function BdcsPage({ params }: Props) {
           {bdcs.map((b) => (
             <tr key={b.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
               <td style={{ ...tdStyle, fontFamily: 'monospace' }}>
-                {String(b.velo.veloNumero).padStart(4, '0')}
+                <Link
+                  href={`/${locale}/admin/bdcs/${b.id}`}
+                  style={{ color: '#1565c0', textDecoration: 'none' }}
+                >
+                  {String(b.velo.veloNumero).padStart(4, '0')}
+                </Link>
               </td>
               <td style={tdStyle}>
-                {b.velo.client
-                  ? `${b.velo.client.prenom} ${b.velo.client.nom}`.trim()
-                  : '—'}
+                {b.velo.client ? (
+                  <Link
+                    href={`/${locale}/admin/clients/${b.velo.client.id ?? ''}`}
+                    style={{ color: '#1565c0', textDecoration: 'none' }}
+                  >
+                    {`${b.velo.client.prenom} ${b.velo.client.nom}`.trim()}
+                  </Link>
+                ) : (
+                  '—'
+                )}
               </td>
               <td style={tdStyle}>
                 {[b.velo.marque?.nom, b.velo.modele, b.velo.couleur].filter(Boolean).join(', ') ||

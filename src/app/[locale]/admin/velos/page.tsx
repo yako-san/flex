@@ -1,4 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
+import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 
@@ -19,7 +20,7 @@ export default async function VelosPage({ params }: Props) {
     where: { workshopId: workshop.id, deletedAt: null },
     orderBy: { veloNumero: 'desc' },
     include: {
-      client: { select: { prenom: true, nom: true } },
+      client: { select: { id: true, prenom: true, nom: true } },
       marque: { select: { nom: true } },
       _count: { select: { bdcs: true } },
     },
@@ -47,10 +48,24 @@ export default async function VelosPage({ params }: Props) {
           {velos.map((v) => (
             <tr key={v.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
               <td style={{ ...tdStyle, fontFamily: 'monospace' }}>
-                {String(v.veloNumero).padStart(4, '0')}
+                <Link
+                  href={`/${locale}/admin/velos/${v.id}`}
+                  style={{ color: '#1565c0', textDecoration: 'none' }}
+                >
+                  {String(v.veloNumero).padStart(4, '0')}
+                </Link>
               </td>
               <td style={tdStyle}>
-                {v.client ? `${v.client.prenom} ${v.client.nom}`.trim() : '—'}
+                {v.client ? (
+                  <Link
+                    href={`/${locale}/admin/clients/${v.client.id}`}
+                    style={{ color: '#1565c0', textDecoration: 'none' }}
+                  >
+                    {`${v.client.prenom} ${v.client.nom}`.trim()}
+                  </Link>
+                ) : (
+                  '—'
+                )}
               </td>
               <td style={tdStyle}>{v.marque?.nom ?? '—'}</td>
               <td style={tdStyle}>{v.modele ?? '—'}</td>

@@ -69,7 +69,7 @@ export default async function AdminDashboardPage({ params }: Props) {
       >
         <Stat label="Clients" value={clientCount} />
         <Stat label="Vélos" value={veloCount} />
-        <Stat label="Bons de commande" value={bdcCount} sub={`${bdcActifCount} actifs`} />
+        <Stat label="Bons de travail" value={bdcCount} sub={`${bdcActifCount} actifs`} />
         <Stat label="Pièces (catalogue)" value={pieceCount} />
         <Stat label="Services" value={serviceCount} />
         <Stat label="Forfaits" value={forfaitCount} />

@@ -1,4 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
+import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 
@@ -50,9 +51,12 @@ export default async function ClientsPage({ params }: Props) {
               return (
                 <tr key={c.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
                   <td style={tdStyle}>
-                    <strong>
+                    <Link
+                      href={`/${locale}/admin/clients/${c.id}`}
+                      style={{ color: '#1565c0', textDecoration: 'none', fontWeight: 600 }}
+                    >
                       {c.prenom} {c.nom}
-                    </strong>
+                    </Link>
                   </td>
                   <td style={tdStyle}>
                     {c.telephone ? (
