@@ -107,7 +107,23 @@ export default async function VeloDetailPage({ params }: Props) {
       <Row label="Note client (facture)">{velo.noteClientFacture ?? '—'}</Row>
       <Row label="Notes libres">{velo.notes ?? '—'}</Row>
 
-      <h2 style={{ ...h2Style, marginTop: '2rem' }}>Historique BDT ({velo.bdcs.length})</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem', marginBottom: '0.75rem' }}>
+        <h2 style={{ ...h2Style, marginBottom: 0 }}>Historique BDT ({velo.bdcs.length})</h2>
+        <Link
+          href={`/${locale}/admin/bdcs/new?veloId=${velo.id}`}
+          style={{
+            padding: '0.4rem 0.9rem',
+            background: 'transparent',
+            color: '#1565c0',
+            border: '1px solid #1565c0',
+            borderRadius: 4,
+            textDecoration: 'none',
+            fontSize: '0.85rem',
+          }}
+        >
+          + Nouveau BDT pour ce vélo
+        </Link>
+      </div>
       {velo.bdcs.length === 0 ? (
         <p style={{ color: '#888' }}>Aucun BDT pour ce vélo.</p>
       ) : (

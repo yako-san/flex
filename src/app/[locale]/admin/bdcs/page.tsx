@@ -35,8 +35,25 @@ export default async function BdcsPage({ params }: Props) {
 
   return (
     <div>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Bons de travail</h1>
-      <p style={{ color: '#666', marginBottom: '1.5rem' }}>{bdcs.length} BDT</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Bons de travail</h1>
+          <p style={{ color: '#666', margin: 0 }}>{bdcs.length} BDT</p>
+        </div>
+        <Link
+          href={`/${locale}/admin/bdcs/new`}
+          style={{
+            padding: '0.6rem 1.2rem',
+            background: '#1a1a1a',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: 4,
+            fontSize: '0.95rem',
+          }}
+        >
+          + Nouveau BDT
+        </Link>
+      </div>
 
       <table style={tableStyle}>
         <thead>
