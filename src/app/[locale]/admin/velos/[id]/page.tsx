@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { DeleteVeloButton } from './delete-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,12 +49,37 @@ export default async function VeloDetailPage({ params }: Props) {
         ← Tous les vélos
       </Link>
 
-      <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>
-        Vélo <span style={{ fontFamily: 'monospace' }}>{String(velo.veloNumero).padStart(4, '0')}</span>
-      </h1>
-      <p style={{ color: '#666', marginBottom: '2rem' }}>
-        {[velo.marque?.nom, velo.modele, velo.couleur, velo.taille].filter(Boolean).join(', ') || '—'}
-      </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>
+            Vélo <span style={{ fontFamily: 'monospace' }}>{String(velo.veloNumero).padStart(4, '0')}</span>
+          </h1>
+          <p style={{ color: '#666', margin: 0 }}>
+            {[velo.marque?.nom, velo.modele, velo.couleur, velo.taille].filter(Boolean).join(', ') || '—'}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link
+            href={`/${locale}/admin/velos/${velo.id}/edit`}
+            style={{
+              padding: '0.4rem 0.9rem',
+              background: 'transparent',
+              color: '#1565c0',
+              border: '1px solid #1565c0',
+              borderRadius: 4,
+              textDecoration: 'none',
+              fontSize: '0.9rem',
+            }}
+          >
+            Modifier
+          </Link>
+          <DeleteVeloButton
+            veloId={velo.id}
+            veloLabel={`Vélo ${String(velo.veloNumero).padStart(4, '0')}`}
+            hasBdcs={velo.bdcs.length > 0}
+          />
+        </div>
+      </div>
 
       <h2 style={h2Style}>Caractéristiques</h2>
       <Row label="Client">

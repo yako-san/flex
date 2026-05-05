@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { DeleteClientButton } from './delete-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,10 +50,35 @@ export default async function ClientDetailPage({ params }: Props) {
         ← Tous les clients
       </Link>
 
-      <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>{client.prenom} {client.nom}</h1>
-      <p style={{ color: '#666', marginBottom: '2rem' }}>
-        {client.velos.length} vélo{client.velos.length > 1 ? 's' : ''} · {totalBdcs} BDT
-      </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>{client.prenom} {client.nom}</h1>
+          <p style={{ color: '#666', margin: 0 }}>
+            {client.velos.length} vélo{client.velos.length > 1 ? 's' : ''} · {totalBdcs} BDT
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link
+            href={`/${locale}/admin/clients/${client.id}/edit`}
+            style={{
+              padding: '0.4rem 0.9rem',
+              background: 'transparent',
+              color: '#1565c0',
+              border: '1px solid #1565c0',
+              borderRadius: 4,
+              textDecoration: 'none',
+              fontSize: '0.9rem',
+            }}
+          >
+            Modifier
+          </Link>
+          <DeleteClientButton
+            clientId={client.id}
+            clientName={`${client.prenom} ${client.nom}`}
+            hasVelos={client.velos.length > 0}
+          />
+        </div>
+      </div>
 
       <h2 style={h2Style}>Coordonnées</h2>
       <Row label="Téléphone">{client.telephone ? `${client.indicatif ?? ''} ${client.telephone}` : '—'}</Row>
@@ -63,7 +89,23 @@ export default async function ClientDetailPage({ params }: Props) {
       <Row label="Remise par défaut">{client.remiseDefault ? `${Number(client.remiseDefault)}%` : '—'}</Row>
       <Row label="Notes">{client.notes ?? '—'}</Row>
 
-      <h2 style={{ ...h2Style, marginTop: '2rem' }}>Vélos ({client.velos.length})</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem', marginBottom: '0.75rem' }}>
+        <h2 style={{ ...h2Style, marginBottom: 0 }}>Vélos ({client.velos.length})</h2>
+        <Link
+          href={`/${locale}/admin/velos/new?clientId=${client.id}`}
+          style={{
+            padding: '0.4rem 0.9rem',
+            background: 'transparent',
+            color: '#1565c0',
+            border: '1px solid #1565c0',
+            borderRadius: 4,
+            textDecoration: 'none',
+            fontSize: '0.85rem',
+          }}
+        >
+          + Nouveau vélo pour ce client
+        </Link>
+      </div>
       {client.velos.length === 0 ? (
         <p style={{ color: '#888' }}>Aucun vélo enregistré.</p>
       ) : (

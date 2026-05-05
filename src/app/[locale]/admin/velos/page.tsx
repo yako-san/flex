@@ -28,8 +28,25 @@ export default async function VelosPage({ params }: Props) {
 
   return (
     <div>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Vélos</h1>
-      <p style={{ color: '#666', marginBottom: '1.5rem' }}>{velos.length} vélos</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Vélos</h1>
+          <p style={{ color: '#666', margin: 0 }}>{velos.length} vélos</p>
+        </div>
+        <Link
+          href={`/${locale}/admin/velos/new`}
+          style={{
+            padding: '0.6rem 1.2rem',
+            background: '#1a1a1a',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: 4,
+            fontSize: '0.95rem',
+          }}
+        >
+          + Nouveau vélo
+        </Link>
+      </div>
 
       <table style={tableStyle}>
         <thead>
