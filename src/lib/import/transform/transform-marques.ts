@@ -59,6 +59,7 @@ export function transformMarques(
       id: generateId('marque'),
       workshopId: ctx.workshopId,
       nom: cleaned,
+      legacyRawV1: raw as unknown as Record<string, unknown>,
     };
     records.push(marque);
     seen.set(dedupKey, marque);

@@ -108,6 +108,7 @@ export function transformPos(
       dateReception: raw.dateReception ? parseV1Date(raw.dateReception) : null,
       status: mapStatus(raw.status),
       notes: null,
+      legacyRawV1: raw as unknown as Record<string, unknown>,
     });
 
     let pos_idx = 0;

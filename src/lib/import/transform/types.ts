@@ -41,6 +41,7 @@ export type V2MarqueDraft = {
   id: string;
   workshopId: string;
   nom: string; // slug canonique (case-insensitive en DB via Citext)
+  legacyRawV1: Record<string, unknown> | null;
 };
 
 export type V2EquipeMemberDraft = {
@@ -56,6 +57,7 @@ export type V2EquipeMemberDraft = {
   role: string | null;
   active: boolean;
   notes: string | null;
+  legacyRawV1: Record<string, unknown> | null;
 };
 
 export type V2ServiceDraft = {
@@ -68,6 +70,7 @@ export type V2ServiceDraft = {
   dureeMinutes: number | null;
   prix: string; // Decimal stringifié
   taxable: boolean;
+  legacyRawV1: Record<string, unknown> | null;
 };
 
 export type V2ForfaitDraft = {
@@ -78,6 +81,7 @@ export type V2ForfaitDraft = {
   prix: string; // Decimal stringifié
   dureeMinutes: number | null;
   taxable: boolean;
+  legacyRawV1: Record<string, unknown> | null;
 };
 
 export type V2ForfaitTaskTemplateDraft = {
@@ -210,6 +214,7 @@ export type V2VenteDirecteDraft = {
   remiseValue: string | null;
   totalPieces: string;
   notes: string | null;
+  legacyRawV1: Record<string, unknown> | null;
 };
 
 export type V2VenteDirecteItemDraft = {
@@ -236,6 +241,7 @@ export type V2PoDraft = {
   dateReception: string | null;
   status: V2PoStatus;
   notes: string | null;
+  legacyRawV1: Record<string, unknown> | null;
 };
 
 export type V2PoItemDraft = {
@@ -270,6 +276,17 @@ export type V2WorkshopDraft = {
   timezone: string;
   defaultLocale: string;
   activeLocales: string[];
+  // Snapshot intégral du dump v1 (counters, facturesJournal, schemaVersion,
+  // exportedAt, appVersion, ventesArchives raw, etc.) pour traçabilité totale.
+  legacyV1Extras: Record<string, unknown> | null;
+};
+
+export type V2CounterDraft = {
+  id: string;
+  workshopId: string;
+  kind: 'VELO_SEQUENCE' | 'FACTURE_SEQUENCE' | 'PO_SEQUENCE';
+  prefix: string | null;
+  current: number;
 };
 
 export type PosImportResult = {
@@ -314,6 +331,7 @@ export type V2PieceDraft = {
   taxable: boolean;
   stockPhysique: number;
   stockReserve: number;
+  legacyRawV1: Record<string, unknown> | null;
 };
 
 export type CatalogueImportResult = {

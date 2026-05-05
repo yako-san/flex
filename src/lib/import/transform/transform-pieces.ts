@@ -141,6 +141,7 @@ export function transformPieces(
       taxable: true,
       stockPhysique: raw.stock,
       stockReserve: raw.stockReserve,
+      legacyRawV1: raw as unknown as Record<string, unknown>,
     };
     records.push(piece);
 

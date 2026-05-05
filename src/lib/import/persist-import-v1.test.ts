@@ -56,6 +56,7 @@ const baseResult = (): ImportV1Result => ({
     timezone: 'America/Montreal',
     defaultLocale: 'fr-CA',
     activeLocales: ['fr-CA', 'en-CA'],
+    legacyV1Extras: null,
   },
   marques: [],
   equipe: [],
@@ -72,6 +73,7 @@ const baseResult = (): ImportV1Result => ({
   venteItems: [],
   pos: [],
   poItems: [],
+  counters: [],
   translations: [],
   legacyMappings: [],
   skipped: [],
@@ -102,7 +104,7 @@ describe('persistImportV1', () => {
     const { prisma, calls } = createMockPrisma();
     const r = baseResult();
     r.marques = [
-      { id: 'm1', workshopId: 'workshop_test', nom: 'specialized' },
+      { id: 'm1', workshopId: 'workshop_test', nom: 'specialized', legacyRawV1: null },
     ];
     r.clients = [
       {
@@ -217,6 +219,7 @@ describe('persistImportV1', () => {
       id: `m${i}`,
       workshopId: 'workshop_test',
       nom: `marque-${i}`,
+      legacyRawV1: null,
     }));
 
     await persistImportV1(prisma, r);
@@ -246,7 +249,7 @@ describe('persistImportV1', () => {
   it('retourne les stats agrégées', async () => {
     const { prisma } = createMockPrisma();
     const r = baseResult();
-    r.marques = [{ id: 'm1', workshopId: 'workshop_test', nom: 'x' }];
+    r.marques = [{ id: 'm1', workshopId: 'workshop_test', nom: 'x', legacyRawV1: null }];
     r.legacyMappings = [
       {
         id: 'map1',

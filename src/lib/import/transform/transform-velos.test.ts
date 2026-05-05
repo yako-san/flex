@@ -44,6 +44,7 @@ const mkEquipe = (overrides: Partial<V2EquipeMemberDraft>): V2EquipeMemberDraft 
   role: null,
   active: true,
   notes: null,
+  legacyRawV1: null,
   ...overrides,
 });
 
@@ -51,6 +52,7 @@ const mkMarque = (overrides: Partial<V2MarqueDraft>): V2MarqueDraft => ({
   id: 'marque_TEST',
   workshopId: 'workshop_TEST',
   nom: '',
+  legacyRawV1: null,
   ...overrides,
 });
 

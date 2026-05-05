@@ -105,6 +105,7 @@ export function transformCatalogueServices(
           prix: decimalString(raw.prix),
           dureeMinutes: parseDureeHHMM(raw.duree),
           taxable: true,
+          legacyRawV1: raw as unknown as Record<string, unknown>,
         };
         forfaits.push(forfait);
         pushTranslation('FORFAIT', forfait.id, label);
@@ -143,6 +144,7 @@ export function transformCatalogueServices(
           dureeMinutes: parseDureeHHMM(raw.duree),
           prix: decimalString(raw.prix),
           taxable: true,
+          legacyRawV1: raw as unknown as Record<string, unknown>,
         };
         services.push(service);
         pushTranslation('SERVICE', service.id, label);

@@ -41,6 +41,7 @@ import type {
   V2VenteDirecteDraft,
   V2VenteDirecteItemDraft,
   V2WorkshopDraft,
+  V2CounterDraft,
 } from './transform/types';
 
 // =============================================================================
@@ -94,6 +95,7 @@ export type ImportV1Result = {
   venteItems: V2VenteDirecteItemDraft[];
   pos: V2PoDraft[];
   poItems: V2PoItemDraft[];
+  counters: V2CounterDraft[];
   translations: V2TranslationDraft[];
   legacyMappings: V2LegacyIdMappingDraft[];
   skipped: SkippedItem[];
@@ -148,7 +150,29 @@ export function importV1(dump: V1Dump, options: ImportV1Options = {}): ImportV1R
     timezone: dump.workshop.timezone,
     defaultLocale,
     activeLocales,
+    // Snapshot intégral du dump v1 pour traçabilité totale (counters,
+    // facturesJournal, schemaVersion, ventesArchives raw, etc.)
+    legacyV1Extras: dump as unknown as Record<string, unknown>,
   };
+
+  // Counters v1 → table Counter v2 (pour préserver les séquences ex
+  // veloId=141 et factureNumero=5)
+  const counters: V2CounterDraft[] = [
+    {
+      id: generateId('ctr'),
+      workshopId,
+      kind: 'VELO_SEQUENCE',
+      prefix: null,
+      current: dump.counters?.veloId ?? 0,
+    },
+    {
+      id: generateId('ctr'),
+      workshopId,
+      kind: 'FACTURE_SEQUENCE',
+      prefix: 'V',
+      current: dump.counters?.factureNumero ?? 0,
+    },
+  ];
 
   const ctx: ImportContext = {
     workshopId,
@@ -282,6 +306,7 @@ export function importV1(dump: V1Dump, options: ImportV1Options = {}): ImportV1R
     venteItems: ventesResult.items,
     pos: posResult.pos,
     poItems: posResult.items,
+    counters,
     translations,
     legacyMappings,
     skipped,

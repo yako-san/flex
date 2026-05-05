@@ -67,6 +67,7 @@ export type PersistStats = {
   venteItems: number;
   pos: number;
   poItems: number;
+  counters: number;
   translations: number;
   legacyMappings: number;
 };
@@ -87,19 +88,39 @@ export async function persistImportV1(
         timezone: result.workshop.timezone,
         defaultLocale: result.workshop.defaultLocale,
         activeLocales: result.workshop.activeLocales as Prisma.InputJsonValue,
+        legacyV1Extras: toJson(result.workshop.legacyV1Extras),
       },
     });
 
+    // 1b. Counters v1 (séquences veloId, factureNumero)
+    await chunkedCreateMany(result.counters, (data) => tx.counter.createMany({ data }));
+
     // 2. Entités à FK simple (workshopId)
-    await chunkedCreateMany(result.marques, (data) => tx.marque.createMany({ data }));
-    await chunkedCreateMany(result.equipe, (data) => tx.equipeMember.createMany({ data }));
-    await chunkedCreateMany(result.services, (data) =>
-      tx.service.createMany({
-        data: data.map((s) => ({ ...s, prix: s.prix })),
+    await chunkedCreateMany(result.marques, (data) =>
+      tx.marque.createMany({
+        data: data.map((m) => ({ ...m, legacyRawV1: toJson(m.legacyRawV1) })),
       }),
     );
-    await chunkedCreateMany(result.forfaits, (data) => tx.forfait.createMany({ data }));
-    await chunkedCreateMany(result.pieces, (data) => tx.piece.createMany({ data }));
+    await chunkedCreateMany(result.equipe, (data) =>
+      tx.equipeMember.createMany({
+        data: data.map((e) => ({ ...e, legacyRawV1: toJson(e.legacyRawV1) })),
+      }),
+    );
+    await chunkedCreateMany(result.services, (data) =>
+      tx.service.createMany({
+        data: data.map((s) => ({ ...s, legacyRawV1: toJson(s.legacyRawV1) })),
+      }),
+    );
+    await chunkedCreateMany(result.forfaits, (data) =>
+      tx.forfait.createMany({
+        data: data.map((f) => ({ ...f, legacyRawV1: toJson(f.legacyRawV1) })),
+      }),
+    );
+    await chunkedCreateMany(result.pieces, (data) =>
+      tx.piece.createMany({
+        data: data.map((p) => ({ ...p, legacyRawV1: toJson(p.legacyRawV1) })),
+      }),
+    );
     await chunkedCreateMany(result.clients, (data) =>
       tx.client.createMany({
         data: data.map((c) => ({
@@ -148,6 +169,7 @@ export async function persistImportV1(
           ...vt,
           date: toDate(vt.date) ?? new Date(0),
           factureDate: toDate(vt.factureDate),
+          legacyRawV1: toJson(vt.legacyRawV1),
         })),
       }),
     );
@@ -157,6 +179,7 @@ export async function persistImportV1(
           ...p,
           dateCommande: toDate(p.dateCommande) ?? new Date(0),
           dateReception: toDate(p.dateReception),
+          legacyRawV1: toJson(p.legacyRawV1),
         })),
       }),
     );
@@ -195,6 +218,7 @@ export async function persistImportV1(
       venteItems: result.venteItems.length,
       pos: result.pos.length,
       poItems: result.poItems.length,
+      counters: result.counters.length,
       translations: result.translations.length,
       legacyMappings: result.legacyMappings.length,
     };

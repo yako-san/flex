@@ -200,6 +200,7 @@ function transformOneVente(
     remiseValue: remiseValue && remiseValue !== '0' && remiseValue !== '' ? remiseValue : null,
     totalPieces: String(total),
     notes: null,
+    legacyRawV1: raw as unknown as Record<string, unknown>,
   };
 
   return { vente, items };

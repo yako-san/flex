@@ -79,6 +79,7 @@ export function transformEquipe(
       role: normalizeNonValue(raw.role),
       active: parseActive(raw.active),
       notes: normalizeNonValue(raw.notes),
+      legacyRawV1: raw as unknown as Record<string, unknown>,
     };
 
     // courriel vide après strip → null

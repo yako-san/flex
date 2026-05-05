@@ -12,6 +12,7 @@ const svc = (overrides: Partial<V2ServiceDraft>): V2ServiceDraft => ({
   dureeMinutes: null,
   prix: '0',
   taxable: true,
+  legacyRawV1: null,
   ...overrides,
 });
 
@@ -23,6 +24,7 @@ const fft = (overrides: Partial<V2ForfaitDraft>): V2ForfaitDraft => ({
   prix: '0',
   dureeMinutes: null,
   taxable: true,
+  legacyRawV1: null,
   ...overrides,
 });
 

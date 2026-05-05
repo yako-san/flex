@@ -15,6 +15,7 @@ const mk = (overrides: Partial<V2EquipeMemberDraft>): V2EquipeMemberDraft => ({
   role: null,
   active: true,
   notes: null,
+  legacyRawV1: null,
   ...overrides,
 });
 

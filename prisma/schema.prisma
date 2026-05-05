@@ -37,6 +37,10 @@ model Workshop {
 
   fiscalEntity Json? @map("fiscal_entity") // raison sociale, NEQ, TPS#, TVQ#, adresse...
 
+  // Données v1 importées sans mappage relationnel (factures journal, etc.)
+  // Stocké brut pour traçabilité ; le mappage détaillé peut se faire plus tard.
+  legacyV1Extras Json? @map("legacy_v1_extras")
+
   stripeCustomerId     String? @unique @map("stripe_customer_id")
   stripeSubscriptionId String? @unique @map("stripe_subscription_id")
 
@@ -164,6 +168,8 @@ model Marque {
   // Le `nom` ici est le slug canonique (case-insensitive). Affichage via Translation.
   nom        String @db.Citext
 
+  legacyRawV1 Json? @map("legacy_raw_v1")
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -191,6 +197,8 @@ model Service {
   dureeMinutes Int?    @map("duree_minutes")
   prix         Decimal @db.Decimal(12, 2)
   taxable      Boolean @default(true)
+
+  legacyRawV1 Json? @map("legacy_raw_v1")
 
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
@@ -234,6 +242,8 @@ model Piece {
   stockPhysique Int @default(0) @map("stock_physique")
   stockReserve  Int @default(0) @map("stock_reserve")
 
+  legacyRawV1 Json? @map("legacy_raw_v1")
+
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
@@ -262,6 +272,8 @@ model Forfait {
   prix         Decimal @db.Decimal(12, 2)
   dureeMinutes Int?    @map("duree_minutes")
   taxable      Boolean @default(true)
+
+  legacyRawV1 Json? @map("legacy_raw_v1")
 
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
@@ -608,6 +620,8 @@ model VenteDirecte {
   totalPieces Decimal @default(0) @map("total_pieces") @db.Decimal(12, 2)
   notes       String?
 
+  legacyRawV1 Json? @map("legacy_raw_v1")
+
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
@@ -742,6 +756,8 @@ model Po {
   status        PoStatus  @default(EN_ATTENTE)
   notes         String?
 
+  legacyRawV1 Json? @map("legacy_raw_v1")
+
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
@@ -864,6 +880,8 @@ model EquipeMember {
   role      String?
   active    Boolean @default(true)
   notes     String?
+
+  legacyRawV1 Json? @map("legacy_raw_v1")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
