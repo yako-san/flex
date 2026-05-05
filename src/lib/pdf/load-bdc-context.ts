@@ -48,6 +48,7 @@ export async function loadBdcPdfContext(
 
   const workshopInfo: WorkshopInfo = {
     name: workshop.name,
+    logoBase64: workshop.logoBase64 ?? null,
     fiscalEntity: fiscalEntity ?? null,
   };
 

@@ -71,7 +71,11 @@ export async function GET(
 
   const buffer = await pdfToBuffer(
     FacturePdf({
-      workshop: { name: workshop.name, fiscalEntity: fiscalEntity ?? null },
+      workshop: {
+        name: workshop.name,
+        logoBase64: workshop.logoBase64 ?? null,
+        fiscalEntity: fiscalEntity ?? null,
+      },
       client: client
         ? {
             prenom: client.prenom,

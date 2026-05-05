@@ -2,6 +2,8 @@ import { auth } from '@clerk/nextjs/server';
 import { setRequestLocale } from 'next-intl/server';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { LinkWorkshopForm } from './link-workshop-form';
+import { FiscalForm, type FiscalEntity } from './fiscal-form';
+import { LogoForm } from './logo-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,16 +18,36 @@ export default async function SettingsPage({ params }: Props) {
   const { orgId, orgSlug } = await auth();
   const workshop = await getActiveWorkshop();
 
+  const fiscal = (workshop?.fiscalEntity as FiscalEntity | null) ?? {};
+
   return (
-    <div style={{ maxWidth: 720 }}>
+    <div style={{ maxWidth: 800 }}>
       <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Paramètres</h1>
 
       <h2 style={{ fontSize: '1.25rem', marginTop: '2rem', marginBottom: '0.5rem' }}>
+        Logo
+      </h2>
+      <p style={{ color: '#666', marginBottom: '1rem', fontSize: '0.9rem' }}>
+        Utilisé en haut des PDFs (évaluation, facture) et comme favicon (icône
+        de l&apos;onglet du navigateur).
+      </p>
+      {workshop ? <LogoForm currentLogoBase64={workshop.logoBase64} /> : null}
+
+      <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
+        Identité fiscale
+      </h2>
+      <p style={{ color: '#666', marginBottom: '1rem', fontSize: '0.9rem' }}>
+        Ces infos apparaissent sur les évaluations et factures émises.
+        Les numéros TPS/TVQ sont obligatoires pour la facturation au Canada
+        (lois LTA/LTVQ) une fois ton seuil de revenu atteint.
+      </p>
+      {workshop ? <FiscalForm initial={fiscal} /> : <p>Aucun workshop actif.</p>}
+
+      <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
         Workshop et organisation Clerk
       </h2>
-      <p style={{ color: '#666', marginBottom: '1rem' }}>
+      <p style={{ color: '#666', marginBottom: '1rem', fontSize: '0.9rem' }}>
         En multi-tenant, chaque atelier est lié à une <strong>Clerk Organization</strong>.
-        Tous les utilisateurs de cette organisation accèdent au workshop.
       </p>
 
       <div

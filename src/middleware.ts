@@ -13,6 +13,7 @@ export const PUBLIC_ROUTES = [
   '/:locale/sign-in(.*)',
   '/:locale/sign-up(.*)',
   '/api/health',
+  '/api/workshop/logo',
 ] as const;
 
 const isPublicRoute = createRouteMatcher([...PUBLIC_ROUTES]);

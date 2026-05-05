@@ -32,14 +32,6 @@ export function PdfButtons({
       >
         📄 Évaluation (PDF)
       </a>
-      <a
-        href={`/api/admin/bdcs/${bdcId}/bon-sortie.pdf`}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={btnLink}
-      >
-        🧾 Bon de sortie (PDF)
-      </a>
 
       {emitted ? (
         <a

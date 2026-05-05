@@ -1,14 +1,24 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import type { ReactElement } from 'react';
 
 export type WorkshopInfo = {
   name: string;
+  logoBase64?: string | null;
   fiscalEntity?: {
     raisonSociale?: string;
+    adresseLigne1?: string;
+    adresseLigne2?: string;
+    ville?: string;
+    province?: string;
+    codePostal?: string;
+    pays?: string;
+    telephone?: string;
+    courriel?: string;
+    siteWeb?: string;
     neq?: string;
     tps?: string;
     tvq?: string;
-    adresse?: string;
+    footerText?: string;
   } | null;
 };
 
@@ -39,172 +49,295 @@ export type ItemRow = {
   total: number;
 };
 
+// =============================================================================
+// Styles — inspiré du modèle v1 yako-cyclo (header logo+meta, sections SERVICES
+// et PIÈCES avec puces, totaux right-aligned)
+// =============================================================================
+const COLORS = {
+  text: '#1a1a1a',
+  muted: '#666',
+  light: '#999',
+  border: '#ccc',
+  borderLight: '#eee',
+  bg: '#fafafa',
+  accent: '#fcd900', // jaune yako (à remplacer par couleur de marque user)
+};
+
 const styles = StyleSheet.create({
-  page: { padding: 40, fontSize: 10, fontFamily: 'Helvetica' },
+  page: { padding: 36, fontSize: 9, fontFamily: 'Helvetica', color: COLORS.text },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 24,
-    borderBottom: '1pt solid #ccc',
-    paddingBottom: 12,
+    marginBottom: 16,
   },
-  workshopBox: { flex: 1 },
-  workshopName: { fontSize: 14, fontWeight: 700, marginBottom: 4 },
-  smallText: { fontSize: 9, color: '#555' },
-  docTitle: { fontSize: 18, fontWeight: 700, textAlign: 'right' },
-  docMeta: { fontSize: 9, color: '#555', textAlign: 'right', marginTop: 2 },
-  section: { marginTop: 16 },
-  sectionTitle: {
-    fontSize: 9,
-    color: '#666',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  logoBox: {
+    width: 70,
+    height: 70,
+    backgroundColor: COLORS.accent,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 4,
+  },
+  logoText: {
+    fontSize: 11,
+    fontWeight: 700,
+    textAlign: 'center',
+    color: COLORS.text,
+  },
+  logoSub: {
+    fontSize: 5,
+    textAlign: 'center',
+    color: COLORS.text,
+    marginTop: 2,
+  },
+  metaBlock: { textAlign: 'right' },
+  metaLabel: {
+    fontSize: 7.5,
+    color: COLORS.muted,
+    textTransform: 'lowercase',
+  },
+  metaValue: {
+    fontSize: 10,
+    fontWeight: 700,
     marginBottom: 6,
   },
-  row: { flexDirection: 'row', gap: 16 },
-  col: { flex: 1 },
-  fieldLabel: { fontSize: 9, color: '#666' },
-  fieldValue: { fontSize: 11, marginTop: 1 },
-  table: { marginTop: 16, borderTop: '1pt solid #ccc' },
-  tableRow: {
-    flexDirection: 'row',
-    borderBottom: '0.5pt solid #eee',
-    paddingVertical: 4,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 4,
-    paddingHorizontal: 4,
-    fontWeight: 700,
+  metaValueSmall: { fontSize: 9, fontWeight: 700, marginBottom: 6 },
+  addressBlock: { marginTop: 12, marginBottom: 18 },
+  addressLine: { fontSize: 8.5, color: COLORS.text, marginBottom: 1 },
+  sectionTitle: {
     fontSize: 9,
-    color: '#666',
+    fontWeight: 700,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    marginTop: 14,
+    marginBottom: 6,
+    paddingBottom: 4,
+    borderBottom: `0.5pt solid ${COLORS.border}`,
   },
-  cell: { paddingHorizontal: 4 },
-  cellPos: { width: 20 },
-  cellKind: { width: 50 },
-  cellLabel: { flex: 1 },
-  cellQty: { width: 40, textAlign: 'right' },
-  cellPrice: { width: 60, textAlign: 'right' },
-  cellTotal: { width: 60, textAlign: 'right', fontWeight: 700 },
-  totals: { marginTop: 12, alignItems: 'flex-end' },
-  totalRow: { flexDirection: 'row', marginTop: 2 },
-  totalLabel: { width: 120, textAlign: 'right', color: '#666', paddingRight: 8 },
-  totalValue: { width: 80, textAlign: 'right', fontWeight: 700 },
-  grandTotal: {
-    fontSize: 13,
-    fontWeight: 700,
-    backgroundColor: '#f5f5f5',
+  itemHeaderRow: {
+    flexDirection: 'row',
+    paddingBottom: 3,
+    fontSize: 7.5,
+    color: COLORS.muted,
+  },
+  itemRow: {
+    flexDirection: 'row',
     paddingVertical: 4,
-    paddingHorizontal: 8,
-    marginTop: 4,
-  },
-  notes: {
-    marginTop: 16,
-    padding: 8,
-    backgroundColor: '#fafafa',
+    borderBottom: `0.3pt solid ${COLORS.borderLight}`,
     fontSize: 9,
-    color: '#444',
+    alignItems: 'flex-start',
+  },
+  bullet: { width: 12, fontSize: 7 },
+  itemLabel: { flex: 1, paddingRight: 8 },
+  itemSku: { fontSize: 7, color: COLORS.muted, marginTop: 1 },
+  numCol: { width: 50, textAlign: 'right' },
+  qtyCol: { width: 30, textAlign: 'right' },
+  totalsBlock: { marginTop: 16, alignSelf: 'flex-end', minWidth: 220 },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 2,
+    fontSize: 9,
+  },
+  totalLabel: { color: COLORS.text },
+  totalValue: { fontFamily: 'Helvetica' },
+  grandTotalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 6,
+    paddingBottom: 4,
+    marginTop: 4,
+    borderTop: `0.5pt solid ${COLORS.text}`,
+    fontSize: 11,
+    fontWeight: 700,
   },
   footer: {
+    marginTop: 28,
+    paddingTop: 8,
+    fontSize: 7,
+    color: COLORS.light,
+  },
+  footerLine: { marginTop: 2 },
+  versionLabel: {
     position: 'absolute',
-    bottom: 30,
-    left: 40,
-    right: 40,
-    fontSize: 8,
-    color: '#888',
-    textAlign: 'center',
-    borderTop: '0.5pt solid #ddd',
-    paddingTop: 6,
+    bottom: 16,
+    right: 36,
+    fontSize: 6.5,
+    color: COLORS.light,
   },
 });
 
-function PdfHeader({
-  workshop,
-  docTitle,
-  docMeta,
-}: {
-  workshop: WorkshopInfo;
-  docTitle: string;
-  docMeta: string;
-}) {
-  const f = workshop.fiscalEntity ?? {};
+// =============================================================================
+// Composants partagés
+// =============================================================================
+
+function LogoBox({ workshop }: { workshop: WorkshopInfo }) {
+  if (workshop.logoBase64) {
+    return (
+      <View style={{ width: 80, height: 80 }}>
+        <Image
+          src={workshop.logoBase64}
+          style={{ width: 80, height: 80, objectFit: 'contain' }}
+        />
+      </View>
+    );
+  }
+  // Fallback : carré jaune avec nom de workshop (placeholder en l'absence de logo)
   return (
-    <View style={styles.header}>
-      <View style={styles.workshopBox}>
-        <Text style={styles.workshopName}>{workshop.name}</Text>
-        {f.raisonSociale ? <Text style={styles.smallText}>{f.raisonSociale}</Text> : null}
-        {f.adresse ? <Text style={styles.smallText}>{f.adresse}</Text> : null}
-        {f.neq ? <Text style={styles.smallText}>NEQ : {f.neq}</Text> : null}
-        {f.tps ? <Text style={styles.smallText}>TPS : {f.tps}</Text> : null}
-        {f.tvq ? <Text style={styles.smallText}>TVQ : {f.tvq}</Text> : null}
-      </View>
-      <View>
-        <Text style={styles.docTitle}>{docTitle}</Text>
-        <Text style={styles.docMeta}>{docMeta}</Text>
-      </View>
+    <View style={styles.logoBox}>
+      <Text style={styles.logoText}>{workshop.name}</Text>
+      {workshop.fiscalEntity?.raisonSociale ? (
+        <Text style={styles.logoSub} wrap={false}>
+          {workshop.fiscalEntity.raisonSociale}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
-function VeloClientBlock({
+function MetaBlock({
+  docLabel,
+  docDate,
+  bdcLabel,
+  bdcId,
   client,
   velo,
 }: {
+  docLabel: string;
+  docDate: string;
+  bdcLabel: string;
+  bdcId: string;
   client: ClientInfo;
-  velo: VeloInfo;
+  velo: VeloInfo | null;
 }) {
-  const veloLine = [velo.marque, velo.modele, velo.couleur, velo.taille].filter(Boolean).join(', ') || '—';
+  const veloLine = velo
+    ? [velo.marque, velo.modele, velo.couleur, velo.taille].filter(Boolean).join(', ') || '—'
+    : null;
   return (
-    <View style={styles.row}>
-      <View style={styles.col}>
-        <Text style={styles.sectionTitle}>Client</Text>
-        <Text style={styles.fieldValue}>
-          {client.prenom} {client.nom}
-        </Text>
-        {client.telephone ? (
-          <Text style={styles.smallText}>
-            {client.indicatif ?? ''} {client.telephone}
-          </Text>
-        ) : null}
-        {client.courriel ? <Text style={styles.smallText}>{client.courriel}</Text> : null}
-      </View>
-      <View style={styles.col}>
-        <Text style={styles.sectionTitle}>Vélo n° {String(velo.veloNumero).padStart(4, '0')}</Text>
-        <Text style={styles.fieldValue}>{veloLine}</Text>
-        {velo.numeroSerie ? <Text style={styles.smallText}>S/N : {velo.numeroSerie}</Text> : null}
-      </View>
+    <View style={styles.metaBlock}>
+      <Text style={styles.metaLabel}>{docLabel}</Text>
+      <Text style={styles.metaValueSmall}>{docDate}</Text>
+
+      <Text style={styles.metaLabel}>{bdcLabel}</Text>
+      <Text style={styles.metaValue}>{bdcId}</Text>
+
+      <Text style={styles.metaLabel}>client</Text>
+      <Text style={styles.metaValueSmall}>
+        {client.prenom} {client.nom}
+      </Text>
+
+      {client.courriel ? (
+        <>
+          <Text style={styles.metaLabel}>contact</Text>
+          <Text style={styles.metaValueSmall}>{client.courriel}</Text>
+        </>
+      ) : null}
+
+      {veloLine ? (
+        <>
+          <Text style={styles.metaLabel}>vélo</Text>
+          <Text style={styles.metaValueSmall}>{veloLine}</Text>
+        </>
+      ) : null}
     </View>
   );
 }
 
-function ItemsTable({ items, hideTotal = false }: { items: ItemRow[]; hideTotal?: boolean }) {
+function AddressBlock({ workshop }: { workshop: WorkshopInfo }) {
+  const f = workshop.fiscalEntity ?? {};
+  const lignes: string[] = [];
+  if (f.adresseLigne1) lignes.push(f.adresseLigne1);
+  if (f.adresseLigne2) lignes.push(f.adresseLigne2);
+  const cityLine = [f.ville, f.province, f.codePostal].filter(Boolean).join(' ');
+  if (cityLine) lignes.push(cityLine);
+  if (f.courriel) lignes.push(f.courriel);
+  if (f.telephone) lignes.push(f.telephone);
+
+  if (lignes.length === 0) return null;
   return (
-    <View style={styles.table}>
-      <View style={styles.tableHeader}>
-        <Text style={[styles.cell, styles.cellPos]}>#</Text>
-        <Text style={[styles.cell, styles.cellKind]}>Type</Text>
-        <Text style={[styles.cell, styles.cellLabel]}>Description</Text>
-        <Text style={[styles.cell, styles.cellQty]}>Qté</Text>
-        {!hideTotal ? <Text style={[styles.cell, styles.cellPrice]}>P.U.</Text> : null}
-        {!hideTotal ? <Text style={[styles.cell, styles.cellTotal]}>Total</Text> : null}
+    <View style={styles.addressBlock}>
+      {lignes.map((line, i) => (
+        <Text key={i} style={styles.addressLine}>
+          {line}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
+function ItemSection({
+  title,
+  bullet,
+  items,
+  hidePrices,
+}: {
+  title: string;
+  bullet: string;
+  items: ItemRow[];
+  hidePrices?: boolean;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.itemHeaderRow}>
+        <Text style={styles.bullet}> </Text>
+        <Text style={styles.itemLabel}> </Text>
+        {!hidePrices ? <Text style={styles.numCol}>unitaire</Text> : null}
+        {!hidePrices ? <Text style={styles.qtyCol}>qté</Text> : null}
+        {!hidePrices ? <Text style={styles.numCol}>prix</Text> : null}
       </View>
-      {items.map((it) => (
-        <View key={it.position} style={styles.tableRow}>
-          <Text style={[styles.cell, styles.cellPos]}>{it.position}</Text>
-          <Text style={[styles.cell, styles.cellKind]}>{it.kind}</Text>
-          <View style={[styles.cell, styles.cellLabel]}>
+      {items.map((it, i) => (
+        <View key={i} style={styles.itemRow}>
+          <Text style={styles.bullet}>{bullet}</Text>
+          <View style={styles.itemLabel}>
             <Text>{it.label}</Text>
-            {it.sku ? <Text style={styles.smallText}>SKU {it.sku}</Text> : null}
+            {it.sku ? <Text style={styles.itemSku}>SKU {it.sku}</Text> : null}
           </View>
-          <Text style={[styles.cell, styles.cellQty]}>{it.qty}</Text>
-          {!hideTotal ? <Text style={[styles.cell, styles.cellPrice]}>{it.unitPrice.toFixed(2)}</Text> : null}
-          {!hideTotal ? <Text style={[styles.cell, styles.cellTotal]}>{it.total.toFixed(2)}</Text> : null}
+          {!hidePrices ? (
+            <Text style={styles.numCol}>{it.unitPrice.toFixed(2)} $</Text>
+          ) : null}
+          {!hidePrices ? <Text style={styles.qtyCol}>{it.qty}</Text> : null}
+          {!hidePrices ? (
+            <Text style={styles.numCol}>{it.total.toFixed(2)} $</Text>
+          ) : null}
         </View>
       ))}
+    </>
+  );
+}
+
+function FiscalFooter({
+  workshop,
+  modePaiement,
+}: {
+  workshop: WorkshopInfo;
+  modePaiement?: string | null;
+}) {
+  const f = workshop.fiscalEntity ?? {};
+  return (
+    <View style={styles.footer}>
+      <Text style={styles.footerLine}>
+        Returns must be made within thirty days of purchase. Returns are accepted for
+        store credit only. Returned items will be credited minus a 15% restocking fee.
+        Opened or used items cannot be returned. Sale items cannot be returned. The price
+        of special-order items is subject to change between the date of order and the date
+        of receipt, and will be billed at the most recent price.
+      </Text>
+      <Text style={[styles.footerLine, { marginTop: 8 }]}>
+        T.P.S : {f.tps ?? '...'}
+      </Text>
+      <Text style={styles.footerLine}>T.V.Q : {f.tvq ?? '...'}</Text>
+      {modePaiement ? (
+        <Text style={[styles.footerLine, { marginTop: 6 }]}>
+          Paiement par {modePaiement.toLowerCase()}.
+        </Text>
+      ) : null}
+      {f.footerText ? (
+        <Text style={[styles.footerLine, { marginTop: 6 }]}>{f.footerText}</Text>
+      ) : null}
     </View>
   );
 }
@@ -233,44 +366,69 @@ export function EvalPdf({
   totalPieces: number;
   notes: string | null;
 }): ReactElement {
+  const services = items.filter((it) => it.kind === 'SERVICE' || it.kind === 'FORFAIT');
+  const pieces = items.filter((it) => it.kind === 'PIECE');
   const total = totalServices + totalPieces;
+  const dateStr = date.toLocaleDateString('fr-CA');
+  const bdcShort = bdcId.slice(-4);
+
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        <PdfHeader
-          workshop={workshop}
-          docTitle="Évaluation"
-          docMeta={`BDT ${bdcId.slice(-6)} · ${date.toLocaleDateString('fr-CA')}`}
-        />
-        <VeloClientBlock client={client} velo={velo} />
-        <ItemsTable items={items} />
-        <View style={styles.totals}>
+        <View style={styles.header}>
+          <LogoBox workshop={workshop} />
+          <MetaBlock
+            docLabel="évaluation"
+            docDate={dateStr}
+            bdcLabel="bon de travail"
+            bdcId={bdcShort}
+            client={client}
+            velo={velo}
+          />
+        </View>
+
+        <AddressBlock workshop={workshop} />
+
+        <ItemSection title="Services" bullet="▸" items={services} />
+        <ItemSection title="Pièces" bullet="◆" items={pieces} />
+
+        <View style={styles.totalsBlock}>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Services</Text>
+            <Text style={styles.totalLabel}>Sous-total services</Text>
             <Text style={styles.totalValue}>{totalServices.toFixed(2)} $</Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Pièces</Text>
+            <Text style={styles.totalLabel}>Sous-total pièces</Text>
             <Text style={styles.totalValue}>{totalPieces.toFixed(2)} $</Text>
           </View>
-          <View style={styles.grandTotal}>
-            <Text>Total estimé HT : {total.toFixed(2)} $</Text>
+          <View style={styles.grandTotalRow}>
+            <Text>Total estimé HT</Text>
+            <Text>{total.toFixed(2)} $</Text>
           </View>
+          <Text
+            style={{ fontSize: 7, color: COLORS.muted, marginTop: 4, textAlign: 'right' }}
+          >
+            Les taxes seront ajoutées à la facturation.
+          </Text>
         </View>
+
         {notes ? (
-          <View style={styles.notes}>
-            <Text>{notes}</Text>
+          <View style={{ marginTop: 12 }}>
+            <Text style={{ fontSize: 8, color: COLORS.muted }}>{notes}</Text>
           </View>
         ) : null}
+
         <View style={{ marginTop: 24 }}>
-          <Text style={styles.smallText}>
-            Cette évaluation est valable 30 jours. Les taxes seront appliquées à la facturation.
-          </Text>
-          <Text style={[styles.smallText, { marginTop: 12 }]}>Approuvé par le client (signature) :</Text>
-          <View style={{ borderBottom: '1pt solid #999', height: 30, marginTop: 8 }} />
+          <Text style={{ fontSize: 8 }}>Approuvé par le client (signature) :</Text>
+          <View
+            style={{ borderBottom: `0.5pt solid ${COLORS.text}`, height: 24, marginTop: 6 }}
+          />
         </View>
-        <Text style={styles.footer} fixed>
-          {workshop.name} · Évaluation {bdcId.slice(-6)}
+
+        <FiscalFooter workshop={workshop} />
+
+        <Text style={styles.versionLabel} fixed>
+          modèle éval. v1 (Flex v2)
         </Text>
       </Page>
     </Document>
@@ -278,7 +436,8 @@ export function EvalPdf({
 }
 
 // =============================================================================
-// Bon de sortie : récap travaux effectués, sous-tâches DONE
+// Bon de sortie : version interne avec sous-tâches DONE
+// (pas envoyé au client en v1 — gardé optionnel pour usage atelier)
 // =============================================================================
 export function BonSortiePdf({
   workshop,
@@ -295,46 +454,49 @@ export function BonSortiePdf({
   bdcId: string;
   date: Date;
   items: ItemRow[];
-  tasksByItem: Record<number, { label: string; status: string }[]>; // keyed by position
+  tasksByItem: Record<number, { label: string; status: string }[]>;
 }): ReactElement {
+  const services = items.filter((it) => it.kind === 'SERVICE' || it.kind === 'FORFAIT');
+  const pieces = items.filter((it) => it.kind === 'PIECE');
+
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        <PdfHeader
-          workshop={workshop}
-          docTitle="Bon de sortie"
-          docMeta={`BDT ${bdcId.slice(-6)} · ${date.toLocaleDateString('fr-CA')}`}
-        />
-        <VeloClientBlock client={client} velo={velo} />
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Travaux réalisés</Text>
-        </View>
-        <ItemsTable items={items} hideTotal />
-
-        <View style={styles.section}>
-          {items
-            .filter((it) => (tasksByItem[it.position] ?? []).length > 0)
-            .map((it) => (
-              <View key={it.position} style={{ marginTop: 8 }}>
-                <Text style={{ fontSize: 10, fontWeight: 700 }}>{it.label}</Text>
-                {(tasksByItem[it.position] ?? []).map((t, idx) => (
-                  <Text key={idx} style={styles.smallText}>
-                    {t.status === 'DONE' ? '✓' : t.status === 'SKIPPED' ? '−' : '○'} {t.label}
-                  </Text>
-                ))}
-              </View>
-            ))}
+        <View style={styles.header}>
+          <LogoBox workshop={workshop} />
+          <MetaBlock
+            docLabel="récap atelier"
+            docDate={date.toLocaleDateString('fr-CA')}
+            bdcLabel="bon de travail"
+            bdcId={bdcId.slice(-4)}
+            client={client}
+            velo={velo}
+          />
         </View>
 
-        <View style={{ marginTop: 24 }}>
-          <Text style={styles.smallText}>
-            Vélo prêt à être récupéré. Vérifiez l&apos;état avant de quitter l&apos;atelier.
-          </Text>
-        </View>
+        <AddressBlock workshop={workshop} />
 
-        <Text style={styles.footer} fixed>
-          {workshop.name} · Bon de sortie {bdcId.slice(-6)}
+        <ItemSection title="Services" bullet="▸" items={services} hidePrices />
+        <ItemSection title="Pièces" bullet="◆" items={pieces} hidePrices />
+
+        {items
+          .filter((it) => (tasksByItem[it.position] ?? []).length > 0)
+          .map((it) => (
+            <View key={it.position} style={{ marginTop: 8 }}>
+              <Text style={{ fontSize: 9, fontWeight: 700 }}>{it.label}</Text>
+              {(tasksByItem[it.position] ?? []).map((t, idx) => (
+                <Text key={idx} style={{ fontSize: 8, color: COLORS.muted, marginTop: 1 }}>
+                  {t.status === 'DONE' ? '✓' : t.status === 'SKIPPED' ? '−' : '○'}{' '}
+                  {t.label}
+                </Text>
+              ))}
+            </View>
+          ))}
+
+        <FiscalFooter workshop={workshop} />
+
+        <Text style={styles.versionLabel} fixed>
+          modèle récap. v1 (Flex v2)
         </Text>
       </Page>
     </Document>
@@ -372,65 +534,67 @@ export function FacturePdf({
   modePaiement: string | null;
   notes: string | null;
 }): ReactElement {
+  const services = items.filter((it) => it.kind === 'SERVICE' || it.kind === 'FORFAIT');
+  const pieces = items.filter((it) => it.kind === 'PIECE');
+  const dateStr = date.toLocaleDateString('fr-CA');
+
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        <PdfHeader
-          workshop={workshop}
-          docTitle="Facture"
-          docMeta={`${factureNumero} · ${date.toLocaleDateString('fr-CA')}`}
-        />
-        {velo ? (
-          <VeloClientBlock client={client} velo={velo} />
-        ) : (
-          <View style={styles.row}>
-            <View style={styles.col}>
-              <Text style={styles.sectionTitle}>Client</Text>
-              <Text style={styles.fieldValue}>
-                {client.prenom} {client.nom}
-              </Text>
-              {client.courriel ? <Text style={styles.smallText}>{client.courriel}</Text> : null}
-            </View>
-          </View>
-        )}
-        <ItemsTable items={items} />
-        <View style={styles.totals}>
+        <View style={styles.header}>
+          <LogoBox workshop={workshop} />
+          <MetaBlock
+            docLabel="reçu de vente"
+            docDate={dateStr}
+            bdcLabel="facture"
+            bdcId={factureNumero}
+            client={client}
+            velo={velo}
+          />
+        </View>
+
+        <AddressBlock workshop={workshop} />
+
+        <ItemSection title="Services" bullet="▸" items={services} />
+        <ItemSection title="Pièces" bullet="◆" items={pieces} />
+
+        <View style={styles.totalsBlock}>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Services</Text>
-            <Text style={styles.totalValue}>{totals.totalServices.toFixed(2)} $</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Pièces</Text>
-            <Text style={styles.totalValue}>{totals.totalPieces.toFixed(2)} $</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Sous-total HT</Text>
+            <Text style={styles.totalLabel}>Sous-total</Text>
             <Text style={styles.totalValue}>{totals.sousTotal.toFixed(2)} $</Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>TPS (5 %)</Text>
+            <Text style={styles.totalLabel}>T.P.S (5 %)</Text>
             <Text style={styles.totalValue}>{totals.tps.toFixed(2)} $</Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>TVQ (9,975 %)</Text>
+            <Text style={styles.totalLabel}>T.V.Q (9,975 %)</Text>
             <Text style={styles.totalValue}>{totals.tvq.toFixed(2)} $</Text>
           </View>
-          <View style={styles.grandTotal}>
-            <Text>Total TTC : {totals.grandTotal.toFixed(2)} $</Text>
+          <View style={styles.totalRow}>
+            <Text style={[styles.totalLabel, { color: COLORS.muted }]}>
+              Total des taxes
+            </Text>
+            <Text style={styles.totalValue}>
+              {(totals.tps + totals.tvq).toFixed(2)} $
+            </Text>
+          </View>
+          <View style={styles.grandTotalRow}>
+            <Text>Total</Text>
+            <Text>{totals.grandTotal.toFixed(2)} $</Text>
           </View>
         </View>
-        {modePaiement ? (
-          <View style={styles.section}>
-            <Text style={styles.smallText}>Mode de paiement : {modePaiement}</Text>
-          </View>
-        ) : null}
+
         {notes ? (
-          <View style={styles.notes}>
-            <Text>{notes}</Text>
+          <View style={{ marginTop: 12 }}>
+            <Text style={{ fontSize: 8, color: COLORS.muted }}>{notes}</Text>
           </View>
         ) : null}
-        <Text style={styles.footer} fixed>
-          {workshop.name} · Facture {factureNumero}
+
+        <FiscalFooter workshop={workshop} modePaiement={modePaiement} />
+
+        <Text style={styles.versionLabel} fixed>
+          modèle facture v1 (Flex v2)
         </Text>
       </Page>
     </Document>

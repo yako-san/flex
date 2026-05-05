@@ -37,6 +37,9 @@ model Workshop {
 
   fiscalEntity Json? @map("fiscal_entity") // raison sociale, NEQ, TPS#, TVQ#, adresse...
 
+  // Logo en base64 (PNG). Utilisé pour PDFs + favicon dynamique. Max ~500KB.
+  logoBase64 String? @map("logo_base64")
+
   // Multi-tenant : chaque Workshop est lié à une Clerk Organization.
   // Null tant que pas linké (workshop seed pré-Clerk Orgs).
   clerkOrgId String? @unique @map("clerk_org_id")
