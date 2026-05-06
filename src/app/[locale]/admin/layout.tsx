@@ -18,6 +18,11 @@ const navItems = [
   { href: 'admin/clients', label: 'Clients' },
   { href: 'admin/velos', label: 'Vélos' },
   { href: 'admin/bdcs', label: 'Bons de travail' },
+  { href: 'admin/pieces', label: 'Pièces' },
+  { href: 'admin/services', label: 'Services' },
+  { href: 'admin/forfaits', label: 'Forfaits' },
+  { href: 'admin/marques', label: 'Marques' },
+  { href: 'admin/equipe', label: 'Équipe' },
   { href: 'admin/import', label: 'Import v1' },
   { href: 'admin/settings', label: 'Paramètres' },
 ];
