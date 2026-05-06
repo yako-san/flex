@@ -9,6 +9,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { generateId } from '@/lib/ids/generate-id';
+import { recordStockMovement } from '@/lib/stock';
 
 // =============================================================================
 // Helpers internes
@@ -203,6 +204,16 @@ export async function addBdtItemAction(
           total: new Prisma.Decimal(unitPriceSnapshot.times(qty).toString()),
         },
       });
+      // Réservation de stock : la pièce est engagée sur ce BDT actif.
+      await recordStockMovement(tx, {
+        workshopId: workshop.id,
+        pieceId: refId,
+        type: 'RESERVATION',
+        delta: qty,
+        bdcItemId: itemId,
+        reason: 'Réservation par ajout d\'item BDT',
+        createdById: userId,
+      });
     } else {
       // FORFAIT
       const forfait = await tx.forfait.findFirst({
@@ -266,11 +277,30 @@ export async function removeBdtItemAction(
     await prisma.$transaction(async (tx) => {
       const item = await tx.bdcItem.findFirst({
         where: { id: itemId, workshopId: workshop.id },
-        select: { bdcId: true },
+        select: { bdcId: true, kind: true, pieceId: true, qty: true },
       });
       if (!item) throw new Error('Item introuvable');
       bdcId = item.bdcId;
       await tx.bdcItemTask.deleteMany({ where: { bdcItemId: itemId } });
+
+      // Si l'item était une pièce avec réservation, on libère le stock avant
+      // de supprimer l'item (pour éviter contrainte FK sur stock_movement).
+      if (item.kind === 'PIECE' && item.pieceId) {
+        // FK SET NULL sur StockMovement.bdcItemId → on peut supprimer l'item
+        // en gardant l'historique. Mais on ajoute aussi un RELEASE pour
+        // libérer le stockReserve.
+        const qty = Number(item.qty);
+        await recordStockMovement(tx, {
+          workshopId: workshop.id,
+          pieceId: item.pieceId,
+          type: 'RELEASE',
+          delta: -qty,
+          bdcItemId: itemId,
+          reason: 'Libération réservation par suppression d\'item BDT',
+          createdById: userId,
+        });
+      }
+
       await tx.bdcItem.delete({ where: { id: itemId } });
       await recalcBdtTotals(tx, bdcId);
     });

@@ -8,6 +8,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { generateId } from '@/lib/ids/generate-id';
+import { recordStockMovement } from '@/lib/stock';
 
 const schema = z.object({
   legacyCode: z.string().trim().optional().nullable(),
@@ -163,4 +164,53 @@ export async function deletePieceAction(id: string): Promise<{ error?: string }>
   });
   revalidatePath('/[locale]/admin/pieces', 'page');
   redirect('/fr-CA/admin/pieces');
+}
+
+// =============================================================================
+// Ajustement manuel de stock
+// =============================================================================
+
+const adjustSchema = z.object({
+  pieceId: z.string().trim().min(1),
+  delta: z.coerce.number().int().refine((n) => n !== 0, 'Delta doit être ≠ 0'),
+  reason: z.string().trim().min(1, 'Raison requise (audit trail)'),
+});
+
+export type AdjustState = { error?: string; success?: boolean };
+
+export async function adjustStockAction(
+  _p: AdjustState | null,
+  formData: FormData,
+): Promise<AdjustState> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+
+  const parsed = adjustSchema.safeParse({
+    pieceId: formData.get('pieceId') ?? '',
+    delta: formData.get('delta') ?? 0,
+    reason: formData.get('reason') ?? '',
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Validation' };
+  const { pieceId, delta, reason } = parsed.data;
+
+  const p = await prisma.piece.findFirst({
+    where: { id: pieceId, workshopId: workshop.id, deletedAt: null },
+  });
+  if (!p) return { error: 'Pièce introuvable' };
+
+  await prisma.$transaction(async (tx) => {
+    await recordStockMovement(tx, {
+      workshopId: workshop.id,
+      pieceId,
+      type: 'MANUAL_ADJUSTMENT',
+      delta,
+      reason,
+      createdById: userId,
+    });
+  });
+
+  revalidatePath(`/[locale]/admin/pieces/${pieceId}/edit`, 'page');
+  return { success: true };
 }

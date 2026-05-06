@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { generateId } from '@/lib/ids/generate-id';
 import { calcQuebecTaxes, TPS_RATE, TVQ_RATE } from '@/lib/billing/quebec-taxes';
+import { recordStockMovement } from '@/lib/stock';
 
 // Émet la facture pour un BDT : crée FactureLog (immutable), incrémente
 // le counter FACTURE_SEQUENCE, met l'archive_status à ARCHIVE_FACTURE.
@@ -125,6 +126,32 @@ export async function emitFactureAction(
         where: { id: bdcId },
         data: { archiveStatus: 'ARCHIVE_FACTURE', cbArchiver: true },
       });
+
+      // Mouvements de stock : pour chaque pièce du BDT, on libère la
+      // réservation (RELEASE) et on décrémente le stock physique
+      // (BDC_INVOICED).
+      for (const item of bdc.items) {
+        if (item.kind !== 'PIECE' || !item.pieceId) continue;
+        const qty = Number(item.qty);
+        await recordStockMovement(tx, {
+          workshopId: workshop.id,
+          pieceId: item.pieceId,
+          type: 'RELEASE',
+          delta: -qty,
+          bdcItemId: item.id,
+          reason: `Libération réservation suite à facturation ${factureNumero}`,
+          createdById: userId,
+        });
+        await recordStockMovement(tx, {
+          workshopId: workshop.id,
+          pieceId: item.pieceId,
+          type: 'BDC_INVOICED',
+          delta: -qty,
+          bdcItemId: item.id,
+          reason: `Sortie stock suite à facturation ${factureNumero}`,
+          createdById: userId,
+        });
+      }
 
       return { factureLogId, factureNumero };
     });
