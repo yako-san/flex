@@ -12,6 +12,7 @@ import { PdfButtons } from './pdf-buttons';
 import { EmailButtons } from './email-buttons';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
