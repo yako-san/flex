@@ -332,6 +332,10 @@ const updateWorkflowSchema = z.object({
   cbEval: z.coerce.boolean(),
   cbBonSortie: z.coerce.boolean(),
   cbArchiver: z.coerce.boolean(),
+  remiseSvcType: z.enum(['PCT', 'FIXED', '']).optional(),
+  remiseSvcValue: z.string().trim().optional().nullable(),
+  remisePceType: z.enum(['PCT', 'FIXED', '']).optional(),
+  remisePceValue: z.string().trim().optional().nullable(),
   notes: z.string().optional().nullable(),
 });
 
@@ -352,6 +356,10 @@ export async function updateBdtWorkflowAction(
     cbEval: formData.get('cbEval') === 'on',
     cbBonSortie: formData.get('cbBonSortie') === 'on',
     cbArchiver: formData.get('cbArchiver') === 'on',
+    remiseSvcType: (formData.get('remiseSvcType') as string) || '',
+    remiseSvcValue: (formData.get('remiseSvcValue') as string) || null,
+    remisePceType: (formData.get('remisePceType') as string) || '',
+    remisePceValue: (formData.get('remisePceValue') as string) || null,
     notes: formData.get('notes') || null,
   });
 
@@ -363,6 +371,17 @@ export async function updateBdtWorkflowAction(
   });
   if (!existing) return { error: 'BDT introuvable' };
 
+  const remSvcVal = data.remiseSvcValue && data.remiseSvcValue.trim() !== ''
+    ? new Prisma.Decimal(data.remiseSvcValue)
+    : null;
+  const remPceVal = data.remisePceValue && data.remisePceValue.trim() !== ''
+    ? new Prisma.Decimal(data.remisePceValue)
+    : null;
+  const remSvcType =
+    data.remiseSvcType === 'PCT' || data.remiseSvcType === 'FIXED' ? data.remiseSvcType : null;
+  const remPceType =
+    data.remisePceType === 'PCT' || data.remisePceType === 'FIXED' ? data.remisePceType : null;
+
   await prisma.bdc.update({
     where: { id: data.bdcId },
     data: {
@@ -372,6 +391,10 @@ export async function updateBdtWorkflowAction(
       cbEval: data.cbEval,
       cbBonSortie: data.cbBonSortie,
       cbArchiver: data.cbArchiver,
+      remiseSvcType: remSvcType,
+      remiseSvcValue: remSvcType ? remSvcVal : null,
+      remisePceType: remPceType,
+      remisePceValue: remPceType ? remPceVal : null,
       notes: data.notes ?? null,
     },
   });

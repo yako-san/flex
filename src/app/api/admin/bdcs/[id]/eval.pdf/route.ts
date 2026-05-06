@@ -31,6 +31,7 @@ export async function GET(
     items: ctx.items,
     totalServices: ctx.totalServices,
     totalPieces: ctx.totalPieces,
+    remises: ctx.remises,
     notes: ctx.notes,
   });
 

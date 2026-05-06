@@ -91,6 +91,12 @@ export async function GET(
     totals: {
       totalServices: Number(facture.totalServices),
       totalPieces: Number(facture.totalPieces),
+      // Remises = total brut des items - total post-remise stocké
+      remises: (() => {
+        const gross = lines.reduce((acc, l) => acc + Number(l.total), 0);
+        const net = Number(facture.totalServices) + Number(facture.totalPieces);
+        return Math.max(0, Math.round((gross - net) * 100) / 100);
+      })(),
       sousTotal: Number(facture.sousTotal),
       tps: Number(facture.tps),
       tvq: Number(facture.tvq),

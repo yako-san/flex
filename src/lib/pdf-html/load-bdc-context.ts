@@ -12,6 +12,7 @@ export type BdcPdfContext = {
   tasksByItem: Record<number, { label: string; status: string }[]>;
   totalServices: number;
   totalPieces: number;
+  remises: number;
 };
 
 export async function loadBdcPdfContext(
@@ -79,6 +80,29 @@ export async function loadBdcPdfContext(
     }
   }
 
+  // Calcul remises : totaux bruts items - totaux post-remise sur Bdc
+  const totalServicesGross = items
+    .filter((it) => it.kind === 'SERVICE' || it.kind === 'FORFAIT')
+    .reduce((acc, it) => acc + it.total, 0);
+  const totalPiecesGross = items
+    .filter((it) => it.kind === 'PIECE')
+    .reduce((acc, it) => acc + it.total, 0);
+
+  // Bdc.totalServices et totalPieces sont en réalité pré-remise (recalcBdtTotals
+  // additionne juste les items). Pour le PDF, on calcule les remises depuis les
+  // champs remise{Svc,Pce}{Type,Value}.
+  const remSvcVal = bdc.remiseSvcValue ? Number(bdc.remiseSvcValue) : 0;
+  const remPceVal = bdc.remisePceValue ? Number(bdc.remisePceValue) : 0;
+  const remSvcAmount =
+    bdc.remiseSvcType === 'PCT' ? totalServicesGross * (remSvcVal / 100)
+    : bdc.remiseSvcType === 'FIXED' ? remSvcVal
+    : 0;
+  const remPceAmount =
+    bdc.remisePceType === 'PCT' ? totalPiecesGross * (remPceVal / 100)
+    : bdc.remisePceType === 'FIXED' ? remPceVal
+    : 0;
+  const remises = Math.round((remSvcAmount + remPceAmount) * 100) / 100;
+
   return {
     workshop: workshopInfo,
     client,
@@ -87,7 +111,8 @@ export async function loadBdcPdfContext(
     notes: bdc.notes,
     items,
     tasksByItem,
-    totalServices: Number(bdc.totalServices),
-    totalPieces: Number(bdc.totalPieces),
+    totalServices: totalServicesGross,
+    totalPieces: totalPiecesGross,
+    remises,
   };
 }

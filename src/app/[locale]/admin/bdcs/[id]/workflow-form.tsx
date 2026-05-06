@@ -15,6 +15,10 @@ type Props = {
     | 'cbEval'
     | 'cbBonSortie'
     | 'cbArchiver'
+    | 'remiseSvcType'
+    | 'remiseSvcValue'
+    | 'remisePceType'
+    | 'remisePceValue'
     | 'notes'
   >;
 };
@@ -64,6 +68,50 @@ export function WorkflowForm({ bdc }: Props) {
         <Checkbox name="cbEval" label="Éval validée mécano" defaultChecked={bdc.cbEval} />
         <Checkbox name="cbBonSortie" label="Bon de sortie imprimé" defaultChecked={bdc.cbBonSortie} />
         <Checkbox name="cbArchiver" label="Archivage déclenché" defaultChecked={bdc.cbArchiver} />
+      </div>
+
+      <h3 style={{ fontSize: '0.95rem', marginTop: '1rem', marginBottom: '0.5rem', color: '#444' }}>
+        Remises
+      </h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem' }}>
+        <div>
+          <label style={labelStyle}>Services</label>
+          <div style={{ display: 'flex', gap: '0.4rem' }}>
+            <select name="remiseSvcType" defaultValue={bdc.remiseSvcType ?? ''} style={{ ...inputStyle, width: 80 }}>
+              <option value="">—</option>
+              <option value="PCT">%</option>
+              <option value="FIXED">$</option>
+            </select>
+            <input
+              name="remiseSvcValue"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={bdc.remiseSvcValue ? String(bdc.remiseSvcValue) : ''}
+              placeholder="0"
+              style={inputStyle}
+            />
+          </div>
+        </div>
+        <div>
+          <label style={labelStyle}>Pièces</label>
+          <div style={{ display: 'flex', gap: '0.4rem' }}>
+            <select name="remisePceType" defaultValue={bdc.remisePceType ?? ''} style={{ ...inputStyle, width: 80 }}>
+              <option value="">—</option>
+              <option value="PCT">%</option>
+              <option value="FIXED">$</option>
+            </select>
+            <input
+              name="remisePceValue"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={bdc.remisePceValue ? String(bdc.remisePceValue) : ''}
+              placeholder="0"
+              style={inputStyle}
+            />
+          </div>
+        </div>
       </div>
 
       <div style={{ marginBottom: '1rem' }}>

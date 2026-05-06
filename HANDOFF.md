@@ -1,109 +1,88 @@
 # Handoff — état actuel flex-app v2
 
-Dernière session : 2026-05-03 (PM/soir). Branche : `claude/resume-from-handoff-HginU`.
+Branche : `claude/resume-from-handoff-HginU`. Production : https://flex-tan.vercel.app/
 
-## ✅ Fait (cette session)
+## ✅ Phases livrées
 
-### Étape I — Auth Clerk (live prod)
+| # | Phase | Status | Commit clé |
+|---|---|---|---|
+| 1 | Multi-tenant (Clerk Orgs ↔ Workshop) | ✅ | `4b888fb` |
+| 2 | CRUD complet (clients, vélos, marques, équipe, services, forfaits, pièces) + pages détail navigables | ✅ | `205862e` |
+| 3 | Workflow BDT (création + items + sous-tâches + transitions + remises) | ✅ | `b3bc145` |
+| 4 | PDF (HTML+Puppeteer pour pixel-perfect ; templates en attente Claude Design) | 🟡 | `d6a2d55` |
+| 5 | Stock dynamique (StockMovement append-only + recalc auto) | ✅ | `b3bc145` |
+| 6 | Notifications email/SMS | ⏳ | — |
+| 7 | Onboarding nouveau workshop | ⏳ | — |
+| 8 | Stripe billing | ⏳ | — |
+| 9 | Polish (i18n, error handling, accessibility, perf) | 🟡 | — |
 
-- Compte Clerk + 7 vars Vercel (publishable/secret + URLs + IMPORT_V1_ADMIN_TOKEN)
-- Pages sign-in / sign-up / dashboard
-- Middleware avec `PUBLIC_ROUTES` exporté + 14 tests
-- 1er user : yako-san (`user_3DE1bOni4wBKXux7CpyHPYgNuE0`)
+## 🎯 État fonctionnel
 
-### Étape J — Import dump v1 (live prod, dump réel persisté)
+V2 supporte aujourd'hui en production :
 
-**Code livré :**
-- `persistImportV1` : transaction Prisma unique, inserts chunkés à 1000, ordre FKs
-- `handleImportV1` : double garde Clerk userId + token admin
-- `/api/admin/import-v1` (REST) + `/admin/import` (UI upload)
-- `createPhantomVelosForOrphanedBdcs` : crée des vélos virtuels à partir des BDC archivés v1 dont les vélos n'apparaissent plus dans la liste actifs (sinon ~50% historique facturation perdu)
-- Dédup BDC dans `transformBdcs` : si même id en actifs+archives, garde l'archive
+**Daily ops** :
+- Créer/modifier/supprimer client, vélo, marque, membre équipe, service, forfait (avec sous-tâches), pièce (avec stock)
+- Numérotation auto vélo (Counter VELO_SEQUENCE, démarre à 142 après import yako-cyclo)
+- Créer un BDT lié à un vélo, ajouter items (services / pièces / forfaits)
+- Forfait → sous-tâches auto-instanciées avec status TODO/DONE/SKIPPED cliquable
+- Workflow BDT : statut éval, statut archive, 4 checkboxes, remises (% ou $) services + pièces, notes
+- Calcul auto des totaux services + pièces - remises
+- **Stock dynamique** : réservation auto à l'ajout d'un item PIECE, libération à la suppression, sortie physique à la facturation. UI ajustement manuel + historique 30 derniers mouvements.
+- Émettre une facture immutable : numérotation séquentielle (FACTURE_SEQUENCE, démarre à 6), TPS 5% + TVQ 9.975% Québec calculés au prorata des items taxables/non-taxables, snapshot complet (lines + tax rates + fiscal entity)
+- Télécharger PDFs : éval (sans taxes, signature), facture (avec taxes, mode paiement)
 
-**Schéma assoupli (4 unique constraints retirées) :**
-- `Piece(workshop_id, legacy_code)` : la dédup v1→v2 produit N pièces v2 pour 1 pieceId v1 → multiplicité légitime
-- `Piece(workshop_id, sku)` : SKU = ref fournisseur, doublons légitimes (même SKU pour 2 items distincts)
-- `Bdc.velo_id` : un vélo peut avoir plusieurs BDC dans son historique (cycles de visites)
-- `Velo.bdc` : `Bdc?` → `bdcs Bdc[]` (one-to-many)
+**Settings** :
+- Identité fiscale : raison sociale, tagline, NEQ, TPS, TVQ, adresse complète, contact, footer text → utilisée dans tous les PDFs
+- Logo upload (PNG/JPG/WebP/SVG, max 500 KB) → utilisé en header PDF + favicon dynamique
+- Liaison workshop ↔ Clerk Organization (multi-tenant)
 
-**Migrations Prisma créées (mais NON auto-appliquées au build cf P3005) :**
-- `20260503184000_piece_legacy_code_not_unique`
-- `20260503190000_piece_sku_not_unique`
-- `20260503193000_bdc_velo_id_not_unique`
-- Toutes appliquées **manuellement** via Neon SQL editor (DROP UNIQUE INDEX + CREATE INDEX)
+**Import v1** : pipeline complet preserve **toutes les données** (10 tables d'entités avec colonnes propres + `legacy_raw_v1` JSONB + dump intégral dans `workshop.legacy_v1_extras`).
 
-**Bugs fixés :**
-- `prisma generate` ajouté au build script (Vercel cache layout sinon → PrismaClientInitializationError)
-- Dashboard `force-dynamic` (sinon prerender + auth() crash au build)
-- `directUrl = env("DATABASE_URL_UNPOOLED")` (alignement Vercel Marketplace)
-- String ISO → Date conversion dans persist (Velo/VenteDirecte/Po)
+## 🟡 Limitations connues / TODO
 
-**Résultat import live (dump yako-cyclo) :**
-- 1 workshop, 26 clients, 25 vélos (12 actifs + 13 phantoms), 25 BDCs (12 actifs + 13 archives), 51+43=94 BDC items, 87 tasks
-- 252 pièces, 70 services, 3 forfaits, 28 task templates
-- 10 ventes, 7 POs, 64 PO items, 356 translations, 353 legacy mappings
-- 37 entrées invalides ignorées (sous-tâches forfait, BDC 0106 client absent, etc.)
+- **Templates PDF** : layout/CSS sont fonctionnels mais pas pixel-perfect avec le modèle v2.5 fourni. Solution choisie : user designe le HTML/CSS via **Claude Design**, m'envoie le résultat, je l'intègre dans `src/lib/pdf-html/templates/{eval,facture}.ts`.
+- **Réception PO** : la création de POs n'a pas d'UI (importée depuis v1 mais pas modifiable). Marquage "RECU" pour incrémenter le stock pas implémenté.
+- **Vente directe (comptoir)** : importée, mais pas de form de création.
+- **Notifications** : Phase 6 (emails clients pour éval/facturation, SMS « vélo prêt »).
+- **Onboarding** : Phase 7 (signup nouveau workshop).
+- **Stripe billing** : Phase 8 (abonnement par workshop).
+- **Email markdown** : `transformClients` n'applique pas `stripMarkdownEmail` → emails comme `[a@b.c](mailto:a@b.c)` arrivent tels quels (cf import yako-cyclo).
+- **Old Neon project** `flex-v2` à supprimer (cleanup non bloquant).
 
-### Étape K — UI dashboard admin (in this push)
+## 🚨 Méthodologie utilisateur (rappels)
 
-- `/admin/layout.tsx` : sidebar nav + Clerk UserButton
-- `/admin` : dashboard avec stats du workshop (10 cartes)
-- `/admin/clients` : table clients avec count vélos
-- `/admin/velos` : table vélos avec status badges + count BDCs
-- `/admin/bdcs` : table BDCs avec archive status badges + totals
-- `/admin/import` : (existant) refactored sans auth check duplicate
-- `/dashboard` : redirect vers `/admin` (l'env var Clerk pointe encore sur /dashboard)
-
-## 🔜 Suite possible
-
-### Reste sur l'import
-- Investiguer les 37 skipped (ne sont sans doute pas critiques mais utile de savoir)
-- Soft delete cleanup : si on veut re-importer, `TRUNCATE TABLE workshop CASCADE` puis upload
-- L'email markdown bracket (`[a@venir.ca](mailto:...)`) n'est pas nettoyé. Le normalisateur `strip-markdown-email` existe mais n'est pas appliqué dans `transformClients`. À ajouter.
-
-### UI à étoffer
-- Pages détail (cliquer sur un client → ses vélos + BDCs)
-- Recherche / filtres
-- Inventaire pièces avec stock
-- Forms CRUD (créer un client, enregistrer une vente comptoir, etc.)
-
-### Infra
-- **Baseline Prisma migrations** : une fois la prod alignée, lancer `prisma migrate resolve --applied <init>` puis ré-activer `prisma migrate deploy` au build pour automatiser. Évite les SQL manuels.
-- **Multi-tenant via Clerk Organizations** : pour l'instant un seul workshop, les pages admin font `findFirst()`. À refactor quand plusieurs ateliers.
-- **Suppression vieux Neon project** `flex-v2` (créé manuellement avant l'intégration Vercel, obsolète).
-
-## 🚨 Méthodologie utilisateur
-
-L'utilisateur n'est pas développeur :
-
-> « tu me donnes des informations partielles, quand tu as besoin que je fasse quelque chose, donne plus d'infos sur la façon d'y arriver et confirme avant que l'élément d'interface est tjrs à l'endroit que tu suggères »
-
-Règles :
-- Avant un clic destructif (SQL, delete) : **demander d'abord ce que l'utilisateur voit**, attendre la réponse, **puis** envoyer la commande dans un message séparé. Ne jamais mettre la commande dans le même message que la demande de vérif.
-- Mode **autopilote** : l'utilisateur peut le demander pour les phases longues. Dans ce mode, on bundle toutes les actions en une seule liste finale et on évite les questions intermédiaires.
-- WebFetch + curl bloqués par le sandbox → toujours demander à l'utilisateur de copier-coller les erreurs Vercel/Neon.
-- Vercel "Promote to Production" pas accessible API → toujours demander à l'utilisateur de cliquer.
+- Avant un clic destructif (SQL prod, delete) : **demander d'abord ce que l'user voit**, attendre la réponse, **puis** envoyer la commande dans un message séparé.
+- Mode **autopilote** : l'user peut le demander pour les phases longues. Bundle toutes les actions en une seule liste finale.
+- WebFetch + curl bloqués par le sandbox → demander à l'user les copier-coller des erreurs Vercel/Neon ou les screenshots.
+- "Promote to Production" sur Vercel pas accessible API → toujours demander à l'user de cliquer.
+- **SVG upload** dans le chat : limité par l'interface Claude Code. PNG/JPG fonctionnent.
 
 ## 🐛 Pièges rencontrés
 
-1. **Bouton "Copy" Clerk** copie `KEY=value`, pas juste la valeur
-2. **Vercel cache + Prisma** : `prisma generate` requis au build
-3. **Server components + Clerk auth()** : `force-dynamic` obligatoire
-4. **Vercel "Redeploy of X"** = même code source, pas le commit le plus récent. Pour mettre à jour, push un commit OU promote un Preview spécifique
-5. **Prisma migrate deploy** échoue P3005 si DB non baselinée → SQL manuels en attendant
-6. **DateTime Prisma** ≠ string ISO : conversion explicite en `Date` requise
-7. **v1 export inclut souvent un BDC en double** (snapshot actif + archive) → dédup nécessaire
-8. **Vélos archivés v1 absents de la liste velos** → phantom velos requis pour préserver historique BDC
+1. Bouton "Copy" Clerk copie `KEY=value`, pas juste la valeur → préciser à l'user ne coller que la partie après le `=`
+2. Vercel cache + Prisma → `prisma generate` dans le build script
+3. Server components + Clerk auth() → `force-dynamic` obligatoire
+4. Vercel "Redeploy of X" = même code source, pas le commit le plus récent
+5. Prisma migrate deploy échoue P3005 si DB non baselinée → SQL manuels en attendant
+6. DateTime Prisma ≠ string ISO : conversion explicite en `Date` requise au persist
+7. v1 export inclut souvent un BDT en double (snapshot actif + archive) → dédup nécessaire
+8. Vélos archivés v1 absents de la liste velos → phantom velos requis pour préserver historique BDT
+9. **next-intl localePrefix='always' redirige aussi /api/** → pour les routes API, skip le middleware intl (route → 404 sinon `/fr-CA/api/...`)
+10. **Helvetica PDF Type 1** ne supporte que Latin-1 → bullets `▸ ◆` et emojis `🚴 ⛑️ 💛` ne marchent pas. Solutions : (a) Inter font via CDN avec react-pdf, (b) HTML+Puppeteer avec Inter en CSS @import.
+11. **@react-pdf/renderer** pénible pour pixel-perfect → migration vers HTML+Puppeteer (puppeteer-core + @sparticuz/chromium-min)
 
 ## 🔧 Stack courte référence
 
 - Next.js 15.5 + React 19 + App Router + typedRoutes
-- next-intl 3.26 (locales: fr-CA, en-CA, prefix always)
-- Clerk 6.12
-- Prisma 5.22 + Postgres Neon (pgbouncer pooled via DATABASE_URL, direct via DATABASE_URL_UNPOOLED)
-- Zod 3.23 pour validation API
-- Vitest, **524 tests passing**
-- Vercel deploy auto sur push (Preview), Production via promote manuel
+- next-intl 3.26 (locales: fr-CA, en-CA, prefix always — skipped pour /api/)
+- Clerk 6.12 + Organizations
+- Prisma 5.22 + Postgres Neon (pgbouncer pooled / DATABASE_URL_UNPOOLED direct)
+- Zod 3.23 pour validation API + actions
+- Vitest 524 tests passing
+- @react-pdf/renderer **retiré** au profit de :
+- puppeteer-core + @sparticuz/chromium-min v148 (Chromium pack chargé depuis CDN GitHub)
+- decimal.js pour précision monétaire
+- Inter font via @import CSS (rsms.me)
 
 Repo : https://github.com/yako-san/flex
-Production URL : https://flex-tan.vercel.app/
+Production : https://flex-tan.vercel.app/

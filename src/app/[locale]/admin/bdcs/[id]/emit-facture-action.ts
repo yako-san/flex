@@ -48,19 +48,50 @@ export async function emitFactureAction(
         throw new Error('Impossible de facturer un BDT sans items');
       }
 
-      // Calcul taxes Québec depuis les items (snapshot taxable)
-      const taxLines = bdc.items.map((it) => ({
-        amount: new Decimal(it.total.toString()),
-        taxable: it.taxableSnapshot,
-      }));
-      const tax = calcQuebecTaxes(taxLines);
-
-      const totalServices = bdc.items
+      // Sous-totaux pre-remise
+      const totalServicesGross = bdc.items
         .filter((it) => it.kind === 'SERVICE' || it.kind === 'FORFAIT')
         .reduce((acc, it) => acc.plus(new Decimal(it.total.toString())), new Decimal(0));
-      const totalPieces = bdc.items
+      const totalPiecesGross = bdc.items
         .filter((it) => it.kind === 'PIECE')
         .reduce((acc, it) => acc.plus(new Decimal(it.total.toString())), new Decimal(0));
+
+      // Application des remises (PCT ou FIXED) services + pièces
+      const remSvcVal = bdc.remiseSvcValue ? new Decimal(bdc.remiseSvcValue.toString()) : null;
+      const remPceVal = bdc.remisePceValue ? new Decimal(bdc.remisePceValue.toString()) : null;
+      const totalServices =
+        remSvcVal && bdc.remiseSvcType === 'PCT'
+          ? totalServicesGross.times(new Decimal(1).minus(remSvcVal.div(100)))
+          : remSvcVal && bdc.remiseSvcType === 'FIXED'
+            ? Decimal.max(0, totalServicesGross.minus(remSvcVal))
+            : totalServicesGross;
+      const totalPieces =
+        remPceVal && bdc.remisePceType === 'PCT'
+          ? totalPiecesGross.times(new Decimal(1).minus(remPceVal.div(100)))
+          : remPceVal && bdc.remisePceType === 'FIXED'
+            ? Decimal.max(0, totalPiecesGross.minus(remPceVal))
+            : totalPiecesGross;
+      const remisesAmount = totalServicesGross
+        .plus(totalPiecesGross)
+        .minus(totalServices.plus(totalPieces));
+
+      // Calcul taxes Québec : on répartit la remise au prorata sur les items
+      // taxables vs non-taxables. Approche simple : on applique la remise
+      // proportionnellement aux items du même groupe (svc/pce) en gardant
+      // leur ratio taxable.
+      const ratio = (g: Decimal, n: Decimal): Decimal =>
+        g.isZero() ? new Decimal(1) : n.div(g);
+      const ratioSvc = ratio(totalServicesGross, totalServices);
+      const ratioPce = ratio(totalPiecesGross, totalPieces);
+      const taxLines = bdc.items.map((it) => {
+        const isSvc = it.kind === 'SERVICE' || it.kind === 'FORFAIT';
+        const r = isSvc ? ratioSvc : ratioPce;
+        return {
+          amount: new Decimal(it.total.toString()).times(r),
+          taxable: it.taxableSnapshot,
+        };
+      });
+      const tax = calcQuebecTaxes(taxLines);
 
       // Increment counter FACTURE_SEQUENCE
       const counter = await tx.counter.findFirst({
