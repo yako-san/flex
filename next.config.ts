@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     'puppeteer-core',
     '@sparticuz/chromium-min',
     'resend',
+    'nodemailer',
   ],
   logging: {
     fetches: {

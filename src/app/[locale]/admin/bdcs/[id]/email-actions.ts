@@ -6,6 +6,8 @@ import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { sendEmail } from '@/lib/email/send';
 import { evalEmailTemplate, factureEmailTemplate } from '@/lib/email/templates';
+import { getEmailProvider } from '@/lib/email/client';
+import { gmailFromAddress } from '@/lib/email/gmail';
 import { loadBdcPdfContext } from '@/lib/pdf-html/load-bdc-context';
 import { buildEvalHtml } from '@/lib/pdf-html/templates/eval';
 import { buildFactureHtml } from '@/lib/pdf-html/templates/facture';
@@ -19,11 +21,17 @@ function fromAddress(workshop: {
   fiscalEntity: unknown;
 }): string {
   const f = workshop.fiscalEntity as { courriel?: string; raisonSociale?: string } | null;
-  // Si courriel configuré dans fiscal, on l'utilise. Sinon Resend default.
-  // Note: Resend exige soit un domaine vérifié, soit utilise onboarding@resend.dev en dev.
+  const displayName = f?.raisonSociale ?? workshop.name;
+
+  // Priorité Gmail si configuré : on doit envoyer DEPUIS l'adresse GMAIL_USER
+  // (Google bloque les "from spoofing" sauf alias officiels du compte).
+  if (getEmailProvider() === 'GMAIL') {
+    return gmailFromAddress(displayName);
+  }
+
+  // Sinon Resend : on peut configurer EMAIL_FROM custom (domaine vérifié requis).
   const fallback = process.env['EMAIL_FROM'] ?? 'onboarding@resend.dev';
   if (f?.courriel) {
-    const displayName = f.raisonSociale ?? workshop.name;
     return `${displayName} <${f.courriel}>`;
   }
   return fallback;

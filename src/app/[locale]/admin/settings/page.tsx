@@ -4,7 +4,7 @@ import { getActiveWorkshop } from '@/lib/workshop';
 import { LinkWorkshopForm } from './link-workshop-form';
 import { FiscalForm, type FiscalEntity } from './fiscal-form';
 import { LogoForm } from './logo-form';
-import { isEmailConfigured } from '@/lib/email/client';
+import { getEmailProvider } from '@/lib/email/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +45,7 @@ export default async function SettingsPage({ params }: Props) {
       {workshop ? <FiscalForm initial={fiscal} /> : <p>Aucun workshop actif.</p>}
 
       <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
-        Notifications courriel (Resend)
+        Notifications courriel
       </h2>
       <div
         style={{
@@ -57,24 +57,52 @@ export default async function SettingsPage({ params }: Props) {
           marginBottom: '2rem',
         }}
       >
-        <Row label="Statut">
-          {isEmailConfigured() ? (
-            <span style={{ color: '#2e7d32' }}>✓ Resend configuré (RESEND_API_KEY présent)</span>
-          ) : (
-            <span style={{ color: '#c62828' }}>
-              ✕ RESEND_API_KEY manquant côté serveur
-            </span>
-          )}
-        </Row>
-        <Row label="From (expéditeur)">
-          <code>{process.env['EMAIL_FROM'] ?? 'onboarding@resend.dev (sandbox)'}</code>
+        <Row label="Provider actif">
+          {(() => {
+            const p = getEmailProvider();
+            if (p === 'GMAIL')
+              return (
+                <span style={{ color: '#2e7d32' }}>
+                  ✓ Gmail SMTP — depuis <code>{process.env['GMAIL_USER']}</code>
+                </span>
+              );
+            if (p === 'RESEND')
+              return (
+                <span style={{ color: '#2e7d32' }}>
+                  ✓ Resend — from{' '}
+                  <code>{process.env['EMAIL_FROM'] ?? 'onboarding@resend.dev'}</code>
+                </span>
+              );
+            return (
+              <span style={{ color: '#c62828' }}>
+                ✕ Aucun provider configuré (GMAIL_USER+APP_PASSWORD ou
+                RESEND_API_KEY manquants)
+              </span>
+            );
+          })()}
         </Row>
         <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '0.75rem' }}>
-          Pour activer l&apos;envoi : créer un compte sur{' '}
+          <strong>Option 1 — Gmail (recommandée si tu utilises déjà Gmail) :</strong>
+          <br />
+          1. Active la 2FA sur le compte Google.{' '}
+          <br />
+          2. Crée un App Password sur{' '}
+          <a
+            href="https://myaccount.google.com/apppasswords"
+            target="_blank"
+            rel="noreferrer"
+          >
+            myaccount.google.com/apppasswords
+          </a>{' '}
+          (sélectionne « Mail » comme application).
+          <br />
+          3. Ajoute dans Vercel : <code>GMAIL_USER</code> = ton adresse Gmail, et{' '}
+          <code>GMAIL_APP_PASSWORD</code> = les 16 caractères générés.
+        </p>
+        <p style={{ color: '#666', fontSize: '0.85rem' }}>
+          <strong>Option 2 — Resend (multi-tenant futur) :</strong> compte sur{' '}
           <a href="https://resend.com" target="_blank" rel="noreferrer">resend.com</a>,
-          générer une clé API, l&apos;ajouter dans Vercel sous{' '}
-          <code>RESEND_API_KEY</code>. Vérifier ensuite ton domaine pour pouvoir
-          envoyer depuis ta propre adresse (sinon limité à <code>onboarding@resend.dev</code>).
+          API key, env <code>RESEND_API_KEY</code> + DNS du domaine.
         </p>
       </div>
 
