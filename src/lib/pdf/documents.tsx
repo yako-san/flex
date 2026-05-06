@@ -6,6 +6,7 @@ export type WorkshopInfo = {
   logoBase64?: string | null;
   fiscalEntity?: {
     raisonSociale?: string;
+    tagline?: string;
     adresseLigne1?: string;
     adresseLigne2?: string;
     ville?: string;
@@ -49,78 +50,70 @@ export type ItemRow = {
   total: number;
 };
 
-// =============================================================================
-// Styles — inspiré du modèle v1 yako-cyclo (header logo+meta, sections SERVICES
-// et PIÈCES avec puces, totaux right-aligned)
-// =============================================================================
 const COLORS = {
   text: '#1a1a1a',
   muted: '#666',
   light: '#999',
-  border: '#ccc',
-  borderLight: '#eee',
-  bg: '#fafafa',
-  accent: '#fcd900', // jaune yako (à remplacer par couleur de marque user)
+  border: '#1a1a1a',
+  borderLight: '#dadada',
 };
 
 const styles = StyleSheet.create({
-  page: { padding: 36, fontSize: 9, fontFamily: 'Helvetica', color: COLORS.text },
+  page: {
+    padding: 36,
+    paddingBottom: 36,
+    fontSize: 9,
+    fontFamily: 'Helvetica',
+    color: COLORS.text,
+  },
+
+  // === Header (logo + meta) ===
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
   },
-  logoBox: {
-    width: 70,
-    height: 70,
-    backgroundColor: COLORS.accent,
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 4,
-  },
-  logoText: {
-    fontSize: 11,
-    fontWeight: 700,
-    textAlign: 'center',
-    color: COLORS.text,
-  },
-  logoSub: {
-    fontSize: 5,
-    textAlign: 'center',
-    color: COLORS.text,
-    marginTop: 2,
-  },
+  logoBlock: { width: 110 },
+  logoImage: { width: 90, height: 90, objectFit: 'contain' },
   metaBlock: { textAlign: 'right' },
   metaLabel: {
-    fontSize: 7.5,
+    fontSize: 8,
     color: COLORS.muted,
-    textTransform: 'lowercase',
+    marginTop: 4,
   },
   metaValue: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 700,
-    marginBottom: 6,
+    marginTop: 1,
   },
-  metaValueSmall: { fontSize: 9, fontWeight: 700, marginBottom: 6 },
-  addressBlock: { marginTop: 12, marginBottom: 18 },
-  addressLine: { fontSize: 8.5, color: COLORS.text, marginBottom: 1 },
+
+  // === Workshop info under logo ===
+  workshopBlock: {
+    marginTop: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  workshopBlockLeft: { flex: 1 },
+  workshopName: { fontSize: 9.5, fontWeight: 700, color: COLORS.text },
+  workshopTagline: { fontSize: 9, color: COLORS.muted, marginBottom: 8 },
+  workshopAddrLine: { fontSize: 9, marginTop: 1 },
+
+  // === Items sections ===
   sectionTitle: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: 700,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginTop: 14,
+    marginTop: 24,
     marginBottom: 6,
-    paddingBottom: 4,
-    borderBottom: `0.5pt solid ${COLORS.border}`,
   },
   itemHeaderRow: {
     flexDirection: 'row',
-    paddingBottom: 3,
+    paddingVertical: 4,
     fontSize: 7.5,
     color: COLORS.muted,
+    borderBottom: `0.5pt solid ${COLORS.border}`,
   },
   itemRow: {
     flexDirection: 'row',
@@ -129,16 +122,31 @@ const styles = StyleSheet.create({
     fontSize: 9,
     alignItems: 'flex-start',
   },
-  bullet: { width: 12, fontSize: 7 },
+  bullet: { width: 10, fontSize: 8 },
   itemLabel: { flex: 1, paddingRight: 8 },
-  itemSku: { fontSize: 7, color: COLORS.muted, marginTop: 1 },
+  itemSku: { fontSize: 7.5, color: COLORS.muted, marginTop: 1 },
   numCol: { width: 50, textAlign: 'right' },
-  qtyCol: { width: 30, textAlign: 'right' },
-  totalsBlock: { marginTop: 16, alignSelf: 'flex-end', minWidth: 220 },
+  qtyCol: { width: 32, textAlign: 'right' },
+
+  // === Footer 2 cols (text left + totals right) ===
+  footerBlock: {
+    marginTop: 28,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 24,
+  },
+  footerLeft: { flex: 2 },
+  footerRight: { width: 200 },
+  footerText: { fontSize: 7, color: COLORS.muted, lineHeight: 1.35, marginTop: 4 },
+  footerImportant: { fontSize: 8.5, color: COLORS.text, marginTop: 8 },
+  footerSmall: { fontSize: 7, color: COLORS.muted, marginTop: 2 },
+
+  // === Totals ===
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 2,
+    paddingVertical: 1.5,
     fontSize: 9,
   },
   totalLabel: { color: COLORS.text },
@@ -153,19 +161,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 700,
   },
-  footer: {
-    marginTop: 28,
-    paddingTop: 8,
-    fontSize: 7,
-    color: COLORS.light,
-  },
-  footerLine: { marginTop: 2 },
+
+  // === Bottom corners ===
   versionLabel: {
     position: 'absolute',
     bottom: 16,
-    right: 36,
+    left: 36,
     fontSize: 6.5,
     color: COLORS.light,
+  },
+  thanksLabel: {
+    position: 'absolute',
+    bottom: 16,
+    right: 36,
+    fontSize: 8,
+    color: COLORS.muted,
+    fontStyle: 'italic',
   },
 });
 
@@ -176,23 +187,26 @@ const styles = StyleSheet.create({
 function LogoBox({ workshop }: { workshop: WorkshopInfo }) {
   if (workshop.logoBase64) {
     return (
-      <View style={{ width: 80, height: 80 }}>
-        <Image
-          src={workshop.logoBase64}
-          style={{ width: 80, height: 80, objectFit: 'contain' }}
-        />
+      <View style={styles.logoBlock}>
+        <Image src={workshop.logoBase64} style={styles.logoImage} />
       </View>
     );
   }
-  // Fallback : carré jaune avec nom de workshop (placeholder en l'absence de logo)
+  // Fallback : carré jaune avec nom workshop (placeholder en l'absence de logo)
   return (
-    <View style={styles.logoBox}>
-      <Text style={styles.logoText}>{workshop.name}</Text>
-      {workshop.fiscalEntity?.raisonSociale ? (
-        <Text style={styles.logoSub} wrap={false}>
-          {workshop.fiscalEntity.raisonSociale}
-        </Text>
-      ) : null}
+    <View
+      style={{
+        width: 90,
+        height: 90,
+        backgroundColor: '#fcd900',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 6,
+      }}
+    >
+      <Text style={{ fontSize: 11, fontWeight: 700, textAlign: 'center' }}>
+        {workshop.name}
+      </Text>
     </View>
   );
 }
@@ -200,69 +214,66 @@ function LogoBox({ workshop }: { workshop: WorkshopInfo }) {
 function MetaBlock({
   docLabel,
   docDate,
-  bdcLabel,
-  bdcId,
+  docNumberLabel,
+  docNumber,
   client,
   velo,
 }: {
   docLabel: string;
   docDate: string;
-  bdcLabel: string;
-  bdcId: string;
+  docNumberLabel: string;
+  docNumber: string;
   client: ClientInfo;
   velo: VeloInfo | null;
 }) {
   const veloLine = velo
     ? [velo.marque, velo.modele, velo.couleur, velo.taille].filter(Boolean).join(', ') || '—'
     : null;
+  const clientLine = `${client.prenom} ${client.nom}`.trim() || '—';
   return (
     <View style={styles.metaBlock}>
       <Text style={styles.metaLabel}>{docLabel}</Text>
-      <Text style={styles.metaValueSmall}>{docDate}</Text>
+      <Text style={styles.metaValue}>{docDate}</Text>
 
-      <Text style={styles.metaLabel}>{bdcLabel}</Text>
-      <Text style={styles.metaValue}>{bdcId}</Text>
-
-      <Text style={styles.metaLabel}>client</Text>
-      <Text style={styles.metaValueSmall}>
-        {client.prenom} {client.nom}
-      </Text>
-
-      {client.courriel ? (
-        <>
-          <Text style={styles.metaLabel}>contact</Text>
-          <Text style={styles.metaValueSmall}>{client.courriel}</Text>
-        </>
-      ) : null}
+      <Text style={styles.metaLabel}>{docNumberLabel}</Text>
+      <Text style={styles.metaValue}>{docNumber}</Text>
 
       {veloLine ? (
         <>
           <Text style={styles.metaLabel}>vélo</Text>
-          <Text style={styles.metaValueSmall}>{veloLine}</Text>
+          <Text style={styles.metaValue}>{veloLine}</Text>
+        </>
+      ) : null}
+
+      <Text style={styles.metaLabel}>client</Text>
+      <Text style={styles.metaValue}>{clientLine}</Text>
+
+      {client.courriel ? (
+        <>
+          <Text style={styles.metaLabel}>contact</Text>
+          <Text style={styles.metaValue}>{client.courriel}</Text>
         </>
       ) : null}
     </View>
   );
 }
 
-function AddressBlock({ workshop }: { workshop: WorkshopInfo }) {
+function WorkshopBlock({ workshop }: { workshop: WorkshopInfo }) {
   const f = workshop.fiscalEntity ?? {};
-  const lignes: string[] = [];
-  if (f.adresseLigne1) lignes.push(f.adresseLigne1);
-  if (f.adresseLigne2) lignes.push(f.adresseLigne2);
   const cityLine = [f.ville, f.province, f.codePostal].filter(Boolean).join(' ');
-  if (cityLine) lignes.push(cityLine);
-  if (f.courriel) lignes.push(f.courriel);
-  if (f.telephone) lignes.push(f.telephone);
-
-  if (lignes.length === 0) return null;
   return (
-    <View style={styles.addressBlock}>
-      {lignes.map((line, i) => (
-        <Text key={i} style={styles.addressLine}>
-          {line}
-        </Text>
-      ))}
+    <View style={styles.workshopBlock}>
+      <View style={styles.workshopBlockLeft}>
+        {f.raisonSociale ? <Text style={styles.workshopName}>{f.raisonSociale}</Text> : null}
+        {f.tagline ? <Text style={styles.workshopTagline}>{f.tagline}</Text> : null}
+        {f.adresseLigne1 ? <Text style={styles.workshopAddrLine}>{f.adresseLigne1}</Text> : null}
+        {f.adresseLigne2 ? <Text style={styles.workshopAddrLine}>{f.adresseLigne2}</Text> : null}
+        {cityLine ? <Text style={styles.workshopAddrLine}>{cityLine}</Text> : null}
+        {f.courriel ? (
+          <Text style={[styles.workshopAddrLine, { marginTop: 6 }]}>{f.courriel}</Text>
+        ) : null}
+        {f.telephone ? <Text style={styles.workshopAddrLine}>{f.telephone}</Text> : null}
+      </View>
     </View>
   );
 }
@@ -309,7 +320,7 @@ function ItemSection({
   );
 }
 
-function FiscalFooter({
+function FooterTextLeft({
   workshop,
   modePaiement,
 }: {
@@ -318,25 +329,46 @@ function FiscalFooter({
 }) {
   const f = workshop.fiscalEntity ?? {};
   return (
-    <View style={styles.footer}>
-      <Text style={styles.footerLine}>
-        Returns must be made within thirty days of purchase. Returns are accepted for
-        store credit only. Returned items will be credited minus a 15% restocking fee.
-        Opened or used items cannot be returned. Sale items cannot be returned. The price
-        of special-order items is subject to change between the date of order and the date
-        of receipt, and will be billed at the most recent price.
+    <View>
+      <Text style={styles.footerText}>
+        Les retours considérés dans les trente jours suivant l&apos;achat. Retours pour
+        crédit seulement. Les articles retournés seront crédités moyennant des frais de
+        15 % de remise en stock. Les items ouverts ou utilisés ne peuvent être retournés.
+        Les articles soldés ne peuvent être retournés. Le prix des articles en commande
+        spéciale est sujet à changer entre la date de la commande et de la réception de
+        l&apos;article et sera facturé au prix le plus récent.
       </Text>
-      <Text style={[styles.footerLine, { marginTop: 8 }]}>
+      <Text style={[styles.footerText, { marginTop: 8 }]}>
+        Returns must be made within thirty days of purchase. Returns are accepted for
+        store credit only. Returned items will be credited minus a 15 % restocking fee.
+        Opened or used items cannot be returned. Sale items cannot be returned. The price
+        of special-order items is subject to change between the date of order and the
+        date of receipt, and will be billed at the most recent price.
+      </Text>
+      <Text style={[styles.footerText, { marginTop: 10 }]}>
         T.P.S : {f.tps ?? '...'}
       </Text>
-      <Text style={styles.footerLine}>T.V.Q : {f.tvq ?? '...'}</Text>
-      {modePaiement ? (
-        <Text style={[styles.footerLine, { marginTop: 6 }]}>
-          Paiement par {modePaiement.toLowerCase()}.
-        </Text>
-      ) : null}
+      <Text style={styles.footerText}>T.V.Q : {f.tvq ?? '...'}</Text>
+
       {f.footerText ? (
-        <Text style={[styles.footerLine, { marginTop: 6 }]}>{f.footerText}</Text>
+        <Text style={styles.footerImportant}>{f.footerText}</Text>
+      ) : (
+        <>
+          <Text style={styles.footerImportant}>
+            Le paiement se fera lors du retrait ou avant
+            {f.telephone ? `, par interac* au ${f.telephone}` : ''}. merci 💛
+          </Text>
+          <Text style={styles.footerSmall}>
+            * (comptant ou Interac) sont les deux seules méthodes pour éviter les frais
+            de service. Les pourboires sont acceptés.
+          </Text>
+        </>
+      )}
+
+      {modePaiement ? (
+        <Text style={[styles.footerText, { marginTop: 8 }]}>
+          Mode de paiement : {modePaiement.toLowerCase()}.
+        </Text>
       ) : null}
     </View>
   );
@@ -354,6 +386,7 @@ export function EvalPdf({
   items,
   totalServices,
   totalPieces,
+  remises = 0,
   notes,
 }: {
   workshop: WorkshopInfo;
@@ -364,11 +397,12 @@ export function EvalPdf({
   items: ItemRow[];
   totalServices: number;
   totalPieces: number;
+  remises?: number;
   notes: string | null;
 }): ReactElement {
   const services = items.filter((it) => it.kind === 'SERVICE' || it.kind === 'FORFAIT');
   const pieces = items.filter((it) => it.kind === 'PIECE');
-  const total = totalServices + totalPieces;
+  const sousTotal = totalServices + totalPieces - remises;
   const dateStr = date.toLocaleDateString('fr-CA');
   const bdcShort = bdcId.slice(-4);
 
@@ -380,55 +414,66 @@ export function EvalPdf({
           <MetaBlock
             docLabel="évaluation"
             docDate={dateStr}
-            bdcLabel="bon de travail"
-            bdcId={bdcShort}
+            docNumberLabel="bon de travail"
+            docNumber={bdcShort}
             client={client}
             velo={velo}
           />
         </View>
 
-        <AddressBlock workshop={workshop} />
+        <WorkshopBlock workshop={workshop} />
 
         <ItemSection title="Services" bullet="▸" items={services} />
         <ItemSection title="Pièces" bullet="◆" items={pieces} />
 
-        <View style={styles.totalsBlock}>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Sous-total services</Text>
-            <Text style={styles.totalValue}>{totalServices.toFixed(2)} $</Text>
+        <View style={styles.footerBlock}>
+          <View style={styles.footerLeft}>
+            {notes ? (
+              <Text style={[styles.footerText, { marginBottom: 8 }]}>{notes}</Text>
+            ) : null}
+            <Text style={styles.footerImportant}>
+              Cette évaluation est valable 30 jours. Les taxes seront ajoutées à la
+              facturation finale.
+            </Text>
+            <View style={{ marginTop: 16 }}>
+              <Text style={{ fontSize: 8 }}>Approuvé par le client (signature) :</Text>
+              <View
+                style={{
+                  borderBottom: `0.5pt solid ${COLORS.text}`,
+                  height: 22,
+                  marginTop: 6,
+                  width: 240,
+                }}
+              />
+            </View>
           </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Sous-total pièces</Text>
-            <Text style={styles.totalValue}>{totalPieces.toFixed(2)} $</Text>
+          <View style={styles.footerRight}>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Sous-total services</Text>
+              <Text style={styles.totalValue}>{totalServices.toFixed(2)} $</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Sous-total pièces</Text>
+              <Text style={styles.totalValue}>{totalPieces.toFixed(2)} $</Text>
+            </View>
+            {remises > 0 ? (
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Remises</Text>
+                <Text style={styles.totalValue}>−{remises.toFixed(2)} $</Text>
+              </View>
+            ) : null}
+            <View style={styles.grandTotalRow}>
+              <Text>Total estimé HT</Text>
+              <Text>{sousTotal.toFixed(2)} $</Text>
+            </View>
           </View>
-          <View style={styles.grandTotalRow}>
-            <Text>Total estimé HT</Text>
-            <Text>{total.toFixed(2)} $</Text>
-          </View>
-          <Text
-            style={{ fontSize: 7, color: COLORS.muted, marginTop: 4, textAlign: 'right' }}
-          >
-            Les taxes seront ajoutées à la facturation.
-          </Text>
         </View>
-
-        {notes ? (
-          <View style={{ marginTop: 12 }}>
-            <Text style={{ fontSize: 8, color: COLORS.muted }}>{notes}</Text>
-          </View>
-        ) : null}
-
-        <View style={{ marginTop: 24 }}>
-          <Text style={{ fontSize: 8 }}>Approuvé par le client (signature) :</Text>
-          <View
-            style={{ borderBottom: `0.5pt solid ${COLORS.text}`, height: 24, marginTop: 6 }}
-          />
-        </View>
-
-        <FiscalFooter workshop={workshop} />
 
         <Text style={styles.versionLabel} fixed>
-          modèle éval. v1 (Flex v2)
+          modèle v2,5
+        </Text>
+        <Text style={styles.thanksLabel} fixed>
+          Merci et bonne route 🚴
         </Text>
       </Page>
     </Document>
@@ -437,7 +482,6 @@ export function EvalPdf({
 
 // =============================================================================
 // Bon de sortie : version interne avec sous-tâches DONE
-// (pas envoyé au client en v1 — gardé optionnel pour usage atelier)
 // =============================================================================
 export function BonSortiePdf({
   workshop,
@@ -467,14 +511,14 @@ export function BonSortiePdf({
           <MetaBlock
             docLabel="récap atelier"
             docDate={date.toLocaleDateString('fr-CA')}
-            bdcLabel="bon de travail"
-            bdcId={bdcId.slice(-4)}
+            docNumberLabel="bon de travail"
+            docNumber={bdcId.slice(-4)}
             client={client}
             velo={velo}
           />
         </View>
 
-        <AddressBlock workshop={workshop} />
+        <WorkshopBlock workshop={workshop} />
 
         <ItemSection title="Services" bullet="▸" items={services} hidePrices />
         <ItemSection title="Pièces" bullet="◆" items={pieces} hidePrices />
@@ -493,10 +537,11 @@ export function BonSortiePdf({
             </View>
           ))}
 
-        <FiscalFooter workshop={workshop} />
-
         <Text style={styles.versionLabel} fixed>
-          modèle récap. v1 (Flex v2)
+          modèle v2,5
+        </Text>
+        <Text style={styles.thanksLabel} fixed>
+          Merci et bonne route 🚴
         </Text>
       </Page>
     </Document>
@@ -526,6 +571,7 @@ export function FacturePdf({
   totals: {
     totalServices: number;
     totalPieces: number;
+    remises?: number;
     sousTotal: number;
     tps: number;
     tvq: number;
@@ -537,6 +583,7 @@ export function FacturePdf({
   const services = items.filter((it) => it.kind === 'SERVICE' || it.kind === 'FORFAIT');
   const pieces = items.filter((it) => it.kind === 'PIECE');
   const dateStr = date.toLocaleDateString('fr-CA');
+  const remises = totals.remises ?? 0;
 
   return (
     <Document>
@@ -546,55 +593,62 @@ export function FacturePdf({
           <MetaBlock
             docLabel="reçu de vente"
             docDate={dateStr}
-            bdcLabel="facture"
-            bdcId={factureNumero}
+            docNumberLabel="facture"
+            docNumber={factureNumero}
             client={client}
             velo={velo}
           />
         </View>
 
-        <AddressBlock workshop={workshop} />
+        <WorkshopBlock workshop={workshop} />
 
         <ItemSection title="Services" bullet="▸" items={services} />
         <ItemSection title="Pièces" bullet="◆" items={pieces} />
 
-        <View style={styles.totalsBlock}>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Sous-total</Text>
-            <Text style={styles.totalValue}>{totals.sousTotal.toFixed(2)} $</Text>
+        <View style={styles.footerBlock}>
+          <View style={styles.footerLeft}>
+            <FooterTextLeft workshop={workshop} modePaiement={modePaiement} />
+            {notes ? (
+              <Text style={[styles.footerText, { marginTop: 8 }]}>{notes}</Text>
+            ) : null}
           </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>T.P.S (5 %)</Text>
-            <Text style={styles.totalValue}>{totals.tps.toFixed(2)} $</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>T.V.Q (9,975 %)</Text>
-            <Text style={styles.totalValue}>{totals.tvq.toFixed(2)} $</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={[styles.totalLabel, { color: COLORS.muted }]}>
-              Total des taxes
-            </Text>
-            <Text style={styles.totalValue}>
-              {(totals.tps + totals.tvq).toFixed(2)} $
-            </Text>
-          </View>
-          <View style={styles.grandTotalRow}>
-            <Text>Total</Text>
-            <Text>{totals.grandTotal.toFixed(2)} $</Text>
+          <View style={styles.footerRight}>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Sous-total</Text>
+              <Text style={styles.totalValue}>{totals.sousTotal.toFixed(2)} $</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Remises</Text>
+              <Text style={styles.totalValue}>{remises.toFixed(2)} $</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>T.P.S (5 %)</Text>
+              <Text style={styles.totalValue}>{totals.tps.toFixed(2)} $</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>T.V.Q (9,975 %)</Text>
+              <Text style={styles.totalValue}>{totals.tvq.toFixed(2)} $</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={[styles.totalLabel, { color: COLORS.muted }]}>
+                Total des taxes
+              </Text>
+              <Text style={styles.totalValue}>
+                {(totals.tps + totals.tvq).toFixed(2)} $
+              </Text>
+            </View>
+            <View style={styles.grandTotalRow}>
+              <Text>Total</Text>
+              <Text>{totals.grandTotal.toFixed(2)} $</Text>
+            </View>
           </View>
         </View>
 
-        {notes ? (
-          <View style={{ marginTop: 12 }}>
-            <Text style={{ fontSize: 8, color: COLORS.muted }}>{notes}</Text>
-          </View>
-        ) : null}
-
-        <FiscalFooter workshop={workshop} modePaiement={modePaiement} />
-
         <Text style={styles.versionLabel} fixed>
-          modèle facture v1 (Flex v2)
+          modèle v2,5
+        </Text>
+        <Text style={styles.thanksLabel} fixed>
+          Merci et bonne route 🚴
         </Text>
       </Page>
     </Document>

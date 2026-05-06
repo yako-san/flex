@@ -9,6 +9,7 @@ import { getActiveWorkshop } from '@/lib/workshop';
 
 const fiscalSchema = z.object({
   raisonSociale: z.string().trim().optional().nullable(),
+  tagline: z.string().trim().optional().nullable(),
   adresseLigne1: z.string().trim().optional().nullable(),
   adresseLigne2: z.string().trim().optional().nullable(),
   ville: z.string().trim().optional().nullable(),
@@ -43,6 +44,7 @@ export async function updateFiscalAction(
 
   const parsed = fiscalSchema.safeParse({
     raisonSociale: clean(formData.get('raisonSociale')),
+    tagline: clean(formData.get('tagline')),
     adresseLigne1: clean(formData.get('adresseLigne1')),
     adresseLigne2: clean(formData.get('adresseLigne2')),
     ville: clean(formData.get('ville')),

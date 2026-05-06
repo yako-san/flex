@@ -6,6 +6,7 @@ import { updateFiscalAction, type FiscalState } from './fiscal-actions';
 
 export type FiscalEntity = {
   raisonSociale?: string;
+  tagline?: string;
   adresseLigne1?: string;
   adresseLigne2?: string;
   ville?: string;
@@ -35,7 +36,8 @@ export function FiscalForm({ initial }: { initial: FiscalEntity }) {
   return (
     <form action={formAction}>
       <h3 style={h3Style}>Identité légale</h3>
-      <Field name="raisonSociale" label="Raison sociale" defaultValue={initial.raisonSociale} placeholder="Yako Cyclo enr." />
+      <Field name="raisonSociale" label="Raison sociale (nom légal)" defaultValue={initial.raisonSociale} placeholder="Jean-Christophe Yacono (yako)" />
+      <Field name="tagline" label="Tagline / sous-titre (affiché sous le nom sur les PDFs)" defaultValue={initial.tagline} placeholder="Ostéo de vélo et mécaniciens certifiés AEP" />
       <Field name="neq" label="NEQ (Numéro d&apos;entreprise du Québec)" defaultValue={initial.neq} placeholder="1234567890" />
       <div style={twoCol}>
         <Field name="tps" label="Numéro TPS" defaultValue={initial.tps} placeholder="123456789RT0001" />
