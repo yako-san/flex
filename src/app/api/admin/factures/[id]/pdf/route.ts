@@ -2,11 +2,13 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
-import { FacturePdf, type ItemRow } from '@/lib/pdf/documents';
-import { pdfToBuffer } from '@/lib/pdf/render';
+import { buildFactureHtml } from '@/lib/pdf-html/templates/facture';
+import { htmlToPdf } from '@/lib/pdf-html/render';
+import type { ItemRow } from '@/lib/pdf-html/templates/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 export async function GET(
   _req: Request,
@@ -14,18 +16,15 @@ export async function GET(
 ) {
   const { userId } = await auth();
   if (!userId) return new NextResponse('Unauthorized', { status: 401 });
-
   const workshop = await getActiveWorkshop();
   if (!workshop) return new NextResponse('No active workshop', { status: 403 });
 
   const { id } = await params;
-
   const facture = await prisma.factureLog.findFirst({
     where: { id, workshopId: workshop.id },
   });
   if (!facture) return new NextResponse('Not found', { status: 404 });
 
-  // Charge le client (et le vélo si BDT)
   const client = facture.clientId
     ? await prisma.client.findUnique({ where: { id: facture.clientId } })
     : null;
@@ -48,7 +47,8 @@ export async function GET(
     }
   }
 
-  const fiscalEntity = workshop.fiscalEntity as Record<string, string> | null | undefined;
+  const fiscalEntity =
+    (workshop.fiscalEntity as Record<string, string> | null | undefined) ?? null;
 
   const lines = (facture.linesSnapshot as unknown as Array<{
     position: number;
@@ -69,39 +69,38 @@ export async function GET(
     total: Number(l.total),
   }));
 
-  const buffer = await pdfToBuffer(
-    FacturePdf({
-      workshop: {
-        name: workshop.name,
-        logoBase64: workshop.logoBase64 ?? null,
-        fiscalEntity: fiscalEntity ?? null,
-      },
-      client: client
-        ? {
-            prenom: client.prenom,
-            nom: client.nom,
-            telephone: client.telephone,
-            indicatif: client.indicatif,
-            courriel: client.courriel,
-          }
-        : { prenom: 'Walk-in', nom: '', telephone: null, indicatif: null, courriel: null },
-      velo,
-      factureNumero: facture.factureNumero,
-      date: facture.date,
-      items,
-      totals: {
-        totalServices: Number(facture.totalServices),
-        totalPieces: Number(facture.totalPieces),
-        sousTotal: Number(facture.sousTotal),
-        tps: Number(facture.tps),
-        tvq: Number(facture.tvq),
-        grandTotal: Number(facture.grandTotal),
-      },
-      modePaiement: facture.modePaiement,
-      notes: facture.notes,
-    }),
-  );
+  const html = buildFactureHtml({
+    workshop: {
+      name: workshop.name,
+      logoBase64: workshop.logoBase64 ?? null,
+      fiscalEntity,
+    },
+    client: client
+      ? {
+          prenom: client.prenom,
+          nom: client.nom,
+          telephone: client.telephone,
+          indicatif: client.indicatif,
+          courriel: client.courriel,
+        }
+      : { prenom: 'Walk-in', nom: '', telephone: null, indicatif: null, courriel: null },
+    velo,
+    factureNumero: facture.factureNumero,
+    date: facture.date,
+    items,
+    totals: {
+      totalServices: Number(facture.totalServices),
+      totalPieces: Number(facture.totalPieces),
+      sousTotal: Number(facture.sousTotal),
+      tps: Number(facture.tps),
+      tvq: Number(facture.tvq),
+      grandTotal: Number(facture.grandTotal),
+    },
+    modePaiement: facture.modePaiement,
+    notes: facture.notes,
+  });
 
+  const buffer = await htmlToPdf(html);
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/pdf',

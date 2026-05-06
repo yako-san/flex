@@ -7,9 +7,14 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
   // Le client Prisma doit rester côté Node, jamais bundlé.
-  // @react-pdf/renderer dépend de yoga-wasm qui ne se bundle pas sous Vercel
-  // serverless ; il doit rester externe.
-  serverExternalPackages: ['@prisma/client', 'decimal.js', '@react-pdf/renderer'],
+  // puppeteer-core + @sparticuz/chromium-min doivent rester externes (binaire
+  // Chromium chargé depuis CDN au runtime).
+  serverExternalPackages: [
+    '@prisma/client',
+    'decimal.js',
+    'puppeteer-core',
+    '@sparticuz/chromium-min',
+  ],
   logging: {
     fetches: {
       fullUrl: false,

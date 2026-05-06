@@ -1,11 +1,6 @@
 import { prisma } from '@/lib/db';
 import type { Workshop } from '@prisma/client';
-import type {
-  ClientInfo,
-  ItemRow,
-  VeloInfo,
-  WorkshopInfo,
-} from './documents';
+import type { ClientInfo, ItemRow, VeloInfo, WorkshopInfo } from './templates/types';
 
 export type BdcPdfContext = {
   workshop: WorkshopInfo;
@@ -35,21 +30,14 @@ export async function loadBdcPdfContext(
   });
   if (!bdc) return null;
 
-  const fiscalEntity = workshop.fiscalEntity as
-    | {
-        raisonSociale?: string;
-        neq?: string;
-        tps?: string;
-        tvq?: string;
-        adresse?: string;
-      }
-    | null
-    | undefined;
+  const fiscalEntity = bdc.workshopId
+    ? ((workshop.fiscalEntity as Record<string, string> | null | undefined) ?? null)
+    : null;
 
   const workshopInfo: WorkshopInfo = {
     name: workshop.name,
     logoBase64: workshop.logoBase64 ?? null,
-    fiscalEntity: fiscalEntity ?? null,
+    fiscalEntity,
   };
 
   const client: ClientInfo = bdc.velo.client

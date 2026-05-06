@@ -1,12 +1,13 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { getActiveWorkshop } from '@/lib/workshop';
-import { EvalPdf } from '@/lib/pdf/documents';
-import { pdfToBuffer } from '@/lib/pdf/render';
-import { loadBdcPdfContext } from '@/lib/pdf/load-bdc-context';
+import { loadBdcPdfContext } from '@/lib/pdf-html/load-bdc-context';
+import { buildEvalHtml } from '@/lib/pdf-html/templates/eval';
+import { htmlToPdf } from '@/lib/pdf-html/render';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 export async function GET(
   _req: Request,
@@ -14,7 +15,6 @@ export async function GET(
 ) {
   const { userId } = await auth();
   if (!userId) return new NextResponse('Unauthorized', { status: 401 });
-
   const workshop = await getActiveWorkshop();
   if (!workshop) return new NextResponse('No active workshop', { status: 403 });
 
@@ -22,20 +22,19 @@ export async function GET(
   const ctx = await loadBdcPdfContext(workshop, id);
   if (!ctx) return new NextResponse('Not found', { status: 404 });
 
-  const buffer = await pdfToBuffer(
-    EvalPdf({
-      workshop: ctx.workshop,
-      client: ctx.client,
-      velo: ctx.velo,
-      bdcId: ctx.bdcId,
-      date: new Date(),
-      items: ctx.items,
-      totalServices: ctx.totalServices,
-      totalPieces: ctx.totalPieces,
-      notes: ctx.notes,
-    }),
-  );
+  const html = buildEvalHtml({
+    workshop: ctx.workshop,
+    client: ctx.client,
+    velo: ctx.velo,
+    bdcId: ctx.bdcId,
+    date: new Date(),
+    items: ctx.items,
+    totalServices: ctx.totalServices,
+    totalPieces: ctx.totalPieces,
+    notes: ctx.notes,
+  });
 
+  const buffer = await htmlToPdf(html);
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/pdf',
