@@ -9,6 +9,7 @@ import { TaskStatusButton } from './task-status-button';
 import { WorkflowForm } from './workflow-form';
 import { DeleteBdtButton } from './delete-button';
 import { PdfButtons } from './pdf-buttons';
+import { EmailButtons } from './email-buttons';
 
 export const dynamic = 'force-dynamic';
 
@@ -231,6 +232,13 @@ export default async function BdcDetailPage({ params }: Props) {
             bdcId={bdc.id}
             existingFactureLogId={factureLog?.id ?? null}
             existingFactureNumero={factureLog?.factureNumero ?? null}
+          />
+          <EmailButtons
+            bdcId={bdc.id}
+            clientCourriel={bdc.velo.client?.courriel ?? null}
+            evalEnvoyee={bdc.cbEvalEnvoye}
+            factureLogId={factureLog?.id ?? null}
+            factureNumero={factureLog?.factureNumero ?? null}
           />
           <h2 style={{ ...h2Style, marginTop: '2rem' }}>Workflow</h2>
           <WorkflowForm bdc={bdc} key={bdc.updatedAt.toISOString()} />

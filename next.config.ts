@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
     'decimal.js',
     'puppeteer-core',
     '@sparticuz/chromium-min',
+    'resend',
   ],
   logging: {
     fetches: {

@@ -4,6 +4,7 @@ import { getActiveWorkshop } from '@/lib/workshop';
 import { LinkWorkshopForm } from './link-workshop-form';
 import { FiscalForm, type FiscalEntity } from './fiscal-form';
 import { LogoForm } from './logo-form';
+import { isEmailConfigured } from '@/lib/email/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +43,40 @@ export default async function SettingsPage({ params }: Props) {
         (lois LTA/LTVQ) une fois ton seuil de revenu atteint.
       </p>
       {workshop ? <FiscalForm initial={fiscal} /> : <p>Aucun workshop actif.</p>}
+
+      <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
+        Notifications courriel (Resend)
+      </h2>
+      <div
+        style={{
+          background: '#fafafa',
+          border: '1px solid #e0e0e0',
+          borderRadius: 6,
+          padding: '1rem 1.25rem',
+          fontSize: '0.9rem',
+          marginBottom: '2rem',
+        }}
+      >
+        <Row label="Statut">
+          {isEmailConfigured() ? (
+            <span style={{ color: '#2e7d32' }}>✓ Resend configuré (RESEND_API_KEY présent)</span>
+          ) : (
+            <span style={{ color: '#c62828' }}>
+              ✕ RESEND_API_KEY manquant côté serveur
+            </span>
+          )}
+        </Row>
+        <Row label="From (expéditeur)">
+          <code>{process.env['EMAIL_FROM'] ?? 'onboarding@resend.dev (sandbox)'}</code>
+        </Row>
+        <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '0.75rem' }}>
+          Pour activer l&apos;envoi : créer un compte sur{' '}
+          <a href="https://resend.com" target="_blank" rel="noreferrer">resend.com</a>,
+          générer une clé API, l&apos;ajouter dans Vercel sous{' '}
+          <code>RESEND_API_KEY</code>. Vérifier ensuite ton domaine pour pouvoir
+          envoyer depuis ta propre adresse (sinon limité à <code>onboarding@resend.dev</code>).
+        </p>
+      </div>
 
       <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
         Workshop et organisation Clerk

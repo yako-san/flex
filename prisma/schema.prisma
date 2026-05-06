@@ -71,6 +71,7 @@ model Workshop {
   translations   Translation[]
   stockMovements StockMovement[]
   auditLogs      AuditLog[]
+  emailLogs      EmailLog[]
   legacyMappings LegacyIdMapping[]
 
   @@index([deletedAt])
@@ -903,6 +904,60 @@ model EquipeMember {
   @@unique([workshopId, surnom])
   @@index([workshopId, active])
   @@map("equipe_member")
+}
+
+// =============================================================================
+// EMAIL LOG — audit trail des courriels envoyés (eval, facture, etc.)
+// =============================================================================
+
+enum EmailKind {
+  BDT_EVAL
+  BDT_FACTURE
+  CLIENT_PICKUP_READY
+  OTHER
+
+  @@map("email_kind")
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+  BOUNCED
+
+  @@map("email_status")
+}
+
+model EmailLog {
+  id         String      @id // log_<ulid>
+  workshopId String      @map("workshop_id")
+  kind       EmailKind
+  status     EmailStatus @default(PENDING)
+
+  toEmail   String  @map("to_email")
+  fromEmail String  @map("from_email")
+  subject   String
+  bodyHtml  String? @map("body_html")
+
+  // Lien vers la source (BDT, FactureLog, Client)
+  bdcId        String? @map("bdc_id")
+  factureLogId String? @map("facture_log_id")
+  clientId     String? @map("client_id")
+
+  // ID retourné par le provider (Resend) pour suivi delivery
+  providerMsgId String? @map("provider_msg_id")
+  providerError String? @map("provider_error")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  sentAt      DateTime? @map("sent_at")
+  createdById String?   @map("created_by_id")
+
+  workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
+  @@index([workshopId, createdAt])
+  @@index([bdcId])
+  @@index([factureLogId])
+  @@map("email_log")
 }
 
 // =============================================================================
