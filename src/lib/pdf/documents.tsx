@@ -1,5 +1,33 @@
-import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
 import type { ReactElement } from 'react';
+
+// =============================================================================
+// Inter font : open-source, full Unicode coverage (▸ ◆ 🚴 ⛑️ 💛 etc.) —
+// la "Helvetica" par défaut de react-pdf est PDF Type 1 et ne supporte que
+// les caractères Latin-1, ce qui casse les bullets et emojis.
+// CDN rsms.me, fetched au runtime puis caché en mémoire.
+// =============================================================================
+Font.register({
+  family: 'Inter',
+  fonts: [
+    {
+      src: 'https://rsms.me/inter/font-files/Inter-Regular.otf',
+      fontWeight: 400,
+    },
+    {
+      src: 'https://rsms.me/inter/font-files/Inter-SemiBold.otf',
+      fontWeight: 600,
+    },
+    {
+      src: 'https://rsms.me/inter/font-files/Inter-Bold.otf',
+      fontWeight: 700,
+    },
+    {
+      src: 'https://rsms.me/inter/font-files/Inter-Italic.otf',
+      fontStyle: 'italic',
+    },
+  ],
+});
 
 export type WorkshopInfo = {
   name: string;
@@ -63,7 +91,7 @@ const styles = StyleSheet.create({
     padding: 36,
     paddingBottom: 36,
     fontSize: 9,
-    fontFamily: 'Helvetica',
+    fontFamily: 'Inter',
     color: COLORS.text,
   },
 
@@ -150,7 +178,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
   },
   totalLabel: { color: COLORS.text },
-  totalValue: { fontFamily: 'Helvetica' },
+  totalValue: { fontFamily: 'Inter' },
   grandTotalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
