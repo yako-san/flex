@@ -1,31 +1,58 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { SearchBar } from '../_components/search-bar';
 
 export const dynamic = 'force-dynamic';
 
-type Props = { params: Promise<{ locale: string }> };
+type Props = {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ q?: string }>;
+};
 
-export default async function PiecesPage({ params }: Props) {
+export default async function PiecesPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { q } = await searchParams;
   setRequestLocale(locale);
   const workshop = await getActiveWorkshop();
   if (!workshop) return <p>Aucun workshop actif.</p>;
 
+  const trimmed = q?.trim() ?? '';
+  const where: Prisma.PieceWhereInput = {
+    workshopId: workshop.id,
+    deletedAt: null,
+    ...(trimmed
+      ? {
+          OR: [
+            { sku: { contains: trimmed, mode: 'insensitive' } },
+            { codeBarre: { contains: trimmed, mode: 'insensitive' } },
+            { legacyCode: { contains: trimmed, mode: 'insensitive' } },
+            { nomCanonical: { contains: trimmed, mode: 'insensitive' } },
+            { categorie: { contains: trimmed, mode: 'insensitive' } },
+            { fournisseur: { contains: trimmed, mode: 'insensitive' } },
+          ],
+        }
+      : {}),
+  };
+
   const pieces = await prisma.piece.findMany({
-    where: { workshopId: workshop.id, deletedAt: null },
+    where,
     orderBy: [{ categorie: 'asc' }, { nomCanonical: 'asc' }],
   });
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Pièces (catalogue)</h1>
-          <p style={{ color: '#666', margin: 0 }}>{pieces.length} pièces</p>
+          <p style={{ color: '#666', margin: 0 }}>{pieces.length} pièce{pieces.length === 1 ? '' : 's'}{trimmed ? ` (filtré: « ${trimmed} »)` : ''}</p>
         </div>
-        <Link href={`/${locale}/admin/pieces/new`} style={btnPrimary}>+ Nouvelle pièce</Link>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <SearchBar placeholder="SKU, code-barre, nom, catégorie…" />
+          <Link href={`/${locale}/admin/pieces/new`} style={btnPrimary}>+ Nouvelle pièce</Link>
+        </div>
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={tbl}>

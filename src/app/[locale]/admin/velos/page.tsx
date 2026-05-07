@@ -1,23 +1,50 @@
 import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { SearchBar } from '../_components/search-bar';
 
 export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ q?: string }>;
 };
 
-export default async function VelosPage({ params }: Props) {
+export default async function VelosPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { q } = await searchParams;
   setRequestLocale(locale);
 
   const workshop = await getActiveWorkshop();
   if (!workshop) return <p>Aucun workshop actif.</p>;
 
+  const trimmed = q?.trim() ?? '';
+  const numeroAsInt = trimmed && /^\d+$/.test(trimmed) ? Number(trimmed) : undefined;
+
+  const where: Prisma.VeloWhereInput = {
+    workshopId: workshop.id,
+    deletedAt: null,
+    ...(trimmed
+      ? {
+          OR: [
+            { modele: { contains: trimmed, mode: 'insensitive' } },
+            { couleur: { contains: trimmed, mode: 'insensitive' } },
+            { taille: { contains: trimmed, mode: 'insensitive' } },
+            { numeroSerie: { contains: trimmed, mode: 'insensitive' } },
+            { notes: { contains: trimmed, mode: 'insensitive' } },
+            { client: { nom: { contains: trimmed, mode: 'insensitive' } } },
+            { client: { prenom: { contains: trimmed, mode: 'insensitive' } } },
+            { marque: { nom: { contains: trimmed, mode: 'insensitive' } } },
+            ...(numeroAsInt !== undefined ? [{ veloNumero: numeroAsInt }] : []),
+          ],
+        }
+      : {}),
+  };
+
   const velos = await prisma.velo.findMany({
-    where: { workshopId: workshop.id, deletedAt: null },
+    where,
     orderBy: { veloNumero: 'desc' },
     include: {
       client: { select: { id: true, prenom: true, nom: true } },
@@ -28,24 +55,27 @@ export default async function VelosPage({ params }: Props) {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Vélos</h1>
-          <p style={{ color: '#666', margin: 0 }}>{velos.length} vélos</p>
+          <p style={{ color: '#666', margin: 0 }}>{velos.length} vélo{velos.length === 1 ? '' : 's'}{trimmed ? ` (filtré: « ${trimmed} »)` : ''}</p>
         </div>
-        <Link
-          href={`/${locale}/admin/velos/new`}
-          style={{
-            padding: '0.6rem 1.2rem',
-            background: '#1a1a1a',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: 4,
-            fontSize: '0.95rem',
-          }}
-        >
-          + Nouveau vélo
-        </Link>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <SearchBar placeholder="N°, modèle, marque, client, série…" />
+          <Link
+            href={`/${locale}/admin/velos/new`}
+            style={{
+              padding: '0.6rem 1.2rem',
+              background: '#1a1a1a',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: 4,
+              fontSize: '0.95rem',
+            }}
+          >
+            + Nouveau vélo
+          </Link>
+        </div>
       </div>
 
       <table style={tableStyle}>
