@@ -48,6 +48,13 @@ model Workshop {
   // Stocké brut pour traçabilité ; le mappage détaillé peut se faire plus tard.
   legacyV1Extras Json? @map("legacy_v1_extras")
 
+  // Templates de courriels client. Forme :
+  // { eval: { subject, body }, facture: { subject, body } }
+  // body = HTML/texte avec placeholders {{clientPrenom}}, {{bdcShortId}},
+  // {{factureNumero}}, {{totalEstime}}, {{grandTotal}}, {{modePaiement}},
+  // {{workshopName}}.
+  emailTemplates Json? @map("email_templates")
+
   stripeCustomerId     String? @unique @map("stripe_customer_id")
   stripeSubscriptionId String? @unique @map("stripe_subscription_id")
 

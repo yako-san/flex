@@ -1,8 +1,17 @@
 // Templates HTML simples pour les courriels client. Restent inline-safe pour
 // les clients mail (Gmail, Outlook, Apple Mail) qui ne supportent pas tous
-// les CSS modernes.
+// les CSS modernes. Les bodies par défaut peuvent être surchargés par
+// workshop.emailTemplates (Paramètres → Templates courriel).
 
 import { escapeHtml } from '@/lib/pdf-html/templates/styles';
+import {
+  renderTemplate,
+  DEFAULT_EVAL_BODY,
+  DEFAULT_EVAL_SUBJECT,
+  DEFAULT_FACTURE_BODY,
+  DEFAULT_FACTURE_SUBJECT,
+  type EmailTemplates,
+} from './render-template';
 
 export type WorkshopBranding = {
   name: string;
@@ -41,61 +50,79 @@ function shell(opts: { workshop: WorkshopBranding; bodyHtml: string }): string {
 </html>`;
 }
 
+function customMessageBlock(msg: string | null | undefined): string {
+  if (!msg) return '';
+  return `<p style="background: #fafafa; padding: 12px; border-left: 3px solid #1a1a1a; white-space: pre-wrap;">${E(msg)}</p>`;
+}
+
 export function evalEmailTemplate(opts: {
   workshop: WorkshopBranding;
+  templates?: EmailTemplates;
   clientPrenom: string;
+  clientNom?: string | null;
   bdcShortId: string;
   totalEstime: number;
   customMessage?: string | null;
 }): string {
+  const tpl = opts.templates?.eval?.body || DEFAULT_EVAL_BODY;
+  const rendered = renderTemplate(tpl, {
+    clientPrenom: opts.clientPrenom,
+    clientNom: opts.clientNom ?? '',
+    bdcShortId: opts.bdcShortId,
+    totalEstime: opts.totalEstime.toFixed(2),
+    workshopName: opts.workshop.name,
+  });
   return shell({
     workshop: opts.workshop,
-    bodyHtml: `
-      <p>Bonjour ${E(opts.clientPrenom)},</p>
-      <p>
-        Voici l'évaluation pour votre vélo (BDT n° ${E(opts.bdcShortId)}).
-        Le PDF complet est en pièce jointe.
-      </p>
-      ${opts.customMessage
-        ? `<p style="background: #fafafa; padding: 12px; border-left: 3px solid #1a1a1a; white-space: pre-wrap;">${E(opts.customMessage)}</p>`
-        : ''}
-      <p>
-        <strong>Total estimé HT :</strong> ${opts.totalEstime.toFixed(2)} $<br>
-        <span style="color: #666; font-size: 12px;">Les taxes seront ajoutées à la facturation finale.</span>
-      </p>
-      <p>
-        Si tu approuves cette évaluation, réponds simplement à ce courriel.
-        Pour toute question ou modification, n'hésite pas à nous contacter.
-      </p>
-      <p>Merci !</p>
-    `,
+    bodyHtml: `${rendered}${customMessageBlock(opts.customMessage)}`,
+  });
+}
+
+export function evalEmailSubject(opts: {
+  templates?: EmailTemplates;
+  bdcShortId: string;
+  workshopName: string;
+}): string {
+  const tpl = opts.templates?.eval?.subject || DEFAULT_EVAL_SUBJECT;
+  return renderTemplate(tpl, {
+    bdcShortId: opts.bdcShortId,
+    workshopName: opts.workshopName,
   });
 }
 
 export function factureEmailTemplate(opts: {
   workshop: WorkshopBranding;
+  templates?: EmailTemplates;
   clientPrenom: string;
+  clientNom?: string | null;
   factureNumero: string;
   grandTotal: number;
   modePaiement?: string | null;
   customMessage?: string | null;
 }): string {
+  const tpl = opts.templates?.facture?.body || DEFAULT_FACTURE_BODY;
+  const rendered = renderTemplate(tpl, {
+    clientPrenom: opts.clientPrenom,
+    clientNom: opts.clientNom ?? '',
+    factureNumero: opts.factureNumero,
+    grandTotal: opts.grandTotal.toFixed(2),
+    modePaiement: opts.modePaiement?.toLowerCase() ?? '',
+    workshopName: opts.workshop.name,
+  });
   return shell({
     workshop: opts.workshop,
-    bodyHtml: `
-      <p>Bonjour ${E(opts.clientPrenom)},</p>
-      <p>
-        Voici la facture <strong>${E(opts.factureNumero)}</strong> en pièce jointe.
-      </p>
-      ${opts.customMessage
-        ? `<p style="background: #fafafa; padding: 12px; border-left: 3px solid #1a1a1a; white-space: pre-wrap;">${E(opts.customMessage)}</p>`
-        : ''}
-      <p>
-        <strong>Total TTC :</strong> ${opts.grandTotal.toFixed(2)} $${
-          opts.modePaiement ? ` (${E(opts.modePaiement.toLowerCase())})` : ''
-        }
-      </p>
-      <p>Merci pour votre confiance, et bonne route ! 🚴</p>
-    `,
+    bodyHtml: `${rendered}${customMessageBlock(opts.customMessage)}`,
+  });
+}
+
+export function factureEmailSubject(opts: {
+  templates?: EmailTemplates;
+  factureNumero: string;
+  workshopName: string;
+}): string {
+  const tpl = opts.templates?.facture?.subject || DEFAULT_FACTURE_SUBJECT;
+  return renderTemplate(tpl, {
+    factureNumero: opts.factureNumero,
+    workshopName: opts.workshopName,
   });
 }

@@ -5,7 +5,13 @@ import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { sendEmail } from '@/lib/email/send';
-import { evalEmailTemplate, factureEmailTemplate } from '@/lib/email/templates';
+import {
+  evalEmailTemplate,
+  evalEmailSubject,
+  factureEmailTemplate,
+  factureEmailSubject,
+} from '@/lib/email/templates';
+import { getEmailTemplates } from '@/lib/email/render-template';
 import { getEmailProvider } from '@/lib/email/client';
 import { gmailFromAddress } from '@/lib/email/gmail';
 import { loadBdcPdfContext } from '@/lib/pdf-html/load-bdc-context';
@@ -69,6 +75,7 @@ export async function sendEvalEmailAction(
   // Construit le body HTML
   const f = workshop.fiscalEntity as Record<string, string> | null;
   const totalEstime = ctx.totalServices + ctx.totalPieces - ctx.remises;
+  const templates = getEmailTemplates(workshop.emailTemplates);
   const bodyHtml = evalEmailTemplate({
     workshop: {
       name: workshop.name,
@@ -76,10 +83,17 @@ export async function sendEvalEmailAction(
       logoBase64: workshop.logoBase64 ?? null,
       signatureText: f?.footerText ?? null,
     },
+    templates,
     clientPrenom: ctx.client.prenom,
+    clientNom: ctx.client.nom,
     bdcShortId: bdcId.slice(-4),
     totalEstime,
     customMessage,
+  });
+  const subject = evalEmailSubject({
+    templates,
+    bdcShortId: bdcId.slice(-4),
+    workshopName: workshop.name,
   });
 
   const result = await sendEmail({
@@ -87,7 +101,7 @@ export async function sendEvalEmailAction(
     kind: 'BDT_EVAL',
     to: ctx.client.courriel,
     from: fromAddress(workshop),
-    subject: `Évaluation pour votre vélo — BDT ${bdcId.slice(-4)}`,
+    subject,
     html: bodyHtml,
     attachments: [
       { filename: `eval-${bdcId.slice(-4)}.pdf`, content: pdfBuffer },
@@ -196,6 +210,7 @@ export async function sendFactureEmailAction(
   });
   const pdfBuffer = await htmlToPdf(html);
 
+  const templates = getEmailTemplates(workshop.emailTemplates);
   const bodyHtml = factureEmailTemplate({
     workshop: {
       name: workshop.name,
@@ -203,11 +218,18 @@ export async function sendFactureEmailAction(
       logoBase64: workshop.logoBase64 ?? null,
       signatureText: fiscalEntity?.['footerText'] ?? null,
     },
+    templates,
     clientPrenom: client.prenom,
+    clientNom: client.nom,
     factureNumero: facture.factureNumero,
     grandTotal: Number(facture.grandTotal),
     modePaiement: facture.modePaiement,
     customMessage,
+  });
+  const subject = factureEmailSubject({
+    templates,
+    factureNumero: facture.factureNumero,
+    workshopName: workshop.name,
   });
 
   const result = await sendEmail({
@@ -215,7 +237,7 @@ export async function sendFactureEmailAction(
     kind: 'BDT_FACTURE',
     to: client.courriel,
     from: fromAddress(workshop),
-    subject: `Facture ${facture.factureNumero}`,
+    subject,
     html: bodyHtml,
     attachments: [
       { filename: `${facture.factureNumero}.pdf`, content: pdfBuffer },

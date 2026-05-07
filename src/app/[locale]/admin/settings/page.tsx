@@ -1,4 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
+import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { LinkWorkshopForm } from './link-workshop-form';
@@ -103,6 +104,14 @@ export default async function SettingsPage({ params }: Props) {
           <strong>Option 2 — Resend (multi-tenant futur) :</strong> compte sur{' '}
           <a href="https://resend.com" target="_blank" rel="noreferrer">resend.com</a>,
           API key, env <code>RESEND_API_KEY</code> + DNS du domaine.
+        </p>
+        <p style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+          <Link
+            href={`/${locale}/admin/settings/email-templates`}
+            style={{ color: '#1565c0', textDecoration: 'none', fontSize: '0.95rem' }}
+          >
+            ✏️ Personnaliser les templates de courriels →
+          </Link>
         </p>
       </div>
 
