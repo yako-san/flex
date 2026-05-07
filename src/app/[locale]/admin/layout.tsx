@@ -27,6 +27,7 @@ const navItems = [
   { href: 'admin/ventes', label: 'Ventes comptoir' },
   { href: 'admin/import', label: 'Import v1' },
   { href: 'admin/settings', label: 'Paramètres' },
+  { href: 'admin/maintenance', label: 'Maintenance' },
 ];
 
 export default async function AdminLayout({ children, params }: Props) {

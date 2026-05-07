@@ -16,6 +16,9 @@ export type FiscalEntity = {
   telephone?: string;
   courriel?: string;
   siteWeb?: string;
+  googleReviewsUrl?: string;
+  instagram?: string;
+  facebook?: string;
   neq?: string;
   tps?: string;
   tvq?: string;
@@ -60,6 +63,18 @@ export function FiscalForm({ initial }: { initial: FiscalEntity }) {
         <Field name="courriel" label="Courriel" defaultValue={initial.courriel} placeholder="contact@yako.cyclo" type="email" />
       </div>
       <Field name="siteWeb" label="Site web (optionnel)" defaultValue={initial.siteWeb} placeholder="https://yako.cyclo" />
+
+      <h3 style={h3Style}>Réseaux sociaux & avis</h3>
+      <Field
+        name="googleReviewsUrl"
+        label="Lien Google Reviews (utilisable dans les courriels et footer PDF)"
+        defaultValue={initial.googleReviewsUrl}
+        placeholder="https://g.page/r/.../review"
+      />
+      <div style={twoCol}>
+        <Field name="instagram" label="Instagram (handle ou URL)" defaultValue={initial.instagram} placeholder="@yako.cyclo" />
+        <Field name="facebook" label="Facebook (handle ou URL)" defaultValue={initial.facebook} placeholder="@yako.cyclo" />
+      </div>
 
       <h3 style={h3Style}>Footer PDF</h3>
       <div>

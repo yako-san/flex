@@ -31,6 +31,16 @@ export default async function VeloDetailPage({ params }: Props) {
         orderBy: { createdAt: 'desc' },
         include: {
           _count: { select: { items: true } },
+          factures: {
+            select: {
+              id: true,
+              factureNumero: true,
+              date: true,
+              modePaiement: true,
+              grandTotal: true,
+            },
+            orderBy: { date: 'desc' },
+          },
         },
       },
     },
@@ -39,6 +49,12 @@ export default async function VeloDetailPage({ params }: Props) {
   if (!velo) notFound();
 
   const v1 = velo.legacyRawV1 as Record<string, unknown> | null;
+  const totalFactureVie = velo.bdcs.reduce(
+    (acc, b) => acc + b.factures.reduce((a, f) => a + Number(f.grandTotal), 0),
+    0,
+  );
+  const derniereIntervention =
+    velo.bdcs[0]?.factures[0]?.date ?? velo.bdcs[0]?.createdAt ?? null;
 
   return (
     <div style={{ maxWidth: 960 }}>
@@ -56,6 +72,13 @@ export default async function VeloDetailPage({ params }: Props) {
           </h1>
           <p style={{ color: '#666', margin: 0 }}>
             {[velo.marque?.nom, velo.modele, velo.couleur, velo.taille].filter(Boolean).join(', ') || '—'}
+          </p>
+          <p style={{ color: '#666', margin: '0.25rem 0 0 0', fontSize: '0.9rem' }}>
+            {velo.bdcs.length} BDT
+            {totalFactureVie > 0 ? ` · ${totalFactureVie.toFixed(2)} $ facturé à vie` : ''}
+            {derniereIntervention
+              ? ` · dernière intervention ${derniereIntervention.toLocaleDateString('fr-CA')}`
+              : ''}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -130,29 +153,58 @@ export default async function VeloDetailPage({ params }: Props) {
         <table style={tableStyle}>
           <thead>
             <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
+              <th style={thStyle}>Date</th>
               <th style={thStyle}>BDT</th>
               <th style={thStyle}>Statut éval</th>
               <th style={thStyle}>Archive</th>
+              <th style={thStyle}>Facture</th>
               <th style={{ ...thStyle, textAlign: 'right' }}>Items</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>Services</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>Pièces</th>
+              <th style={{ ...thStyle, textAlign: 'right' }}>Total facturé</th>
             </tr>
           </thead>
           <tbody>
-            {velo.bdcs.map((b) => (
-              <tr key={b.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={tdStyle}>
-                  <Link href={`/${locale}/admin/bdcs/${b.id}`} style={linkCellStyle}>
-                    voir →
-                  </Link>
-                </td>
-                <td style={tdStyle}>{b.evalStatus}</td>
-                <td style={tdStyle}>{b.archiveStatus}</td>
-                <td style={{ ...tdStyle, textAlign: 'right' }}>{b._count.items}</td>
-                <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{Number(b.totalServices).toFixed(2)}</td>
-                <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{Number(b.totalPieces).toFixed(2)}</td>
-              </tr>
-            ))}
+            {velo.bdcs.map((b) => {
+              const facture = b.factures[0] ?? null;
+              return (
+                <tr key={b.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                  <td style={{ ...tdStyle, fontSize: '0.85rem', color: '#666' }}>
+                    {b.createdAt.toLocaleDateString('fr-CA')}
+                  </td>
+                  <td style={tdStyle}>
+                    <Link href={`/${locale}/admin/bdcs/${b.id}`} style={linkCellStyle}>
+                      voir →
+                    </Link>
+                  </td>
+                  <td style={tdStyle}>{b.evalStatus}</td>
+                  <td style={{ ...tdStyle, fontSize: '0.85rem' }}>{b.archiveStatus}</td>
+                  <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                    {facture ? (
+                      <>
+                        <a
+                          href={`/api/admin/factures/${facture.id}/pdf`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ color: '#2e7d32', textDecoration: 'none', fontWeight: 600 }}
+                        >
+                          {facture.factureNumero}
+                        </a>
+                        {facture.modePaiement ? (
+                          <span style={{ color: '#888', marginLeft: 4 }}>
+                            ({facture.modePaiement.toLowerCase()})
+                          </span>
+                        ) : null}
+                      </>
+                    ) : (
+                      <span style={{ color: '#888' }}>—</span>
+                    )}
+                  </td>
+                  <td style={{ ...tdStyle, textAlign: 'right' }}>{b._count.items}</td>
+                  <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace', fontWeight: facture ? 600 : 400 }}>
+                    {facture ? `${Number(facture.grandTotal).toFixed(2)} $` : '—'}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
