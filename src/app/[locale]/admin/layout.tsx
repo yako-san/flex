@@ -23,6 +23,7 @@ const navItems = [
   { href: 'admin/forfaits', label: 'Forfaits' },
   { href: 'admin/marques', label: 'Marques' },
   { href: 'admin/equipe', label: 'Équipe' },
+  { href: 'admin/pos', label: 'Commandes (POs)' },
   { href: 'admin/import', label: 'Import v1' },
   { href: 'admin/settings', label: 'Paramètres' },
 ];
