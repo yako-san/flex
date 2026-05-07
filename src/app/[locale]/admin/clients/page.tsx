@@ -52,6 +52,20 @@ export default async function ClientsPage({ params, searchParams }: Props) {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <SearchBar placeholder="Nom, courriel, tél, notes…" />
+          <a
+            href="/api/admin/export/clients"
+            style={{
+              padding: '0.55rem 0.9rem',
+              border: '1px solid #ccc',
+              color: '#444',
+              textDecoration: 'none',
+              borderRadius: 4,
+              fontSize: '0.9rem',
+              background: 'white',
+            }}
+          >
+            ↓ CSV
+          </a>
           <Link
             href={`/${locale}/admin/clients/new`}
             style={{

@@ -51,6 +51,7 @@ export default async function PiecesPage({ params, searchParams }: Props) {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <SearchBar placeholder="SKU, code-barre, nom, catégorie…" />
+          <a href="/api/admin/export/pieces" style={csvBtn}>↓ CSV</a>
           <Link href={`/${locale}/admin/pieces/new`} style={btnPrimary}>+ Nouvelle pièce</Link>
         </div>
       </div>
@@ -93,6 +94,7 @@ export default async function PiecesPage({ params, searchParams }: Props) {
 }
 
 const btnPrimary: React.CSSProperties = { padding: '0.6rem 1.2rem', background: '#1a1a1a', color: 'white', textDecoration: 'none', borderRadius: 4, fontSize: '0.95rem' };
+const csvBtn: React.CSSProperties = { padding: '0.55rem 0.9rem', border: '1px solid #ccc', color: '#444', textDecoration: 'none', borderRadius: 4, fontSize: '0.9rem', background: 'white' };
 const linkBtn: React.CSSProperties = { color: '#1565c0', textDecoration: 'none', fontSize: '0.85rem' };
 const tbl: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' };
 const th: React.CSSProperties = { textAlign: 'left', padding: '0.5rem 0.6rem', fontWeight: 600, color: '#666', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' };

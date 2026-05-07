@@ -1,23 +1,49 @@
 import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { SearchBar } from '../_components/search-bar';
 
 export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ q?: string }>;
 };
 
-export default async function BdcsPage({ params }: Props) {
+export default async function BdcsPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { q } = await searchParams;
   setRequestLocale(locale);
 
   const workshop = await getActiveWorkshop();
   if (!workshop) return <p>Aucun workshop actif.</p>;
 
+  const trimmed = q?.trim() ?? '';
+  const numeroAsInt = trimmed && /^\d+$/.test(trimmed) ? Number(trimmed) : undefined;
+
+  const where: Prisma.BdcWhereInput = {
+    workshopId: workshop.id,
+    deletedAt: null,
+    ...(trimmed
+      ? {
+          OR: [
+            { notes: { contains: trimmed, mode: Prisma.QueryMode.insensitive } },
+            { velo: { modele: { contains: trimmed, mode: Prisma.QueryMode.insensitive } } },
+            { velo: { numeroSerie: { contains: trimmed, mode: Prisma.QueryMode.insensitive } } },
+            { velo: { client: { nom: { contains: trimmed, mode: Prisma.QueryMode.insensitive } } } },
+            { velo: { client: { prenom: { contains: trimmed, mode: Prisma.QueryMode.insensitive } } } },
+            { velo: { marque: { nom: { contains: trimmed, mode: Prisma.QueryMode.insensitive } } } },
+            { factures: { some: { factureNumero: { contains: trimmed, mode: Prisma.QueryMode.insensitive } } } },
+            ...(numeroAsInt !== undefined ? [{ velo: { veloNumero: numeroAsInt } }] : []),
+          ],
+        }
+      : {}),
+  };
+
   const bdcs = await prisma.bdc.findMany({
-    where: { workshopId: workshop.id, deletedAt: null },
+    where,
     orderBy: { createdAt: 'desc' },
     include: {
       velo: {
@@ -35,24 +61,28 @@ export default async function BdcsPage({ params }: Props) {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Bons de travail</h1>
-          <p style={{ color: '#666', margin: 0 }}>{bdcs.length} BDT</p>
+          <p style={{ color: '#666', margin: 0 }}>{bdcs.length} BDT{trimmed ? ` (filtré: « ${trimmed} »)` : ''}</p>
         </div>
-        <Link
-          href={`/${locale}/admin/bdcs/new`}
-          style={{
-            padding: '0.6rem 1.2rem',
-            background: '#1a1a1a',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: 4,
-            fontSize: '0.95rem',
-          }}
-        >
-          + Nouveau BDT
-        </Link>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <SearchBar placeholder="N° vélo, client, modèle, marque, série, facture…" />
+          <a href="/api/admin/export/bdcs" style={csvBtn}>↓ CSV</a>
+          <Link
+            href={`/${locale}/admin/bdcs/new`}
+            style={{
+              padding: '0.6rem 1.2rem',
+              background: '#1a1a1a',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: 4,
+              fontSize: '0.95rem',
+            }}
+          >
+            + Nouveau BDT
+          </Link>
+        </div>
       </div>
 
       <table style={tableStyle}>
@@ -141,6 +171,7 @@ function ArchiveBadge({ status }: { status: string }) {
   );
 }
 
+const csvBtn: React.CSSProperties = { padding: '0.55rem 0.9rem', border: '1px solid #ccc', color: '#444', textDecoration: 'none', borderRadius: 4, fontSize: '0.9rem', background: 'white' };
 const tableStyle: React.CSSProperties = {
   width: '100%',
   borderCollapse: 'collapse',

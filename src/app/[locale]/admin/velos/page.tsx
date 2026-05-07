@@ -62,6 +62,7 @@ export default async function VelosPage({ params, searchParams }: Props) {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <SearchBar placeholder="N°, modèle, marque, client, série…" />
+          <a href="/api/admin/export/velos" style={csvBtn}>↓ CSV</a>
           <Link
             href={`/${locale}/admin/velos/new`}
             style={{
@@ -161,6 +162,15 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+const csvBtn: React.CSSProperties = {
+  padding: '0.55rem 0.9rem',
+  border: '1px solid #ccc',
+  color: '#444',
+  textDecoration: 'none',
+  borderRadius: 4,
+  fontSize: '0.9rem',
+  background: 'white',
+};
 const tableStyle: React.CSSProperties = {
   width: '100%',
   borderCollapse: 'collapse',
