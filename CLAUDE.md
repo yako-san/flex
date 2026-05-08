@@ -1,4 +1,4 @@
-# CLAUDE.md — flex-app
+# CLAUDE.md — flex-app v2
 
 ## Langue de travail
 
@@ -10,32 +10,86 @@ description de PR, et nom de variable user-facing doit être en français
 L'utilisateur (yako-san) est francophone (fr-CA) et a demandé explicitement
 plusieurs fois de rester en français. Ne pas dériver vers l'anglais.
 
+## Préférences transversales (à respecter strictement)
+
+- **Pas de validation émotionnelle** : éviter "t'as raison", "excellente
+  question", "super idée". Aller direct au fait.
+- **Valider la cause avant la solution** : pas d'action sur hypothèse.
+  Quand un truc casse, comprendre pourquoi avant de patcher.
+- **Push auto sur la branche de travail accepté** : commit + push direct
+  sans redemander, sauf opérations destructives (force-push, reset,
+  delete branch, drop table). Pour celles-là, demander d'abord.
+- **Bump auto APP_VERSION** quand l'utilisateur mentionne un numéro de
+  version. Pas de mécanisme APP_VERSION en V2 pour l'instant — à mettre
+  en place quand pertinent.
+- **Préparer blob de reprise détaillé** avant compaction de session
+  (résumé sur disque, pas juste en mémoire).
+- **Ne JAMAIS toucher la prod pendant les tests** — toujours seed DB de
+  dev.
+
 ## Contexte produit
 
-flex-app v2 : SaaS multi-tenant de gestion d'atelier de vélo, migration
-depuis une v1 Google Apps Script. Tenant principal actuel : yako-cyclo
-(Québec). Voir `docs/billing-fiscalite-brief.md` pour le dossier billing
-en attente.
+flex-app v2 : SaaS multi-tenant de gestion d'atelier de vélo, **migration
+depuis une v1 Next.js + Google Sheets** (`yako-san/flex-rev-app`, tag
+`v1.0.0` au commit `ef5e604`, version courante `v1.0.17`). Tenant principal
+actuel : yako-cyclo (Québec, fr-CA, CAD).
 
-## Stack
+**V1 n'est PAS du Google Apps Script** (erreur que j'ai propagée tôt dans
+la session de bootstrap, corrigée depuis). C'est :
+- Next.js 14 App Router + TypeScript strict
+- Backend = Google Sheets API v4 (5 documents Sheets)
+- Auth NextAuth + Google OAuth
+- Cache Vercel KV (Upstash)
+- Email Gmail draft via API
+- PDF `@react-pdf/renderer`
 
-- Next.js 15.5 + React 19 + App Router + typedRoutes
+## Référentiel v1
+
+- Repo v1 : `yako-san/flex-rev-app` — accès via session v1 ou via export
+  `GET /api/admin/export-v1`. **Mon scope GitHub MCP est limité à
+  `yako-san/flex` seulement**, donc pas de lecture directe.
+- Document de référence v1→v2 : `docs/v1-v2-parity.md` — audit modèle
+  par modèle, à tenir à jour à chaque batch de porting.
+- Mémoire v1 partagée : la session v1 publie dans son dépôt sous
+  `docs/v2-handoff/v1-reference.md`. yako-san fait le pont.
+
+## Stack v2
+
+- Next.js 15.1 + React 19 + App Router + typedRoutes
 - next-intl 3.26 (locales fr-CA / en-CA, localePrefix='always')
 - Clerk 6.12 + Organizations (multi-tenant)
-- Prisma 5.22 + Postgres Neon
-- Vitest (524 tests passent)
+- Prisma 5.22 + Postgres Neon (25 modèles)
+- Vitest (533 tests passent au 2026-05-08)
 - puppeteer-core + @sparticuz/chromium-min pour PDF
 - nodemailer (Gmail SMTP) + Resend (fallback)
 - Server Actions avec useActionState
 - Soft-delete (deletedAt) sur entités principales
 
-## Conventions
+## Conventions git
 
-- Branch de travail : `claude/resume-from-handoff-HginU` (en attendant
-  rationalisation des branches). Aussi présent : `main` et
-  `claude/bootstrap-flex-app-v2-0Gwel` (défaut GitHub) — tous trois
-  synchronisés.
-- Commits : confiance, push, mais demander avant les opérations destructives
-  (delete, force-push, reset).
-- yako-san n'est pas développeur — préférer les commandes copy-pastable et
-  les explications brèves "ce que tu dois faire".
+- Branche de travail courante : `claude/resume-from-handoff-HginU`
+- Branches synchronisées : `main` et `claude/bootstrap-flex-app-v2-0Gwel`
+  (défaut GitHub)
+- 3 branches alignées sur HEAD à chaque push (les 3 sont fast-forwardées
+  ensemble pour que peu importe celle que Vercel suit, c'est à jour)
+- Commits : confiance, push, mais demander avant les opérations
+  destructives
+- Format commit : `feat|fix|docs|refactor(scope): description courte`,
+  body en français
+
+## Communication v1 ↔ v2
+
+- Pas de canal MCP direct entre les 2 sessions Claude
+- v2 lit ce qui est publié sur `yako-san/flex-rev-app/docs/v2-handoff/`
+  (via raw URL si public, sinon yako-san copie-colle ici)
+- v2 ne peut pas modifier le code v1 — yako-san relaie
+
+## Profil yako-san
+
+- yako-san n'est pas développeur — préférer commandes copy-pastable et
+  explications brèves "ce que tu dois faire"
+- Préfère décisions cadrées et plan d'action explicite plutôt que
+  exploration ouverte
+- A un atelier de vélo réel (yako-cyclo, Montréal). V2 doit fonctionner
+  en production pour cet atelier ET pouvoir être vendue à d'autres
+  ateliers / corps de métiers (multi-tenant fondamental)
