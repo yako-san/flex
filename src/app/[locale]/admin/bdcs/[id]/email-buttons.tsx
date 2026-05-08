@@ -4,13 +4,17 @@ import { useState, useTransition } from 'react';
 import {
   sendEvalEmailAction,
   sendFactureEmailAction,
+  sendSuiviEmailAction,
   type EmailState,
 } from './email-actions';
+
+type Kind = 'eval' | 'facture' | 'suivi';
 
 type Props = {
   bdcId: string;
   clientCourriel: string | null;
   evalEnvoyee: boolean;
+  suiviEnvoye: boolean;
   factureLogId: string | null;
   factureNumero: string | null;
 };
@@ -19,11 +23,12 @@ export function EmailButtons({
   bdcId,
   clientCourriel,
   evalEnvoyee,
+  suiviEnvoye,
   factureLogId,
   factureNumero: _factureNumero,
 }: Props) {
   const [pending, startTransition] = useTransition();
-  const [show, setShow] = useState<'eval' | 'facture' | null>(null);
+  const [show, setShow] = useState<Kind | null>(null);
   const [msg, setMsg] = useState('');
   const [result, setResult] = useState<EmailState | null>(null);
 
@@ -36,15 +41,17 @@ export function EmailButtons({
     );
   }
 
-  function send(kind: 'eval' | 'facture') {
+  function send(kind: Kind) {
     setResult(null);
     startTransition(async () => {
       const r =
         kind === 'eval'
           ? await sendEvalEmailAction(bdcId, msg.trim() || null)
-          : factureLogId
-            ? await sendFactureEmailAction(factureLogId, msg.trim() || null)
-            : { error: 'Pas de facture émise', success: false };
+          : kind === 'suivi'
+            ? await sendSuiviEmailAction(bdcId, msg.trim() || null)
+            : factureLogId
+              ? await sendFactureEmailAction(factureLogId, msg.trim() || null)
+              : { error: 'Pas de facture émise', success: false };
       setResult(r);
       if (r.success) {
         setShow(null);
@@ -75,6 +82,17 @@ export function EmailButtons({
           ✉️ Envoyer la facture par courriel
         </button>
       ) : null}
+      <button
+        type="button"
+        onClick={() => setShow(show === 'suivi' ? null : 'suivi')}
+        style={{
+          ...btn,
+          color: suiviEnvoye ? '#2e7d32' : '#1565c0',
+          borderColor: suiviEnvoye ? '#2e7d32' : '#1565c0',
+        }}
+      >
+        ✉️ {suiviEnvoye ? 'Renvoyer le courriel de suivi' : 'Envoyer le courriel de suivi'}
+      </button>
 
       {show ? (
         <div style={{ background: '#fafafa', border: '1px solid #e0e0e0', borderRadius: 4, padding: '0.75rem' }}>

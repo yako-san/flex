@@ -16,6 +16,10 @@ import {
   DEFAULT_FACTURE_BODY_EN,
   DEFAULT_FACTURE_SUBJECT_FR,
   DEFAULT_FACTURE_SUBJECT_EN,
+  DEFAULT_SUIVI_BODY_FR,
+  DEFAULT_SUIVI_BODY_EN,
+  DEFAULT_SUIVI_SUBJECT_FR,
+  DEFAULT_SUIVI_SUBJECT_EN,
   type EmailTemplates,
   type Locale,
 } from './render-template';
@@ -151,6 +155,43 @@ export function factureEmailSubject(opts: {
   const tpl = pickLocale(opts.templates?.facture?.subject, locale) || fallback;
   return renderTemplate(tpl, {
     factureNumero: opts.factureNumero,
+    workshopName: opts.workshopName,
+  });
+}
+
+export function suiviEmailTemplate(opts: {
+  workshop: WorkshopBranding;
+  templates?: EmailTemplates;
+  clientLang?: string | null;
+  clientPrenom: string;
+  clientNom?: string | null;
+  veloLabel?: string | null;
+  customMessage?: string | null;
+}): string {
+  const locale = normalizeLocale(opts.clientLang);
+  const fallback = locale === 'en' ? DEFAULT_SUIVI_BODY_EN : DEFAULT_SUIVI_BODY_FR;
+  const tpl = pickLocale(opts.templates?.courrielSuivi?.body, locale) || fallback;
+  const rendered = renderTemplate(tpl, {
+    clientPrenom: opts.clientPrenom,
+    clientNom: opts.clientNom ?? '',
+    veloLabel: opts.veloLabel ?? '',
+    workshopName: opts.workshop.name,
+  });
+  return shell({
+    workshop: opts.workshop,
+    bodyHtml: `${rendered}${customMessageBlock(opts.customMessage)}`,
+  });
+}
+
+export function suiviEmailSubject(opts: {
+  templates?: EmailTemplates;
+  clientLang?: string | null;
+  workshopName: string;
+}): string {
+  const locale = normalizeLocale(opts.clientLang);
+  const fallback = locale === 'en' ? DEFAULT_SUIVI_SUBJECT_EN : DEFAULT_SUIVI_SUBJECT_FR;
+  const tpl = pickLocale(opts.templates?.courrielSuivi?.subject, locale) || fallback;
+  return renderTemplate(tpl, {
     workshopName: opts.workshopName,
   });
 }

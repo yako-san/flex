@@ -510,10 +510,11 @@ model Bdc {
   //   v1.checkOk   → cbEval        (évaluation faite côté mecano)
   //   v1.checkBds  → cbBonSortie   (bon de sortie imprimé)
   //   v1.checkOut  → cbArchiver    (archivage déclenché)
-  cbEvalEnvoye Boolean @default(false) @map("cb_eval_envoye")
-  cbEval       Boolean @default(false) @map("cb_eval")
-  cbBonSortie  Boolean @default(false) @map("cb_bon_sortie")
-  cbArchiver   Boolean @default(false) @map("cb_archiver")
+  cbEvalEnvoye  Boolean @default(false) @map("cb_eval_envoye")
+  cbEval        Boolean @default(false) @map("cb_eval")
+  cbBonSortie   Boolean @default(false) @map("cb_bon_sortie")
+  cbArchiver    Boolean @default(false) @map("cb_archiver")
+  cbSuiviEnvoye Boolean @default(false) @map("cb_suivi_envoye") // courriel de suivi post-livraison envoyé
 
   remiseSvcType  RemiseType? @map("remise_svc_type")
   remiseSvcValue Decimal?    @map("remise_svc_value") @db.Decimal(12, 2)
@@ -971,6 +972,7 @@ model EquipeMember {
 enum EmailKind {
   BDT_EVAL
   BDT_FACTURE
+  BDT_SUIVI // courriel de suivi post-livraison (V1 « courriel_suivi »)
   CLIENT_PICKUP_READY
   OTHER
 

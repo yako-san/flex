@@ -10,6 +10,8 @@ import {
   evalEmailSubject,
   factureEmailTemplate,
   factureEmailSubject,
+  suiviEmailTemplate,
+  suiviEmailSubject,
 } from '@/lib/email/templates';
 import { getEmailTemplates } from '@/lib/email/render-template';
 import { getEmailProvider } from '@/lib/email/client';
@@ -260,5 +262,81 @@ export async function sendFactureEmailAction(
   if (facture.bdcId) {
     revalidatePath(`/[locale]/admin/bdcs/${facture.bdcId}`, 'page');
   }
+  return { success: true, emailLogId: result.emailLogId };
+}
+
+// Envoie un courriel de suivi post-livraison au client (sans PDF en pièce
+// jointe). Utilise le template courrielSuivi (subject + body) avec
+// fallback aux defaults V2. Marque Bdc.cbSuiviEnvoye=true à l'envoi
+// réussi (visible dans la liste des suivis envoyés / à envoyer).
+export async function sendSuiviEmailAction(
+  bdcId: string,
+  customMessage: string | null,
+): Promise<EmailState> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+
+  const bdc = await prisma.bdc.findFirst({
+    where: { id: bdcId, workshopId: workshop.id, deletedAt: null },
+    include: {
+      velo: {
+        include: {
+          client: { select: { prenom: true, nom: true, courriel: true, lang: true } },
+          marque: { select: { nom: true } },
+        },
+      },
+    },
+  });
+  if (!bdc) return { error: 'BDT introuvable' };
+  if (!bdc.velo.client?.courriel) {
+    return { error: "Le client n'a pas de courriel renseigné" };
+  }
+
+  const f = workshop.fiscalEntity as Record<string, string> | null;
+  const templates = getEmailTemplates(workshop.emailTemplates);
+  const veloLabel =
+    [bdc.velo.marque?.nom, bdc.velo.modele].filter(Boolean).join(' ') || 'vélo';
+
+  const bodyHtml = suiviEmailTemplate({
+    workshop: {
+      name: workshop.name,
+      raisonSociale: f?.raisonSociale ?? null,
+      logoBase64: workshop.logoBase64 ?? null,
+      signatureText: f?.footerText ?? null,
+    },
+    templates,
+    clientLang: bdc.velo.client.lang,
+    clientPrenom: bdc.velo.client.prenom,
+    clientNom: bdc.velo.client.nom,
+    veloLabel,
+    customMessage,
+  });
+  const subject = suiviEmailSubject({
+    templates,
+    clientLang: bdc.velo.client.lang,
+    workshopName: workshop.name,
+  });
+
+  const result = await sendEmail({
+    workshopId: workshop.id,
+    kind: 'BDT_SUIVI',
+    to: bdc.velo.client.courriel,
+    from: fromAddress(workshop),
+    subject,
+    html: bodyHtml,
+    bdcId,
+    createdById: userId,
+  });
+
+  if (!result.ok) return { error: result.error, emailLogId: result.emailLogId };
+
+  await prisma.bdc.update({
+    where: { id: bdcId },
+    data: { cbSuiviEnvoye: true },
+  });
+
+  revalidatePath(`/[locale]/admin/bdcs/${bdcId}`, 'page');
   return { success: true, emailLogId: result.emailLogId };
 }

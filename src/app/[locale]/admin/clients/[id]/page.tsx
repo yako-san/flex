@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { DeleteClientButton } from './delete-button';
+import { FactureStatutControls } from '../../factures/facture-statut-controls';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +50,7 @@ export default async function ClientDetailPage({ params }: Props) {
         type: true,
         date: true,
         modePaiement: true,
+        statut: true,
         grandTotal: true,
         bdcId: true,
         venteId: true,
@@ -172,7 +174,7 @@ export default async function ClientDetailPage({ params }: Props) {
               <th style={thStyle}>Date</th>
               <th style={thStyle}>N°</th>
               <th style={thStyle}>Type</th>
-              <th style={thStyle}>Mode pmt</th>
+              <th style={thStyle}>Statut</th>
               <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
               <th style={thStyle}></th>
             </tr>
@@ -183,7 +185,13 @@ export default async function ClientDetailPage({ params }: Props) {
                 <td style={{ ...tdStyle, fontSize: '0.85rem' }}>{f.date.toLocaleDateString('fr-CA')}</td>
                 <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '0.85rem' }}>{f.factureNumero}</td>
                 <td style={{ ...tdStyle, fontSize: '0.85rem' }}>{f.type}</td>
-                <td style={{ ...tdStyle, fontSize: '0.85rem' }}>{f.modePaiement ?? '—'}</td>
+                <td style={tdStyle}>
+                  <FactureStatutControls
+                    factureLogId={f.id}
+                    statut={f.statut}
+                    modePaiement={f.modePaiement}
+                  />
+                </td>
                 <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace', fontWeight: 600 }}>
                   {Number(f.grandTotal).toFixed(2)} $
                 </td>

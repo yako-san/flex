@@ -248,6 +248,7 @@ export default async function BdcDetailPage({ params }: Props) {
             bdcId={bdc.id}
             clientCourriel={bdc.velo.client?.courriel ?? null}
             evalEnvoyee={bdc.cbEvalEnvoye}
+            suiviEnvoye={bdc.cbSuiviEnvoye}
             factureLogId={factureLog?.id ?? null}
             factureNumero={factureLog?.factureNumero ?? null}
           />
