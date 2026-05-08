@@ -821,6 +821,10 @@ model Po {
   dateCommande  DateTime  @map("date_commande")
   dateReception DateTime? @map("date_reception")
   status        PoStatus  @default(EN_ATTENTE)
+  // ADHOC : PO créé directement à la réception (achat impulsif, sans
+  // commande préalable). poNumero préfixé par 'ADHOC-'. Peut être fusionné
+  // dans un PO normal plus tard via mergeAdhocIntoPoAction.
+  isAdhoc       Boolean   @default(false) @map("is_adhoc")
   notes         String?
 
   legacyRawV1 Json? @map("legacy_raw_v1")
@@ -850,6 +854,10 @@ model PoItem {
   qtyCommandee Decimal @map("qty_commandee") @db.Decimal(10, 3)
   qtyRecue     Decimal @default(0) @map("qty_recue") @db.Decimal(10, 3)
   unitPrice    Decimal @map("unit_price") @db.Decimal(12, 2)
+  // Catégorie utilisée à l'auto-création de Piece lors d'une réception
+  // ADHOC (V1 col O _PO_). Aide à classer dans le catalogue.
+  categorie    String?
+  notes        String?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

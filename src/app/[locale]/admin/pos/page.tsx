@@ -62,6 +62,12 @@ export default async function PosPage({ params, searchParams }: Props) {
           >
             ↓ CSV
           </a>
+          <Link
+            href={`/${locale}/admin/pos/adhoc`}
+            style={{ padding: '0.6rem 1.2rem', background: '#2e7d32', color: 'white', textDecoration: 'none', borderRadius: 4, fontSize: '0.95rem' }}
+          >
+            📦 Réception ADHOC
+          </Link>
         </div>
       </div>
       <table style={tbl}>
