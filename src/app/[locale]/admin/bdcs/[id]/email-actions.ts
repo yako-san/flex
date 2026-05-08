@@ -68,7 +68,7 @@ export async function sendEvalEmailAction(
     totalServices: ctx.totalServices,
     totalPieces: ctx.totalPieces,
     remises: ctx.remises,
-    notes: ctx.notes,
+    notes: ctx.noteClientEval,
   });
   const pdfBuffer = await htmlToPdf(html);
 

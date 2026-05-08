@@ -19,6 +19,11 @@ type Props = {
     | 'remiseSvcValue'
     | 'remisePceType'
     | 'remisePceValue'
+    | 'avanceMontant'
+    | 'avanceMode'
+    | 'avanceNote'
+    | 'noteClientEval'
+    | 'noteClientFacture'
     | 'notes'
   >;
 };
@@ -115,8 +120,72 @@ export function WorkflowForm({ bdc }: Props) {
         </div>
       </div>
 
+      <h3 style={{ fontSize: '0.95rem', marginTop: '1rem', marginBottom: '0.5rem', color: '#444' }}>
+        Avance / acompte client
+      </h3>
+      <p style={{ color: '#888', fontSize: '0.78rem', marginTop: 0, marginBottom: '0.4rem' }}>
+        Acompte versé lors de l&apos;évaluation. N&apos;affecte pas les taxes — sert
+        uniquement à afficher le « reste à payer » sur le PDF facture.
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <div>
+          <label style={labelStyle}>Montant ($)</label>
+          <input
+            name="avanceMontant"
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={bdc.avanceMontant ? String(bdc.avanceMontant) : ''}
+            placeholder="0.00"
+            style={inputStyle}
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>Mode</label>
+          <select name="avanceMode" defaultValue={bdc.avanceMode ?? ''} style={inputStyle}>
+            <option value="">—</option>
+            <option value="COMPTANT">Comptant</option>
+            <option value="INTERAC">Interac</option>
+            <option value="CARTES">Carte</option>
+          </select>
+        </div>
+        <div>
+          <label style={labelStyle}>Note (optionnel)</label>
+          <input
+            name="avanceNote"
+            defaultValue={bdc.avanceNote ?? ''}
+            placeholder="ex. acompte évaluation"
+            style={inputStyle}
+          />
+        </div>
+      </div>
+
+      <h3 style={{ fontSize: '0.95rem', marginTop: '1rem', marginBottom: '0.5rem', color: '#444' }}>
+        Notes client (visibles dans les PDFs et courriels)
+      </h3>
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={labelStyle}>Note évaluation (PDF/courriel d&apos;éval)</label>
+        <textarea
+          name="noteClientEval"
+          defaultValue={bdc.noteClientEval ?? ''}
+          rows={3}
+          placeholder="Précisions à transmettre au client lors de l'évaluation"
+          style={{ ...inputStyle, fontFamily: 'inherit', resize: 'vertical' }}
+        />
+      </div>
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={labelStyle}>Note facture (PDF/courriel de facture)</label>
+        <textarea
+          name="noteClientFacture"
+          defaultValue={bdc.noteClientFacture ?? ''}
+          rows={3}
+          placeholder="Précisions à transmettre au client lors de la facturation"
+          style={{ ...inputStyle, fontFamily: 'inherit', resize: 'vertical' }}
+        />
+      </div>
+
       <div style={{ marginBottom: '1rem' }}>
-        <label style={labelStyle}>Notes</label>
+        <label style={labelStyle}>Notes (interne)</label>
         <textarea
           name="notes"
           defaultValue={bdc.notes ?? ''}

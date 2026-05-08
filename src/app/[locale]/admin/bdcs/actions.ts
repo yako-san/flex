@@ -336,6 +336,11 @@ const updateWorkflowSchema = z.object({
   remiseSvcValue: z.string().trim().optional().nullable(),
   remisePceType: z.enum(['PCT', 'FIXED', '']).optional(),
   remisePceValue: z.string().trim().optional().nullable(),
+  avanceMontant: z.string().trim().optional().nullable(),
+  avanceMode: z.enum(['COMPTANT', 'INTERAC', 'CARTES', '']).optional(),
+  avanceNote: z.string().optional().nullable(),
+  noteClientEval: z.string().optional().nullable(),
+  noteClientFacture: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
 });
 
@@ -360,6 +365,11 @@ export async function updateBdtWorkflowAction(
     remiseSvcValue: (formData.get('remiseSvcValue') as string) || null,
     remisePceType: (formData.get('remisePceType') as string) || '',
     remisePceValue: (formData.get('remisePceValue') as string) || null,
+    avanceMontant: (formData.get('avanceMontant') as string) || null,
+    avanceMode: (formData.get('avanceMode') as string) || '',
+    avanceNote: formData.get('avanceNote') || null,
+    noteClientEval: formData.get('noteClientEval') || null,
+    noteClientFacture: formData.get('noteClientFacture') || null,
     notes: formData.get('notes') || null,
   });
 
@@ -382,6 +392,15 @@ export async function updateBdtWorkflowAction(
   const remPceType =
     data.remisePceType === 'PCT' || data.remisePceType === 'FIXED' ? data.remisePceType : null;
 
+  const avanceMontant =
+    data.avanceMontant && data.avanceMontant.trim() !== ''
+      ? new Prisma.Decimal(data.avanceMontant)
+      : null;
+  const avanceMode =
+    data.avanceMode === 'COMPTANT' || data.avanceMode === 'INTERAC' || data.avanceMode === 'CARTES'
+      ? data.avanceMode
+      : null;
+
   await prisma.bdc.update({
     where: { id: data.bdcId },
     data: {
@@ -395,11 +414,61 @@ export async function updateBdtWorkflowAction(
       remiseSvcValue: remSvcType ? remSvcVal : null,
       remisePceType: remPceType,
       remisePceValue: remPceType ? remPceVal : null,
+      avanceMontant,
+      avanceMode,
+      avanceNote: data.avanceNote ?? null,
+      noteClientEval: data.noteClientEval ?? null,
+      noteClientFacture: data.noteClientFacture ?? null,
       notes: data.notes ?? null,
     },
   });
 
   revalidatePath(`/[locale]/admin/bdcs/${data.bdcId}`, 'page');
+  return {};
+}
+
+// =============================================================================
+// Item pièce : workflow commande fournisseur (cmdStatus + cmdNote)
+// =============================================================================
+
+const CMD_STATUS_VALUES = [
+  'LISTEE',
+  'ESTIMEE',
+  'A_COMMANDER',
+  'EN_COMMANDE',
+  'RECU_PARTIEL',
+  'RECUE',
+] as const;
+
+export async function updatePieceItemCmdAction(
+  itemId: string,
+  formData: FormData,
+): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+
+  const rawStatus = String(formData.get('cmdStatus') ?? '').trim();
+  const cmdStatus = CMD_STATUS_VALUES.includes(rawStatus as (typeof CMD_STATUS_VALUES)[number])
+    ? (rawStatus as (typeof CMD_STATUS_VALUES)[number])
+    : null;
+  const cmdNoteRaw = formData.get('cmdNote');
+  const cmdNote =
+    typeof cmdNoteRaw === 'string' && cmdNoteRaw.trim() !== '' ? cmdNoteRaw : null;
+
+  const item = await prisma.bdcItem.findFirst({
+    where: { id: itemId, workshopId: workshop.id, kind: 'PIECE' },
+    select: { id: true, bdcId: true },
+  });
+  if (!item) return { error: 'Item pièce introuvable' };
+
+  await prisma.bdcItem.update({
+    where: { id: item.id },
+    data: { cmdStatus, cmdNote },
+  });
+
+  revalidatePath(`/[locale]/admin/bdcs/${item.bdcId}`, 'page');
   return {};
 }
 

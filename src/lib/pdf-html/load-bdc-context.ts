@@ -7,7 +7,15 @@ export type BdcPdfContext = {
   client: ClientInfo;
   velo: VeloInfo;
   bdcId: string;
-  notes: string | null;
+  /** Note client visible sur le PDF d'évaluation (Bdc.noteClientEval) */
+  noteClientEval: string | null;
+  /** Note client visible sur le PDF de facture (Bdc.noteClientFacture) */
+  noteClientFacture: string | null;
+  /** Notes internes (Bdc.notes) — JAMAIS rendues dans les PDFs client */
+  notesInternes: string | null;
+  /** Avance versée par le client (acompte). Affichée sur le PDF facture. */
+  avanceMontant: number | null;
+  avanceMode: 'COMPTANT' | 'INTERAC' | 'CARTES' | null;
   items: ItemRow[];
   tasksByItem: Record<number, { label: string; status: string }[]>;
   totalServices: number;
@@ -108,7 +116,11 @@ export async function loadBdcPdfContext(
     client,
     velo,
     bdcId,
-    notes: bdc.notes,
+    noteClientEval: bdc.noteClientEval,
+    noteClientFacture: bdc.noteClientFacture,
+    notesInternes: bdc.notes,
+    avanceMontant: bdc.avanceMontant ? Number(bdc.avanceMontant) : null,
+    avanceMode: bdc.avanceMode,
     items,
     tasksByItem,
     totalServices: totalServicesGross,

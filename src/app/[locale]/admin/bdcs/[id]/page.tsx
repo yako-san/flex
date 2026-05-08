@@ -10,6 +10,7 @@ import { WorkflowForm } from './workflow-form';
 import { DeleteBdtButton } from './delete-button';
 import { PdfButtons } from './pdf-buttons';
 import { EmailButtons } from './email-buttons';
+import { PieceCmdEditor } from './piece-cmd-editor';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -156,7 +157,16 @@ export default async function BdcDetailPage({ params }: Props) {
                         <KindBadge kind={item.kind} />
                       </td>
                       <td style={tdStyle}>
-                        <div>{item.labelSnapshot}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          <span>{item.labelSnapshot}</span>
+                          {item.kind === 'PIECE' ? (
+                            <PieceCmdEditor
+                              itemId={item.id}
+                              cmdStatus={item.cmdStatus}
+                              cmdNote={item.cmdNote}
+                            />
+                          ) : null}
+                        </div>
                         {item.piece?.sku ? (
                           <div style={{ color: '#888', fontSize: '0.78rem', fontFamily: 'monospace' }}>
                             SKU {item.piece.sku}

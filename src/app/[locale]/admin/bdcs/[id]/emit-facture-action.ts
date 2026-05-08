@@ -149,6 +149,9 @@ export async function emitFactureAction(
           tvq: new Prisma.Decimal(tax.tvq.toString()),
           taxes: new Prisma.Decimal(tax.tps.plus(tax.tvq).toString()),
           grandTotal: new Prisma.Decimal(tax.total.toString()),
+          // Snapshot de la note client visible facture au moment de l'émission.
+          // FactureLog est immutable, donc on fige le texte ici.
+          notes: bdc.noteClientFacture ?? null,
         },
       });
 

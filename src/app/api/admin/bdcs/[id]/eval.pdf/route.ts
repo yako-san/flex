@@ -32,7 +32,7 @@ export async function GET(
     totalServices: ctx.totalServices,
     totalPieces: ctx.totalPieces,
     remises: ctx.remises,
-    notes: ctx.notes,
+    notes: ctx.noteClientEval,
   });
 
   const buffer = await htmlToPdf(html);
