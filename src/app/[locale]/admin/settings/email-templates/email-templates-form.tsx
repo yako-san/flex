@@ -231,40 +231,47 @@ function Block({
   return (
     <div style={{ marginBottom: '1.5rem' }}>
       <h3 style={h3}>{title}</h3>
-      <Row label={`Sujet (${tab.toUpperCase()})`}>
-        <input
-          name={`${prefix}_subject_${tab}`}
-          defaultValue={initial?.subject?.[tab] ?? ''}
-          placeholder={tab === 'fr' ? defaults.subject_fr : defaults.subject_en}
-          style={inputStyle}
-        />
-      </Row>
-      <Row label={`Corps (${tab.toUpperCase()}, HTML accepté)`}>
-        <textarea
-          name={`${prefix}_body_${tab}`}
-          defaultValue={initial?.body?.[tab] ?? ''}
-          placeholder={tab === 'fr' ? defaults.body_fr : defaults.body_en}
-          rows={8}
-          style={textareaStyle}
-        />
-      </Row>
-      <details style={{ marginTop: '0.4rem' }}>
-        <summary style={{ cursor: 'pointer', color: '#666', fontSize: '0.85rem' }}>
-          Fragments granulaires (greeting / intro / cta / outro)
-        </summary>
-        <div style={{ paddingLeft: '0.5rem', marginTop: '0.5rem' }}>
-          {(['greeting', 'intro', 'cta', 'outro'] as const).map((f) => (
-            <Row key={f} label={`${f.charAt(0).toUpperCase() + f.slice(1)} (${tab.toUpperCase()})`}>
-              <textarea
-                name={`${prefix}_${f}_${tab}`}
-                defaultValue={(initial?.[f] as { [k in LocaleTab]?: string } | undefined)?.[tab] ?? ''}
-                rows={2}
-                style={textareaStyle}
-              />
-            </Row>
-          ))}
+      {/* Rendre les 2 langues simultanément (input par locale) et cacher
+          celle qui n'est pas active via display:none — comme ça les
+          inputs persistent leurs valeurs entre changements d'onglet. */}
+      {(['fr', 'en'] as const).map((loc) => (
+        <div key={loc} style={{ display: tab === loc ? 'block' : 'none' }}>
+          <Row label={`Sujet (${loc.toUpperCase()})`}>
+            <input
+              name={`${prefix}_subject_${loc}`}
+              defaultValue={initial?.subject?.[loc] ?? ''}
+              placeholder={loc === 'fr' ? defaults.subject_fr : defaults.subject_en}
+              style={inputStyle}
+            />
+          </Row>
+          <Row label={`Corps (${loc.toUpperCase()}, HTML accepté)`}>
+            <textarea
+              name={`${prefix}_body_${loc}`}
+              defaultValue={initial?.body?.[loc] ?? ''}
+              placeholder={loc === 'fr' ? defaults.body_fr : defaults.body_en}
+              rows={8}
+              style={textareaStyle}
+            />
+          </Row>
+          <details style={{ marginTop: '0.4rem' }}>
+            <summary style={{ cursor: 'pointer', color: '#666', fontSize: '0.85rem' }}>
+              Fragments granulaires (greeting / intro / cta / outro)
+            </summary>
+            <div style={{ paddingLeft: '0.5rem', marginTop: '0.5rem' }}>
+              {(['greeting', 'intro', 'cta', 'outro'] as const).map((f) => (
+                <Row key={f} label={`${f.charAt(0).toUpperCase() + f.slice(1)} (${loc.toUpperCase()})`}>
+                  <textarea
+                    name={`${prefix}_${f}_${loc}`}
+                    defaultValue={(initial?.[f] as { [k in LocaleTab]?: string } | undefined)?.[loc] ?? ''}
+                    rows={2}
+                    style={textareaStyle}
+                  />
+                </Row>
+              ))}
+            </div>
+          </details>
         </div>
-      </details>
+      ))}
     </div>
   );
 }
