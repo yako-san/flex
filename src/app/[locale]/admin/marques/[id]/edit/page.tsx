@@ -29,7 +29,15 @@ export default async function EditMarquePage({ params }: Props) {
         <h1 style={{ fontSize: '1.75rem', margin: 0 }}>Modifier la marque</h1>
         <DeleteMarqueButton marqueId={m.id} marqueName={m.nom} hasVelos={m._count.velos > 0} />
       </div>
-      <MarqueForm initial={{ id: m.id, nom: m.nom }} />
+      <MarqueForm
+        initial={{
+          id: m.id,
+          nom: m.nom,
+          taillesDisponibles: Array.isArray(m.taillesDisponibles)
+            ? (m.taillesDisponibles as string[])
+            : [],
+        }}
+      />
     </div>
   );
 }

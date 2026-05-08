@@ -67,6 +67,20 @@ export default async function ClientsPage({ params, searchParams }: Props) {
             ↓ CSV
           </a>
           <Link
+            href={`/${locale}/admin/clients/import`}
+            style={{
+              padding: '0.55rem 0.9rem',
+              border: '1px solid #ccc',
+              color: '#444',
+              textDecoration: 'none',
+              borderRadius: 4,
+              fontSize: '0.9rem',
+              background: 'white',
+            }}
+          >
+            ↑ Import CSV
+          </Link>
+          <Link
             href={`/${locale}/admin/clients/new`}
             style={{
               padding: '0.6rem 1.2rem',

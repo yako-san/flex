@@ -26,6 +26,7 @@ const navItems = [
   { href: 'admin/pos', label: 'Commandes (POs)' },
   { href: 'admin/ventes', label: 'Ventes comptoir' },
   { href: 'admin/import', label: 'Import v1' },
+  { href: 'admin/legacy-v1', label: 'Données v1 brutes' },
   { href: 'admin/settings', label: 'Paramètres' },
   { href: 'admin/maintenance', label: 'Maintenance' },
 ];

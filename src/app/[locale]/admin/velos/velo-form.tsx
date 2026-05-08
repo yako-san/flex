@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import {
   createVeloAction,
   updateVeloAction,
@@ -9,7 +9,7 @@ import {
 import type { Velo } from '@prisma/client';
 
 type ClientOption = { id: string; prenom: string; nom: string };
-type MarqueOption = { id: string; nom: string };
+type MarqueOption = { id: string; nom: string; taillesDisponibles: string[] };
 type EquipeOption = { id: string; surnom: string };
 
 type Props = {
@@ -44,6 +44,12 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
   );
 
   const fe = state?.fieldErrors ?? {};
+
+  const [selectedMarqueId, setSelectedMarqueId] = useState<string>(
+    initial?.marqueId ?? '',
+  );
+  const taillesPourMarque =
+    marques.find((m) => m.id === selectedMarqueId)?.taillesDisponibles ?? [];
   const v = (k: keyof Velo): string =>
     initial && (initial[k] as unknown as string | number | null | undefined) != null
       ? String(initial[k])
@@ -86,11 +92,17 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
 
       <div style={rowStyle}>
         <label style={labelStyle}>Marque</label>
-        <select name="marqueId" defaultValue={initial?.marqueId ?? ''} style={inputStyle}>
+        <select
+          name="marqueId"
+          value={selectedMarqueId}
+          onChange={(e) => setSelectedMarqueId(e.target.value)}
+          style={inputStyle}
+        >
           <option value="">— aucune —</option>
           {marques.map((m) => (
             <option key={m.id} value={m.id}>
               {m.nom}
+              {m.taillesDisponibles.length > 0 ? ` (${m.taillesDisponibles.length} tailles)` : ''}
             </option>
           ))}
         </select>
@@ -107,8 +119,32 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
           <input name="couleur" defaultValue={v('couleur')} style={inputStyle} />
         </div>
         <div>
-          <label style={labelStyle}>Taille</label>
-          <input name="taille" defaultValue={v('taille')} style={inputStyle} />
+          <label style={labelStyle}>
+            Taille
+            {taillesPourMarque.length > 0 ? (
+              <span style={{ color: '#888', fontWeight: 400, marginLeft: 4 }}>
+                (suggestions de la marque)
+              </span>
+            ) : null}
+          </label>
+          {taillesPourMarque.length > 0 ? (
+            <>
+              <input
+                name="taille"
+                list="tailles-disponibles"
+                defaultValue={v('taille')}
+                style={inputStyle}
+                placeholder={taillesPourMarque.join(' / ')}
+              />
+              <datalist id="tailles-disponibles">
+                {taillesPourMarque.map((t) => (
+                  <option key={t} value={t} />
+                ))}
+              </datalist>
+            </>
+          ) : (
+            <input name="taille" defaultValue={v('taille')} style={inputStyle} />
+          )}
         </div>
       </div>
 

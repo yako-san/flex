@@ -183,6 +183,11 @@ model Marque {
   // Le `nom` ici est le slug canonique (case-insensitive). Affichage via Translation.
   nom        String @db.Citext
 
+  // Tailles cadre disponibles pour cette marque (ex ["XS","S","M","L","XL"]
+  // ou ["48","51","54","57"]). Utilisé pour proposer un dropdown au choix
+  // de la taille dans le formulaire vélo.
+  taillesDisponibles Json? @map("tailles_disponibles")
+
   legacyRawV1 Json? @map("legacy_raw_v1")
 
   createdAt DateTime  @default(now()) @map("created_at")

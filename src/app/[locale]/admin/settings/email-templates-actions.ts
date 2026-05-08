@@ -12,6 +12,10 @@ const schema = z.object({
   evalBody: z.string().max(10000).optional().nullable(),
   factureSubject: z.string().trim().max(200).optional().nullable(),
   factureBody: z.string().max(10000).optional().nullable(),
+  venteSubject: z.string().trim().max(200).optional().nullable(),
+  venteBody: z.string().max(10000).optional().nullable(),
+  smsRappelBody: z.string().max(1000).optional().nullable(),
+  smsSuiviBody: z.string().max(1000).optional().nullable(),
 });
 
 export type EmailTemplatesState = { error?: string; success?: boolean };
@@ -36,6 +40,10 @@ export async function updateEmailTemplatesAction(
     evalBody: clean(formData.get('evalBody')),
     factureSubject: clean(formData.get('factureSubject')),
     factureBody: clean(formData.get('factureBody')),
+    venteSubject: clean(formData.get('venteSubject')),
+    venteBody: clean(formData.get('venteBody')),
+    smsRappelBody: clean(formData.get('smsRappelBody')),
+    smsSuiviBody: clean(formData.get('smsSuiviBody')),
   });
   if (!parsed.success) return { error: 'Validation échouée' };
 
@@ -48,9 +56,22 @@ export async function updateEmailTemplatesAction(
   if (d.factureSubject) factureT['subject'] = d.factureSubject;
   if (d.factureBody) factureT['body'] = d.factureBody;
 
+  const venteT: Record<string, string> = {};
+  if (d.venteSubject) venteT['subject'] = d.venteSubject;
+  if (d.venteBody) venteT['body'] = d.venteBody;
+
+  const smsRappelT: Record<string, string> = {};
+  if (d.smsRappelBody) smsRappelT['body'] = d.smsRappelBody;
+
+  const smsSuiviT: Record<string, string> = {};
+  if (d.smsSuiviBody) smsSuiviT['body'] = d.smsSuiviBody;
+
   const payload: Record<string, unknown> = {};
   if (Object.keys(evalT).length > 0) payload['eval'] = evalT;
   if (Object.keys(factureT).length > 0) payload['facture'] = factureT;
+  if (Object.keys(venteT).length > 0) payload['vente'] = venteT;
+  if (Object.keys(smsRappelT).length > 0) payload['smsRappel'] = smsRappelT;
+  if (Object.keys(smsSuiviT).length > 0) payload['smsSuivi'] = smsSuiviT;
 
   await prisma.workshop.update({
     where: { id: workshop.id },

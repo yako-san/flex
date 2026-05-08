@@ -32,22 +32,31 @@ export default async function MarquesPage({ params }: Props) {
         <thead>
           <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
             <th style={th}>Nom</th>
+            <th style={th}>Tailles disponibles</th>
             <th style={{ ...th, textAlign: 'right' }}>Vélos</th>
             <th style={{ ...th, textAlign: 'right' }}></th>
           </tr>
         </thead>
         <tbody>
-          {marques.map((m) => (
-            <tr key={m.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-              <td style={td}>{m.nom}</td>
-              <td style={{ ...td, textAlign: 'right' }}>{m._count.velos}</td>
-              <td style={{ ...td, textAlign: 'right' }}>
-                <Link href={`/${locale}/admin/marques/${m.id}/edit`} style={linkBtn}>
-                  Modifier
-                </Link>
-              </td>
-            </tr>
-          ))}
+          {marques.map((m) => {
+            const tailles = Array.isArray(m.taillesDisponibles)
+              ? (m.taillesDisponibles as string[])
+              : [];
+            return (
+              <tr key={m.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                <td style={td}>{m.nom}</td>
+                <td style={{ ...td, fontSize: '0.85rem', color: tailles.length > 0 ? '#444' : '#999' }}>
+                  {tailles.length > 0 ? tailles.join(' · ') : '—'}
+                </td>
+                <td style={{ ...td, textAlign: 'right' }}>{m._count.velos}</td>
+                <td style={{ ...td, textAlign: 'right' }}>
+                  <Link href={`/${locale}/admin/marques/${m.id}/edit`} style={linkBtn}>
+                    Modifier
+                  </Link>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

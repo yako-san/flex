@@ -28,7 +28,7 @@ export default async function NewVeloPage({ params, searchParams }: Props) {
     prisma.marque.findMany({
       where: { workshopId: workshop.id, deletedAt: null },
       orderBy: { nom: 'asc' },
-      select: { id: true, nom: true },
+      select: { id: true, nom: true, taillesDisponibles: true },
     }),
     prisma.equipeMember.findMany({
       where: { workshopId: workshop.id, active: true },
@@ -48,7 +48,13 @@ export default async function NewVeloPage({ params, searchParams }: Props) {
       <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>Nouveau vélo</h1>
       <VeloForm
         clients={clients}
-        marques={marques}
+        marques={marques.map((m) => ({
+          id: m.id,
+          nom: m.nom,
+          taillesDisponibles: Array.isArray(m.taillesDisponibles)
+            ? (m.taillesDisponibles as string[])
+            : [],
+        }))}
         equipe={equipe}
         defaultClientId={sp.clientId ?? null}
       />

@@ -10,6 +10,10 @@ import {
   DEFAULT_EVAL_BODY,
   DEFAULT_FACTURE_SUBJECT,
   DEFAULT_FACTURE_BODY,
+  DEFAULT_VENTE_SUBJECT,
+  DEFAULT_VENTE_BODY,
+  DEFAULT_SMS_RAPPEL,
+  DEFAULT_SMS_SUIVI,
   TEMPLATE_PLACEHOLDERS,
 } from '@/lib/email/render-template';
 
@@ -19,6 +23,10 @@ type Props = {
     evalBody?: string;
     factureSubject?: string;
     factureBody?: string;
+    venteSubject?: string;
+    venteBody?: string;
+    smsRappelBody?: string;
+    smsSuiviBody?: string;
   };
 };
 
@@ -48,8 +56,8 @@ export function EmailTemplatesForm({ initial }: Props) {
         ))}
       </p>
 
-      <h3 style={h3}>Évaluation BDT</h3>
-      <Row label="Sujet" placeholder={DEFAULT_EVAL_SUBJECT}>
+      <h3 style={h3}>Évaluation BDT (courriel)</h3>
+      <Row label="Sujet">
         <input
           name="evalSubject"
           defaultValue={initial.evalSubject ?? ''}
@@ -57,18 +65,18 @@ export function EmailTemplatesForm({ initial }: Props) {
           style={inputStyle}
         />
       </Row>
-      <Row label="Corps (HTML accepté)" placeholder="(par défaut)">
+      <Row label="Corps (HTML accepté)">
         <textarea
           name="evalBody"
           defaultValue={initial.evalBody ?? ''}
           placeholder={DEFAULT_EVAL_BODY}
           rows={10}
-          style={{ ...inputStyle, fontFamily: 'monospace', fontSize: '0.85rem', resize: 'vertical' }}
+          style={textareaStyle}
         />
       </Row>
 
-      <h3 style={h3}>Facture</h3>
-      <Row label="Sujet" placeholder={DEFAULT_FACTURE_SUBJECT}>
+      <h3 style={h3}>Facture BDT (courriel)</h3>
+      <Row label="Sujet">
         <input
           name="factureSubject"
           defaultValue={initial.factureSubject ?? ''}
@@ -76,13 +84,58 @@ export function EmailTemplatesForm({ initial }: Props) {
           style={inputStyle}
         />
       </Row>
-      <Row label="Corps (HTML accepté)" placeholder="(par défaut)">
+      <Row label="Corps (HTML accepté)">
         <textarea
           name="factureBody"
           defaultValue={initial.factureBody ?? ''}
           placeholder={DEFAULT_FACTURE_BODY}
           rows={10}
-          style={{ ...inputStyle, fontFamily: 'monospace', fontSize: '0.85rem', resize: 'vertical' }}
+          style={textareaStyle}
+        />
+      </Row>
+
+      <h3 style={h3}>Vente directe (courriel)</h3>
+      <Row label="Sujet">
+        <input
+          name="venteSubject"
+          defaultValue={initial.venteSubject ?? ''}
+          placeholder={DEFAULT_VENTE_SUBJECT}
+          style={inputStyle}
+        />
+      </Row>
+      <Row label="Corps (HTML accepté)">
+        <textarea
+          name="venteBody"
+          defaultValue={initial.venteBody ?? ''}
+          placeholder={DEFAULT_VENTE_BODY}
+          rows={8}
+          style={textareaStyle}
+        />
+      </Row>
+
+      <h3 style={h3}>SMS rappel (vélo prêt à récupérer)</h3>
+      <p style={{ color: '#888', fontSize: '0.8rem', marginTop: 0 }}>
+        Texte court, pas de HTML. Provider SMS pas encore branché — sera utilisé
+        dès intégration Twilio.
+      </p>
+      <Row label="Corps SMS">
+        <textarea
+          name="smsRappelBody"
+          defaultValue={initial.smsRappelBody ?? ''}
+          placeholder={DEFAULT_SMS_RAPPEL}
+          rows={3}
+          style={textareaStyle}
+        />
+      </Row>
+
+      <h3 style={h3}>SMS suivi (après livraison)</h3>
+      <Row label="Corps SMS">
+        <textarea
+          name="smsSuiviBody"
+          defaultValue={initial.smsSuiviBody ?? ''}
+          placeholder={DEFAULT_SMS_SUIVI}
+          rows={3}
+          style={textareaStyle}
         />
       </Row>
 
@@ -116,14 +169,7 @@ export function EmailTemplatesForm({ initial }: Props) {
   );
 }
 
-function Row({
-  label,
-  children,
-}: {
-  label: string;
-  placeholder?: string;
-  children: React.ReactNode;
-}) {
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: '1rem' }}>
       <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#444', marginBottom: '0.3rem' }}>
@@ -142,4 +188,10 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid #ccc',
   borderRadius: 4,
   background: 'white',
+};
+const textareaStyle: React.CSSProperties = {
+  ...inputStyle,
+  fontFamily: 'monospace',
+  fontSize: '0.85rem',
+  resize: 'vertical',
 };

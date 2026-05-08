@@ -20,6 +20,10 @@ export default async function EmailTemplatesPage({ params }: Props) {
     evalBody: t.eval?.body ?? '',
     factureSubject: t.facture?.subject ?? '',
     factureBody: t.facture?.body ?? '',
+    venteSubject: t.vente?.subject ?? '',
+    venteBody: t.vente?.body ?? '',
+    smsRappelBody: t.smsRappel?.body ?? '',
+    smsSuiviBody: t.smsSuivi?.body ?? '',
   };
 
   return (
@@ -30,9 +34,10 @@ export default async function EmailTemplatesPage({ params }: Props) {
       >
         ← Paramètres
       </Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Templates de courriels</h1>
+      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Templates de courriels et SMS</h1>
       <p style={{ color: '#666', marginTop: 0, marginBottom: '1.5rem' }}>
-        Personnalise le sujet et le corps des courriels d&apos;évaluation et de facture.
+        Personnalise le sujet et le corps des courriels (évaluation, facture, vente)
+        et des SMS (rappel, suivi).
       </p>
       <EmailTemplatesForm initial={initial} />
     </div>

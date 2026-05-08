@@ -15,6 +15,9 @@ export function renderTemplate(
 export type EmailTemplates = {
   eval?: { subject?: string; body?: string };
   facture?: { subject?: string; body?: string };
+  vente?: { subject?: string; body?: string };
+  smsRappel?: { body?: string };
+  smsSuivi?: { body?: string };
 };
 
 export function getEmailTemplates(workshopJson: unknown): EmailTemplates {
@@ -31,6 +34,7 @@ export const TEMPLATE_PLACEHOLDERS = [
   '{{factureNumero}}',
   '{{grandTotal}}',
   '{{modePaiement}}',
+  '{{veloLabel}}',
 ] as const;
 
 export const DEFAULT_EVAL_SUBJECT = 'Évaluation pour votre vélo — BDT {{bdcShortId}}';
@@ -58,3 +62,19 @@ export const DEFAULT_FACTURE_BODY = `<p>Bonjour {{clientPrenom}},</p>
   <strong>Total TTC :</strong> {{grandTotal}} $ ({{modePaiement}})
 </p>
 <p>Merci pour votre confiance, et bonne route !</p>`;
+
+export const DEFAULT_VENTE_SUBJECT = 'Reçu vente comptoir {{factureNumero}}';
+export const DEFAULT_VENTE_BODY = `<p>Bonjour {{clientPrenom}},</p>
+<p>
+  Voici votre reçu pour la vente <strong>{{factureNumero}}</strong> en pièce jointe.
+</p>
+<p>
+  <strong>Total TTC :</strong> {{grandTotal}} $ ({{modePaiement}})
+</p>
+<p>Merci de votre achat !</p>`;
+
+// SMS — gabarits courts, sans HTML
+export const DEFAULT_SMS_RAPPEL =
+  'Salut {{clientPrenom}}, ton vélo {{veloLabel}} est prêt à récupérer chez {{workshopName}}. Au plaisir !';
+export const DEFAULT_SMS_SUIVI =
+  'Salut {{clientPrenom}}, comment va ton vélo {{veloLabel}} depuis ta visite chez {{workshopName}} ? N\'hésite pas si tu as des questions.';

@@ -4,11 +4,25 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { auth } from '@clerk/nextjs/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { generateId } from '@/lib/ids/generate-id';
 
-const schema = z.object({ nom: z.string().trim().min(1, 'Nom requis') });
+const schema = z.object({
+  nom: z.string().trim().min(1, 'Nom requis'),
+  taillesDisponibles: z.string().optional().nullable(),
+});
+
+// Convertit "XS, S, M" → ["XS","S","M"]. Trim + dédup + drop empty.
+function parseTailles(input: string | null | undefined): string[] {
+  if (!input) return [];
+  const items = input
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return Array.from(new Set(items));
+}
 
 export type MarqueFormState = { error?: string; fieldErrors?: Record<string, string> };
 
@@ -31,7 +45,10 @@ export async function createMarqueAction(
   const workshop = await getActiveWorkshop();
   if (!workshop) return { error: 'Aucun workshop actif' };
 
-  const parsed = schema.safeParse({ nom: formData.get('nom') });
+  const parsed = schema.safeParse({
+    nom: formData.get('nom'),
+    taillesDisponibles: formData.get('taillesDisponibles'),
+  });
   if (!parsed.success) return { error: 'Validation', fieldErrors: fe(parsed) };
 
   const existing = await prisma.marque.findFirst({
@@ -39,11 +56,14 @@ export async function createMarqueAction(
   });
   if (existing) return { error: `Marque "${parsed.data.nom}" déjà existante` };
 
+  const tailles = parseTailles(parsed.data.taillesDisponibles);
   await prisma.marque.create({
     data: {
       id: generateId('marque'),
       workshopId: workshop.id,
       nom: parsed.data.nom,
+      taillesDisponibles:
+        tailles.length > 0 ? (tailles as Prisma.InputJsonValue) : Prisma.JsonNull,
     },
   });
   revalidatePath('/[locale]/admin/marques', 'page');
@@ -60,12 +80,20 @@ export async function updateMarqueAction(
   const workshop = await getActiveWorkshop();
   if (!workshop) return { error: 'Aucun workshop actif' };
 
-  const parsed = schema.safeParse({ nom: formData.get('nom') });
+  const parsed = schema.safeParse({
+    nom: formData.get('nom'),
+    taillesDisponibles: formData.get('taillesDisponibles'),
+  });
   if (!parsed.success) return { error: 'Validation', fieldErrors: fe(parsed) };
 
+  const tailles = parseTailles(parsed.data.taillesDisponibles);
   await prisma.marque.update({
     where: { id: marqueId },
-    data: { nom: parsed.data.nom },
+    data: {
+      nom: parsed.data.nom,
+      taillesDisponibles:
+        tailles.length > 0 ? (tailles as Prisma.InputJsonValue) : Prisma.JsonNull,
+    },
   });
   revalidatePath('/[locale]/admin/marques', 'page');
   redirect('/fr-CA/admin/marques');
