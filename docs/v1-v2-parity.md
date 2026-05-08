@@ -109,31 +109,34 @@ Légende :
 
 **Action** : ajouter validation côté server action `deleteVeloAction` pour empêcher soft-delete si BDT non terminé. Existe peut-être déjà — à vérifier.
 
-### 1.4 Bdc — DRIFT MAJEUR sur evalStatus
+### 1.4 Bdc
 
 | V1 | V2 | Statut |
 |---|---|---|
 | `id` | `Bdc.id` | ✅ |
 | `dateIn, dateOut` | `Bdc.createdAt, deletedAt` | 🔁 |
 | `veloDesc, clientNom` | (relations) | ✅ |
-| `noteClient` (col V GAP, éval) | (porté dans `Velo.noteClientEval`) | ⚠️ **mapping à vérifier** : V1 stocke sur BDC, V2 sur Velo. Si plusieurs BDT pour le même vélo, on perd la note historique. |
-| `noteClientFacture` (col W GAP) | (porté dans `Velo.noteClientFacture`) | ⚠️ idem |
+| `noteClient` (col V GAP, éval) | `Bdc.noteClientEval` | ✅ migré Velo→Bdc en Sprint 1 (4 BDT actifs copiés) |
+| `noteClientFacture` (col W GAP) | `Bdc.noteClientFacture` | ✅ migré Velo→Bdc en Sprint 1 |
 | `checkEval, checkOk, checkBds, checkOut` | `Bdc.cbEvalEnvoye, cbEval, cbBonSortie, cbArchiver` | ✅ |
-| **`evalStatus: '' \| APPROUVE \| REDUX \| ATTENTE \| REFUSE`** | **`BdcEvalStatus: EN_ATTENTE \| APPROUVE \| REDUX \| REFUSE`** | ❌ **DRIFT** : (1) V2 ne représente pas la valeur vide `''` (= "indécis"), (2) V2 utilise `EN_ATTENTE` quand V1 utilise `ATTENTE`. **Action** : ajouter une valeur `INDECIS` à l'enum V2 OU passer `evalStatus` en nullable et traiter `null` comme indécis. Renommer `EN_ATTENTE` → `ATTENTE` pour conformité. |
+| `evalStatus: '' \| APPROUVE \| REDUX \| ATTENTE \| REFUSE` | `BdcEvalStatus: INDECIS \| ATTENTE \| APPROUVE \| REDUX \| REFUSE` | ✅ aligné Sprint 1. Back-compat `'' && checkOk → APPROUVE` codée dans `mapEvalStatus`. |
 | `archiveStatus` (lu depuis ARCHIVES col C) | `Bdc.archiveStatus: BdcArchiveStatus` | ✅ |
 | `noteVelo` (copié de INVENTAIRE) | `Velo.noteVelo` | ✅ relation |
 | `evalMecano, mecaMecano, ctrlMecano` | `Velo.*MecanoId` | ✅ relation |
 | `noteInterne` (col W ARCHIVES) | `Bdc.notes` | ✅ |
 | `remiseSvc: { type, value }` | `Bdc.remiseSvcType + remiseSvcValue` | ✅ |
 | `remisePce: { type, value }` | `Bdc.remisePceType + remisePceValue` | ✅ |
-| **`avance: { montant, mode, note }`** (v1.0.15+) | ❌ **MANQUE** | ❌ **À AJOUTER** : champs `Bdc.avanceMontant + avanceMode + avanceNote` (ou JSON). Mode = `comptant \| interac \| cartes`. Affecte le "reste à payer" affiché dans la facture (mais pas le calcul fiscal). Acompte versé par le client lors de l'éval. |
+| `avance: { montant, mode, note }` (v1.0.15+) | `Bdc.avanceMontant + avanceMode + avanceNote` | ✅ ajouté Sprint 1 (3 colonnes Postgres + enum `AvanceMode = COMPTANT \| INTERAC \| CARTES`). UI à brancher en Sprint 2. |
 | `items[]` | `Bdc.items: BdcItem[]` | ✅ |
 | `totalServices, totalPieces` | `Bdc.totalServices, totalPieces` | ✅ |
 
 **Actions BDC** :
-- 🔴 [P1] Aligner `BdcEvalStatus` enum sur V1 (renommer `EN_ATTENTE` → `ATTENTE`, ajouter `INDECIS` pour `''`)
-- 🔴 [P1] Ajouter champ `avance` (montant + mode + note)
-- 🟡 [P2] Décider si `noteClient` doit être par-BDC ou par-Velo (V1 par-BDC, V2 par-Velo). Si par-Velo, on perd le contexte multi-BDT.
+- ✅ [P1 Sprint 1] BdcEvalStatus aligné
+- ✅ [P1 Sprint 1] avance ajoutée
+- ✅ [P1 Sprint 1] noteClient migré Velo→Bdc
+- 🟡 [Sprint 2] Brancher UI avance dans le formulaire BDT
+- 🟡 [Sprint 2] Lire `noteClientEval/Facture` depuis Bdc (pas Velo) dans PDFs/courriels
+- 🟢 [fin Sprint 2] Droper `Velo.noteClientEval/Facture` (deprecated transition complète)
 
 ### 1.5 BdcItem — gestion forfaits / pièces
 
@@ -142,21 +145,22 @@ Légende :
 | `BDCServiceItem.serviceId` | `BdcItem.serviceId` | ✅ |
 | `BDCServiceItem.nom` | `BdcItem.labelSnapshot` | ✅ |
 | `BDCServiceItem.fait: boolean` | `BdcItem.tasks[] (BdcItemTask)` ou tâche inline | 🔁 V1 = checkbox unique sur l'item ; V2 = sous-tâches (`BdcItemTask`). Pour services simples (pas forfait), V2 pourrait avoir besoin d'un champ `done: boolean` direct. |
-| `BDCServiceItem.status: string` | (manque) | ❌ **MANQUE** : statut texte libre du service (ex "À refaire", "ok"). Petit, à ajouter en `BdcItem.statusText`. |
+| `BDCServiceItem.status: string` | `BdcItem.statusText` | ✅ ajouté Sprint 1 |
 | `BDCServiceItem.prix` | `BdcItem.unitPriceSnapshot` | ✅ |
-| **`BDCServiceItem.subStates: boolean[]`** (v1.0.7+) | `BdcItem.tasks[]` (BdcItemTask: TODO/DONE/SKIPPED) | ✅ V2 plus riche que V1. Mapping import : pour chaque `subStates[i] === true` → tâche correspondante en `DONE`. **À implémenter dans transformBdcs**. |
+| `BDCServiceItem.subStates: boolean[]` (v1.0.7+) | `BdcItem.tasks[]` (BdcItemTask: TODO/DONE/SKIPPED) | ✅ V2 plus riche que V1. Mapping import : pour chaque `subStates[i] === true` → tâche correspondante en `DONE`. À vérifier dans `transformBdcs`. |
 | `BDCPieceItem.nom` | `BdcItem.labelSnapshot` | ✅ |
 | `BDCPieceItem.prix` | `BdcItem.unitPriceSnapshot` | ✅ |
-| **`BDCPieceItem.cmd: '...' \| '—' \| '√' \| '$' \| '#' \| '@'`** | ❌ **MANQUE** | 🔴 **À AJOUTER** : enum `BdcPieceCmdStatus` (`LISTEE \| ESTIMEE \| A_COMMANDER \| EN_COMMANDE \| RECU_PARTIEL \| RECUE`) sur `BdcItem` quand `kind=PIECE`. Critique pour le workflow d'achat/réception. |
+| `BDCPieceItem.cmd: '...' \| '—' \| '√' \| '$' \| '#' \| '@'` | `BdcItem.cmdStatus: BdcPieceCmdStatus` | ✅ ajouté Sprint 1 (`LISTEE \| ESTIMEE \| A_COMMANDER \| EN_COMMANDE \| RECU_PARTIEL \| RECUE`) + CHECK constraint `cmdStatus IS NULL OR kind='PIECE'`. UI à brancher Sprint 2. |
 | `BDCPieceItem.qte` | `BdcItem.qty` | ✅ |
 | `BDCPieceItem.sousTotal` | `BdcItem.total` | ✅ |
-| `BDCPieceItem.flag` | (manque) | ⚠️ duplicate de `cmd` ? À vérifier. |
-| **`BDCPieceItem.cmdNote: string`** (col W) | ❌ **MANQUE** | 🔴 **À AJOUTER** : `BdcItem.cmdNote: String?` — note libre de commande fournisseur (visible dans /admin/pos pour le commerçant). |
+| `BDCPieceItem.flag` | (abandonné) | ➖ V1 (col V) — drapeau visuel marginal en pratique, **décision** : ne pas porter (cf v1-reference §a). |
+| `BDCPieceItem.cmdNote: string` (col W) | `BdcItem.cmdNote` | ✅ ajouté Sprint 1 |
 
 **Actions BdcItem** :
-- 🔴 [P1] Ajouter enum + champ `cmdStatus` pour items pièces
-- 🔴 [P1] Ajouter `cmdNote` pour items pièces
-- 🟡 [P2] Ajouter `statusText` pour items services (petit)
+- ✅ [P1 Sprint 1] cmdStatus enum + CHECK constraint
+- ✅ [P1 Sprint 1] cmdNote ajouté
+- ✅ [P1 Sprint 1] statusText ajouté
+- 🟡 [Sprint 2] Brancher UI : dropdown cmdStatus + textarea cmdNote sur items pièces
 - 🟢 [P3] Vérifier que l'import gère bien `subStates` → `BdcItemTask.status='DONE'`
 
 ### 1.6 Piece (catalogue) — DRIFTS notables
@@ -360,23 +364,21 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 | `pieceId` dupliqués (P00004 ×3, etc.) | À vérifier dans `transform/transform-pieces.ts` — déduplication par `(sku, nom)` ou nouveau ULID |
 | Courriels Markdown résiduels | ✅ `stripMarkdownLink` appliqué |
 | Dates Excel serial mixtes | ✅ `parseExcelSerial` + `parseV1Date` appliqués |
-| `equipe.active` parser tolérant | ⚠️ à vérifier dans `transform/transform-equipe.ts` |
+| `equipe.active` parser tolérant | ✅ Sprint 1 — `parseActive` enrichi (oui/non/yes/no/y/n/1/0/vrai/faux/true/false) |
 | Marques pollution legacy | ✅ V2 a une table propre |
 
 ---
 
-## 5. Préférences user transversales — à porter dans CLAUDE.md
+## 5. Préférences user transversales — portées dans CLAUDE.md
 
 (D'après section 15 du `v1-reference.md`)
 
-- ✅ Communiquer en français — déjà dans CLAUDE.md
-- ❌ **Pas de validation émotionnelle** — à ajouter au CLAUDE.md
-- ❌ **Valider la cause avant la solution** — à ajouter
-- ❌ **Bump auto APP_VERSION** quand l'utilisateur mentionne un numéro de version — à ajouter (pas de mécanisme APP_VERSION en V2 pour l'instant)
-- ❌ **Push auto sur main accepté** (commit + push direct sans demander) — à ajouter / clarifier
-- ❌ **Préparer blob de reprise détaillé** avant compaction — à ajouter
-
-**Action immédiate** : enrichir `CLAUDE.md`.
+- ✅ Communiquer en français
+- ✅ Pas de validation émotionnelle
+- ✅ Valider la cause avant la solution
+- ✅ Bump auto APP_VERSION quand l'utilisateur mentionne un numéro de version (mécanisme à mettre en place quand pertinent en V2)
+- ✅ Push auto sur la branche de travail accepté (sauf opérations destructives)
+- ✅ Préparer blob de reprise détaillé avant compaction
 
 ---
 
@@ -392,20 +394,23 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 6. ✅ **`parseActive`** enrichi (oui/non/yes/no/y/n/1/0/vrai/faux/true/false).
 7. ✅ **`src/lib/velo/status-labels.ts`** — labels FR/EN + couleurs V1 pour VeloStatus + BdcEvalStatus. Appliqué sur listes vélos + BDT + dashboard + détail vélo.
 
-### Sprint 2 — fonctions manquantes importantes (P2, ~12h)
+### Sprint 2 — fonctions manquantes importantes (P2, ~15h)
 
 5. **`/api/po/adhoc-receive` + merge-adhoc** — workflow PO ADHOC. [4h]
 6. **`/api/factures/log-status`** — marquer facture comme PAYÉE + mode paiement. [2h]
-7. **`Bdc.suivi-courriel`** — courriel post-livraison (template SMS_SUIVI déjà prêt). [1h]
-8. **Photos clients + vélo** (Vercel Blob). [3h]
-9. **`/api/admin/snapshot`** — backup DB. [2h]
+7. **Couche Gmail draft hybride** — brouillon Gmail par défaut + bouton secondaire « Envoyer maintenant » (envoi direct via SMTP/Resend déjà en place). API Gmail `gmail.compose` scope. Toggle UI sur factures + évaluations. [3h]
+8. **`Bdc.suivi-courriel`** — courriel post-livraison (template SMS_SUIVI déjà prêt). [1h]
+9. **Photos clients + vélo** (Vercel Blob). [3h]
+10. **`/api/admin/snapshot`** — backup DB. [2h]
+11. **Brancher UI nouvelles colonnes Sprint 1** : champs avance dans BDT, dropdown cmdStatus + cmdNote sur items pièces, lecture `noteClientEval/Facture` depuis Bdc dans PDFs/courriels. [inclus dans 5–9 ci-dessus]
+12. **Fin Sprint 2** : droper `Velo.noteClientEval/Facture` (deprecated) une fois toutes les routes/PDFs branchés sur Bdc. [migration ALTER DROP COLUMN, 15 min]
 
 ### Sprint 3 — finitions (P3, ~6h)
 
-10. **Champs Piece manquants** (`flag, groupe, notes, surplus, skuUrl`). [2h]
-11. **`Service.categoriePrio`**. [30 min]
-12. **PoItem.notes / categorie**. [30 min]
-13. **`/api/catalogue/export/labels`** — étiquettes imprimables avec code-barre. [3h]
+13. **Champs Piece manquants** (`groupe, notes`) — `flag, surplus, skuUrl` abandonnés (cf décision v1-reference §a/d). [1h]
+14. **`Service.categoriePrio`**. [30 min]
+15. **PoItem.notes / categorie**. [30 min]
+16. **`/api/catalogue/export/labels`** — étiquettes imprimables avec code-barre. [3h]
 
 ### En attente
 
@@ -422,7 +427,7 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 - **Postgres au lieu de Sheets** — perte du caractère "éditable manuellement" mais gain en intégrité
 - **Clerk au lieu de NextAuth** — multi-tenant + organizations
 - **next-intl FR + EN** au lieu de FR seul
-- **Email envoi auto** au lieu de Gmail draft (changement de UX — à valider avec yako-san)
+- **Email hybride** : brouillon Gmail par défaut (pattern V1) + bouton secondaire « Envoyer maintenant » optionnel (envoi direct SMTP/Resend) — à implémenter Sprint 2. Décision V1 : préserver le filet « relire avant d'envoyer » pour factures/évaluations, autoriser l'envoi direct pour les communications routinières.
 - **Sortie de Square** — réservations natives
 - **shadcn/ui prévu** au lieu d'inline styles (pas encore appliqué — en attente Design System)
 

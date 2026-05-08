@@ -393,6 +393,8 @@ describe('transformBdcs', () => {
       ['ATTENTE', 'ATTENTE'],
       ['REFUSE', 'REFUSE'],
       ['', 'INDECIS'], // raw vide v1 → INDECIS (= pas encore décidé)
+      ['EN_ATTENTE', 'ATTENTE'], // back-compat ancien V2 (renommé en ATTENTE)
+      ['EN ATTENTE', 'ATTENTE'], // variante v1 avec espace
     ])('"%s" → %s', (input, expected) => {
       const r = transformBdcs({ actifs: [baseBdt(input)], archives: [] }, ctx, buildLookups());
       expect(r.bdcs[0]?.evalStatus).toBe(expected);
