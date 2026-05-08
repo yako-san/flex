@@ -88,6 +88,9 @@ export async function persistImportV1(
         timezone: result.workshop.timezone,
         defaultLocale: result.workshop.defaultLocale,
         activeLocales: result.workshop.activeLocales as Prisma.InputJsonValue,
+        emailTemplates: result.workshop.emailTemplates
+          ? (result.workshop.emailTemplates as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
         legacyV1Extras: toJson(result.workshop.legacyV1Extras),
       },
     });
@@ -98,7 +101,15 @@ export async function persistImportV1(
     // 2. Entités à FK simple (workshopId)
     await chunkedCreateMany(result.marques, (data) =>
       tx.marque.createMany({
-        data: data.map((m) => ({ ...m, legacyRawV1: toJson(m.legacyRawV1) })),
+        data: data.map((m) => ({
+          id: m.id,
+          workshopId: m.workshopId,
+          nom: m.nom,
+          taillesDisponibles: m.taillesDisponibles
+            ? (m.taillesDisponibles as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+          legacyRawV1: toJson(m.legacyRawV1),
+        })),
       }),
     );
     await chunkedCreateMany(result.equipe, (data) =>

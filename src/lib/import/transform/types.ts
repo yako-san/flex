@@ -41,6 +41,9 @@ export type V2MarqueDraft = {
   id: string;
   workshopId: string;
   nom: string; // slug canonique (case-insensitive en DB via Citext)
+  // Tailles disponibles pour cette marque (schema 1.1.0+ : copié de dump.tailles
+  // — liste globale workshop répliquée par marque, à ajuster manuellement).
+  taillesDisponibles?: readonly string[] | undefined;
   legacyRawV1: Record<string, unknown> | null;
 };
 
@@ -276,8 +279,11 @@ export type V2WorkshopDraft = {
   timezone: string;
   defaultLocale: string;
   activeLocales: string[];
+  // Templates courriels/SMS structurés (transformés depuis dump.templates v1.1.0+).
+  emailTemplates?: Record<string, unknown> | undefined;
   // Snapshot intégral du dump v1 (counters, facturesJournal, schemaVersion,
-  // exportedAt, appVersion, ventesArchives raw, etc.) pour traçabilité totale.
+  // exportedAt, appVersion, ventesArchives raw, parametres, etc.) pour
+  // traçabilité totale.
   legacyV1Extras: Record<string, unknown> | null;
 };
 

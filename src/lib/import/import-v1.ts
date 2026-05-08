@@ -20,6 +20,7 @@ import {
 } from './transform/transform-ventes';
 import { transformPos, type V1Po } from './transform/transform-pos';
 import { createPhantomVelosForOrphanedBdcs } from './transform/create-phantom-velos';
+import { transformTemplates } from './transform/transform-templates';
 import type {
   ImportContext,
   SkippedItem,
@@ -46,6 +47,10 @@ import type {
 
 // =============================================================================
 // V1 Dump format (correspond au shape exposé par /api/admin/export-v1 v1)
+//
+// Schema versions :
+//   1.0.0 — initial (toutes clés sauf templates/tailles/parametres)
+//   1.1.0 — ajout des 3 clés ci-dessous (présentes dans dump >= 2026-05-08)
 // =============================================================================
 export type V1Dump = {
   schemaVersion: string;
@@ -69,6 +74,10 @@ export type V1Dump = {
   catalogue: { pieces: V1CataloguePiece[]; services: V1CatalogueService[] };
   pos: V1Po[];
   equipe: V1EquipeMember[];
+  // Schema 1.1.0+ (optionnel pour back-compat dumps 1.0.0)
+  templates?: Record<string, string>;
+  tailles?: readonly string[];
+  parametres?: Array<{ row: number; rawCols: (string | number | boolean)[] }>;
 };
 
 export type ImportV1Options = {
@@ -150,8 +159,10 @@ export function importV1(dump: V1Dump, options: ImportV1Options = {}): ImportV1R
     timezone: dump.workshop.timezone,
     defaultLocale,
     activeLocales,
+    // Schema 1.1.0+ : transformer dump.templates → emailTemplates structuré
+    emailTemplates: transformTemplates(dump.templates),
     // Snapshot intégral du dump v1 pour traçabilité totale (counters,
-    // facturesJournal, schemaVersion, ventesArchives raw, etc.)
+    // facturesJournal, schemaVersion, ventesArchives raw, parametres, etc.)
     legacyV1Extras: dump as unknown as Record<string, unknown>,
   };
 
@@ -186,6 +197,20 @@ export function importV1(dump: V1Dump, options: ImportV1Options = {}): ImportV1R
   // 1. Marques (pas de FK)
   const marquesResult = transformMarques(dump.marques, ctx);
   skipped.push(...marquesResult.skipped);
+
+  // Schema 1.1.0+ : si dump.tailles présent, le réplique sur chaque marque.
+  // C'est une liste globale workshop dans la v1, mais V2 stocke par marque
+  // (override manuel possible ensuite). Préserve la cohérence d'affichage.
+  if (Array.isArray(dump.tailles) && dump.tailles.length > 0) {
+    const tailles = dump.tailles
+      .filter((t): t is string => typeof t === 'string' && t.trim() !== '')
+      .map((t) => t.trim());
+    if (tailles.length > 0) {
+      for (const m of marquesResult.records) {
+        m.taillesDisponibles = tailles;
+      }
+    }
+  }
 
   // 2. Équipe (pas de FK)
   const equipeResult = transformEquipe(dump.equipe, ctx);
