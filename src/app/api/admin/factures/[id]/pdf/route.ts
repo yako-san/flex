@@ -82,8 +82,9 @@ export async function GET(
           telephone: client.telephone,
           indicatif: client.indicatif,
           courriel: client.courriel,
+          lang: client.lang,
         }
-      : { prenom: 'Walk-in', nom: '', telephone: null, indicatif: null, courriel: null },
+      : { prenom: 'Walk-in', nom: '', telephone: null, indicatif: null, courriel: null, lang: null },
     velo,
     factureNumero: facture.factureNumero,
     date: facture.date,

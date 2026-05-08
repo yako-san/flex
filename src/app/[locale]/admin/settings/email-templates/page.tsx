@@ -15,19 +15,12 @@ export default async function EmailTemplatesPage({ params }: Props) {
   if (!workshop) return <p>Aucun workshop actif.</p>;
 
   const t = getEmailTemplates(workshop.emailTemplates);
-  const initial = {
-    evalSubject: t.eval?.subject ?? '',
-    evalBody: t.eval?.body ?? '',
-    factureSubject: t.facture?.subject ?? '',
-    factureBody: t.facture?.body ?? '',
-    venteSubject: t.vente?.subject ?? '',
-    venteBody: t.vente?.body ?? '',
-    smsRappelBody: t.smsRappel?.body ?? '',
-    smsSuiviBody: t.smsSuivi?.body ?? '',
-  };
+  // Extrait les clés v1 non-mappées (préservées par transform-templates pour audit)
+  const unmapped =
+    (t as { _unmapped?: Record<string, string> })._unmapped ?? {};
 
   return (
-    <div style={{ maxWidth: 800 }}>
+    <div style={{ maxWidth: 880 }}>
       <Link
         href={`/${locale}/admin/settings`}
         style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
@@ -36,10 +29,12 @@ export default async function EmailTemplatesPage({ params }: Props) {
       </Link>
       <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Templates de courriels et SMS</h1>
       <p style={{ color: '#666', marginTop: 0, marginBottom: '1.5rem' }}>
-        Personnalise le sujet et le corps des courriels (évaluation, facture, vente)
-        et des SMS (rappel, suivi).
+        Personnalise séparément FR et EN. Le client reçoit la version
+        correspondant à <code>Client.lang</code>. Les fragments granulaires
+        (greeting / intro / cta / outro) viennent du V1 — utilisés si tu ne
+        remplis pas le champ « Corps » direct.
       </p>
-      <EmailTemplatesForm initial={initial} />
+      <EmailTemplatesForm initial={t} unmapped={unmapped} />
     </div>
   );
 }

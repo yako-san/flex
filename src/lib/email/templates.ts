@@ -1,16 +1,23 @@
 // Templates HTML simples pour les courriels client. Restent inline-safe pour
 // les clients mail (Gmail, Outlook, Apple Mail) qui ne supportent pas tous
 // les CSS modernes. Les bodies par défaut peuvent être surchargés par
-// workshop.emailTemplates (Paramètres → Templates courriel).
+// workshop.emailTemplates (Paramètres → Templates courriel) — multi-locale
+// FR + EN, sélection automatique selon Client.lang.
 
 import { escapeHtml } from '@/lib/pdf-html/templates/styles';
 import {
   renderTemplate,
-  DEFAULT_EVAL_BODY,
-  DEFAULT_EVAL_SUBJECT,
-  DEFAULT_FACTURE_BODY,
-  DEFAULT_FACTURE_SUBJECT,
+  pickLocale,
+  DEFAULT_EVAL_BODY_FR,
+  DEFAULT_EVAL_BODY_EN,
+  DEFAULT_EVAL_SUBJECT_FR,
+  DEFAULT_EVAL_SUBJECT_EN,
+  DEFAULT_FACTURE_BODY_FR,
+  DEFAULT_FACTURE_BODY_EN,
+  DEFAULT_FACTURE_SUBJECT_FR,
+  DEFAULT_FACTURE_SUBJECT_EN,
   type EmailTemplates,
+  type Locale,
 } from './render-template';
 
 export type WorkshopBranding = {
@@ -55,16 +62,28 @@ function customMessageBlock(msg: string | null | undefined): string {
   return `<p style="background: #fafafa; padding: 12px; border-left: 3px solid #1a1a1a; white-space: pre-wrap;">${E(msg)}</p>`;
 }
 
+// Sélection locale : Client.lang en V2 = 'fr-CA' / 'en-CA' (BCP 47),
+// V1 = 'FR' / 'EN'. On normalise vers 'fr' / 'en'.
+function normalizeLocale(raw: string | null | undefined): Locale {
+  if (!raw) return 'fr';
+  const lower = raw.toLowerCase();
+  if (lower.startsWith('en')) return 'en';
+  return 'fr';
+}
+
 export function evalEmailTemplate(opts: {
   workshop: WorkshopBranding;
   templates?: EmailTemplates;
+  clientLang?: string | null;
   clientPrenom: string;
   clientNom?: string | null;
   bdcShortId: string;
   totalEstime: number;
   customMessage?: string | null;
 }): string {
-  const tpl = opts.templates?.eval?.body || DEFAULT_EVAL_BODY;
+  const locale = normalizeLocale(opts.clientLang);
+  const fallback = locale === 'en' ? DEFAULT_EVAL_BODY_EN : DEFAULT_EVAL_BODY_FR;
+  const tpl = pickLocale(opts.templates?.eval?.body, locale) || fallback;
   const rendered = renderTemplate(tpl, {
     clientPrenom: opts.clientPrenom,
     clientNom: opts.clientNom ?? '',
@@ -80,10 +99,13 @@ export function evalEmailTemplate(opts: {
 
 export function evalEmailSubject(opts: {
   templates?: EmailTemplates;
+  clientLang?: string | null;
   bdcShortId: string;
   workshopName: string;
 }): string {
-  const tpl = opts.templates?.eval?.subject || DEFAULT_EVAL_SUBJECT;
+  const locale = normalizeLocale(opts.clientLang);
+  const fallback = locale === 'en' ? DEFAULT_EVAL_SUBJECT_EN : DEFAULT_EVAL_SUBJECT_FR;
+  const tpl = pickLocale(opts.templates?.eval?.subject, locale) || fallback;
   return renderTemplate(tpl, {
     bdcShortId: opts.bdcShortId,
     workshopName: opts.workshopName,
@@ -93,6 +115,7 @@ export function evalEmailSubject(opts: {
 export function factureEmailTemplate(opts: {
   workshop: WorkshopBranding;
   templates?: EmailTemplates;
+  clientLang?: string | null;
   clientPrenom: string;
   clientNom?: string | null;
   factureNumero: string;
@@ -100,7 +123,9 @@ export function factureEmailTemplate(opts: {
   modePaiement?: string | null;
   customMessage?: string | null;
 }): string {
-  const tpl = opts.templates?.facture?.body || DEFAULT_FACTURE_BODY;
+  const locale = normalizeLocale(opts.clientLang);
+  const fallback = locale === 'en' ? DEFAULT_FACTURE_BODY_EN : DEFAULT_FACTURE_BODY_FR;
+  const tpl = pickLocale(opts.templates?.facture?.body, locale) || fallback;
   const rendered = renderTemplate(tpl, {
     clientPrenom: opts.clientPrenom,
     clientNom: opts.clientNom ?? '',
@@ -117,10 +142,13 @@ export function factureEmailTemplate(opts: {
 
 export function factureEmailSubject(opts: {
   templates?: EmailTemplates;
+  clientLang?: string | null;
   factureNumero: string;
   workshopName: string;
 }): string {
-  const tpl = opts.templates?.facture?.subject || DEFAULT_FACTURE_SUBJECT;
+  const locale = normalizeLocale(opts.clientLang);
+  const fallback = locale === 'en' ? DEFAULT_FACTURE_SUBJECT_EN : DEFAULT_FACTURE_SUBJECT_FR;
+  const tpl = pickLocale(opts.templates?.facture?.subject, locale) || fallback;
   return renderTemplate(tpl, {
     factureNumero: opts.factureNumero,
     workshopName: opts.workshopName,

@@ -76,6 +76,7 @@ export async function sendEvalEmailAction(
   const f = workshop.fiscalEntity as Record<string, string> | null;
   const totalEstime = ctx.totalServices + ctx.totalPieces - ctx.remises;
   const templates = getEmailTemplates(workshop.emailTemplates);
+  const clientLang = ctx.client.lang ?? null;
   const bodyHtml = evalEmailTemplate({
     workshop: {
       name: workshop.name,
@@ -84,6 +85,7 @@ export async function sendEvalEmailAction(
       signatureText: f?.footerText ?? null,
     },
     templates,
+    clientLang,
     clientPrenom: ctx.client.prenom,
     clientNom: ctx.client.nom,
     bdcShortId: bdcId.slice(-4),
@@ -92,6 +94,7 @@ export async function sendEvalEmailAction(
   });
   const subject = evalEmailSubject({
     templates,
+    clientLang,
     bdcShortId: bdcId.slice(-4),
     workshopName: workshop.name,
   });
@@ -192,6 +195,7 @@ export async function sendFactureEmailAction(
       telephone: client.telephone,
       indicatif: client.indicatif,
       courriel: client.courriel,
+      lang: client.lang,
     },
     velo,
     factureNumero: facture.factureNumero,
@@ -211,6 +215,7 @@ export async function sendFactureEmailAction(
   const pdfBuffer = await htmlToPdf(html);
 
   const templates = getEmailTemplates(workshop.emailTemplates);
+  const clientLang = client.lang ?? null;
   const bodyHtml = factureEmailTemplate({
     workshop: {
       name: workshop.name,
@@ -219,6 +224,7 @@ export async function sendFactureEmailAction(
       signatureText: fiscalEntity?.['footerText'] ?? null,
     },
     templates,
+    clientLang,
     clientPrenom: client.prenom,
     clientNom: client.nom,
     factureNumero: facture.factureNumero,
@@ -228,6 +234,7 @@ export async function sendFactureEmailAction(
   });
   const subject = factureEmailSubject({
     templates,
+    clientLang,
     factureNumero: facture.factureNumero,
     workshopName: workshop.name,
   });

@@ -56,8 +56,9 @@ export async function loadBdcPdfContext(
         telephone: bdc.velo.client.telephone,
         indicatif: bdc.velo.client.indicatif,
         courriel: bdc.velo.client.courriel,
+        lang: bdc.velo.client.lang,
       }
-    : { prenom: '?', nom: '', telephone: null, indicatif: null, courriel: null };
+    : { prenom: '?', nom: '', telephone: null, indicatif: null, courriel: null, lang: null };
 
   const velo: VeloInfo = {
     veloNumero: bdc.velo.veloNumero,

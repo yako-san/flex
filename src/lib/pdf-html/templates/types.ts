@@ -26,6 +26,8 @@ export type ClientInfo = {
   telephone: string | null;
   indicatif: string | null;
   courriel: string | null;
+  // BCP 47 (ex 'fr-CA', 'en-CA'). Détermine la locale des courriels client.
+  lang: string | null;
 };
 
 export type VeloInfo = {

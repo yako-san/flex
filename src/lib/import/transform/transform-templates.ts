@@ -1,98 +1,153 @@
 // Mapping V1 dump.templates (Record<string, string> flat) → V2
-// Workshop.emailTemplates (structuré { eval, facture, vente, smsRappel,
-// smsSuivi } × { subject, body }).
+// Workshop.emailTemplates structuré multi-locale FR + EN.
 //
-// V1 utilise des clés flat type `evaluation_fr`, `facture_subject_fr`, etc.
-// Comme on n'a pas la liste exacte des clés observées (section 4 de
-// v1-reference.md non accessible côté V2 sans repo), on fait un mapping
-// best-effort par regex sur les patterns les plus courants. Tout ce qui
-// n'est pas reconnu est préservé brut sous `_unmapped` pour audit.
+// V1 keys observées (tag 1.1.0) :
+//
+//   eval_subject_fr / _en, eval_message_fr / _en
+//   facture_subject_fr / _en, facture_message_fr / _en
+//   vente_subject_fr / _en, vente_message_fr / _en
+//   courriel_suivi_subject_fr / _en, courriel_suivi_fr / _en
+//   sms_rappel_fr / _en
+//   sms_suivi_fr / _en
+//   signature_yako, signature_cf
+//
+// On fait un mapping EXPLICITE clé par clé pour éviter les ambiguïtés.
 
-export type V2EmailTemplates = {
-  eval?: { subject?: string; body?: string };
-  facture?: { subject?: string; body?: string };
-  vente?: { subject?: string; body?: string };
-  smsRappel?: { body?: string };
-  smsSuivi?: { body?: string };
-  _unmapped?: Record<string, string>;
-};
+import type {
+  EmailTemplates,
+  Locale,
+  LocaleString,
+} from '@/lib/email/render-template';
 
-// Détecte le type de template à partir d'une clé v1.
-// Retourne { kind, field, locale? } ou null si non reconnu.
-function classify(rawKey: string): {
-  kind: 'eval' | 'facture' | 'vente' | 'smsRappel' | 'smsSuivi';
-  field: 'subject' | 'body';
-  locale?: 'fr' | 'en';
-} | null {
-  // On garde les séparateurs pour pouvoir détecter le suffixe locale
-  // (ex. "evaluation_body_fr" → "fr" en fin de chaîne).
-  const k = rawKey.toLowerCase();
-  const compact = k.replace(/[\s_-]+/g, '');
-
-  let kind: 'eval' | 'facture' | 'vente' | 'smsRappel' | 'smsSuivi' | null = null;
-  if (/eval(uation)?/.test(compact) && !/sms/.test(compact)) kind = 'eval';
-  else if (/facturebdt|facturebdc|facturationbdt/.test(compact)) kind = 'facture';
-  else if (/facturevente|facturecomptoir/.test(compact)) kind = 'vente';
-  else if (/facture/.test(compact) && !/vente|comptoir/.test(compact)) kind = 'facture';
-  else if (/smsrappel|rappelsms/.test(compact)) kind = 'smsRappel';
-  else if (/smssuivi|suivisms/.test(compact)) kind = 'smsSuivi';
-  else if (/courrielsuivi|suivicourriel|suivi/.test(compact)) kind = 'smsSuivi';
-  else if (/rappel/.test(compact)) kind = 'smsRappel';
-  if (!kind) return null;
-
-  const isSubject = /subject|sujet|object|titre/.test(compact);
-  const field: 'subject' | 'body' = isSubject ? 'subject' : 'body';
-
-  // Locale détectée si suffixe `_fr` / `_en` / mot isolé `fr`/`en`.
-  let locale: 'fr' | 'en' | undefined;
-  if (/(^|[\s_-])fr([\s_-]|$)|french|francais/.test(k)) locale = 'fr';
-  else if (/(^|[\s_-])en([\s_-]|$)|english|anglais/.test(k)) locale = 'en';
-
-  if (locale === undefined) return { kind, field };
-  return { kind, field, locale };
+// Helpers pour assigner un champ localisé en construisant l'objet au fur
+// et à mesure (sans muter directement, plus sûr face aux undefined).
+function setLocalized(
+  target: LocaleString | undefined,
+  locale: Locale,
+  value: string,
+): LocaleString {
+  return { ...(target ?? {}), [locale]: value };
 }
 
-// V2 ne stocke pas la locale dans emailTemplates (un seul template, censé
-// être déjà localisé selon `Client.lang`). Pour le mapping initial v1→v2,
-// on prend la version FR par défaut, puis on stocke EN dans `_unmapped`
-// pour audit (l'utilisateur fera la localisation manuelle dans une v2
-// future qui supportera les 2 langues).
+// Mapping clé v1 → cible v2 (kind + field + locale).
+type Target =
+  | { kind: 'eval' | 'facture' | 'vente' | 'courrielSuivi'; field: 'subject' | 'body' | 'greeting' | 'intro' | 'cta' | 'outro'; locale: Locale }
+  | { kind: 'smsRappel' | 'smsSuivi'; field: 'body'; locale: Locale }
+  | { kind: 'outroGlobal'; locale: Locale }
+  | { kind: 'signature'; signatureKey: 'yako' | 'cf' };
+
+const KEY_MAP: Record<string, Target> = {
+  // Évaluation
+  eval_subject_fr: { kind: 'eval', field: 'subject', locale: 'fr' },
+  eval_subject_en: { kind: 'eval', field: 'subject', locale: 'en' },
+  eval_message_fr: { kind: 'eval', field: 'body', locale: 'fr' },
+  eval_message_en: { kind: 'eval', field: 'body', locale: 'en' },
+
+  // Facture BDT
+  facture_subject_fr: { kind: 'facture', field: 'subject', locale: 'fr' },
+  facture_subject_en: { kind: 'facture', field: 'subject', locale: 'en' },
+  facture_message_fr: { kind: 'facture', field: 'body', locale: 'fr' },
+  facture_message_en: { kind: 'facture', field: 'body', locale: 'en' },
+
+  // Vente directe
+  vente_subject_fr: { kind: 'vente', field: 'subject', locale: 'fr' },
+  vente_subject_en: { kind: 'vente', field: 'subject', locale: 'en' },
+  vente_message_fr: { kind: 'vente', field: 'body', locale: 'fr' },
+  vente_message_en: { kind: 'vente', field: 'body', locale: 'en' },
+
+  // Courriel de suivi (post-livraison)
+  courriel_suivi_subject_fr: { kind: 'courrielSuivi', field: 'subject', locale: 'fr' },
+  courriel_suivi_subject_en: { kind: 'courrielSuivi', field: 'subject', locale: 'en' },
+  courriel_suivi_fr: { kind: 'courrielSuivi', field: 'body', locale: 'fr' },
+  courriel_suivi_en: { kind: 'courrielSuivi', field: 'body', locale: 'en' },
+
+  // SMS rappel
+  sms_rappel_fr: { kind: 'smsRappel', field: 'body', locale: 'fr' },
+  sms_rappel_en: { kind: 'smsRappel', field: 'body', locale: 'en' },
+
+  // SMS suivi
+  sms_suivi_fr: { kind: 'smsSuivi', field: 'body', locale: 'fr' },
+  sms_suivi_en: { kind: 'smsSuivi', field: 'body', locale: 'en' },
+
+  // Signatures par lead V1
+  signature_yako: { kind: 'signature', signatureKey: 'yako' },
+  signature_cf:   { kind: 'signature', signatureKey: 'cf' },
+
+  // Fragments granulaires V1 (greeting/intro/cta/outro)
+  eval_greeting_fr: { kind: 'eval', field: 'greeting', locale: 'fr' },
+  eval_greeting_en: { kind: 'eval', field: 'greeting', locale: 'en' },
+  eval_intro_fr:    { kind: 'eval', field: 'intro', locale: 'fr' },
+  eval_intro_en:    { kind: 'eval', field: 'intro', locale: 'en' },
+  eval_cta_fr:      { kind: 'eval', field: 'cta', locale: 'fr' },
+  eval_cta_en:      { kind: 'eval', field: 'cta', locale: 'en' },
+  eval_outro_fr:    { kind: 'eval', field: 'outro', locale: 'fr' },
+  eval_outro_en:    { kind: 'eval', field: 'outro', locale: 'en' },
+
+  facture_greeting_fr: { kind: 'facture', field: 'greeting', locale: 'fr' },
+  facture_greeting_en: { kind: 'facture', field: 'greeting', locale: 'en' },
+  facture_intro_fr:    { kind: 'facture', field: 'intro', locale: 'fr' },
+  facture_intro_en:    { kind: 'facture', field: 'intro', locale: 'en' },
+  facture_cta_fr:      { kind: 'facture', field: 'cta', locale: 'fr' },
+  facture_cta_en:      { kind: 'facture', field: 'cta', locale: 'en' },
+  facture_outro_fr:    { kind: 'facture', field: 'outro', locale: 'fr' },
+  facture_outro_en:    { kind: 'facture', field: 'outro', locale: 'en' },
+
+  // Outro global V1 (partagé entre eval/facture/vente)
+  outro_fr: { kind: 'outroGlobal', locale: 'fr' },
+  outro_en: { kind: 'outroGlobal', locale: 'en' },
+};
+
 export function transformTemplates(
   raw: Record<string, string> | undefined,
-): V2EmailTemplates | undefined {
+): EmailTemplates | undefined {
   if (!raw || typeof raw !== 'object') return undefined;
 
-  const result: V2EmailTemplates = {};
+  const result: EmailTemplates = {};
   const unmapped: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(raw)) {
     if (typeof value !== 'string' || value.trim() === '') continue;
-    const cls = classify(key);
-    if (!cls) {
+
+    const target = KEY_MAP[key.trim()];
+    if (!target) {
       unmapped[key] = value;
       continue;
     }
 
-    // SMS n'a pas de subject (ignoré côté V2 — texte court direct)
-    if ((cls.kind === 'smsRappel' || cls.kind === 'smsSuivi') && cls.field === 'subject') {
-      unmapped[key] = value;
+    if (target.kind === 'signature') {
+      result.signatures = { ...(result.signatures ?? {}), [target.signatureKey]: value };
       continue;
     }
 
-    // Locale EN : préserver dans _unmapped pour audit (V2 mono-locale pour l'instant)
-    if (cls.locale === 'en') {
-      unmapped[key] = value;
+    if (target.kind === 'outroGlobal') {
+      result.outro = setLocalized(result.outro, target.locale, value);
       continue;
     }
 
-    // Locale FR ou non spécifiée : assigner
-    if (cls.kind === 'smsRappel' || cls.kind === 'smsSuivi') {
-      result[cls.kind] = { ...result[cls.kind], body: value };
-    } else {
-      result[cls.kind] = { ...result[cls.kind], [cls.field]: value };
+    if (target.kind === 'smsRappel' || target.kind === 'smsSuivi') {
+      const existing = result[target.kind] ?? {};
+      result[target.kind] = {
+        ...existing,
+        body: setLocalized(existing.body, target.locale, value),
+      };
+      continue;
     }
+
+    // eval / facture / vente / courrielSuivi (subject, body, greeting,
+    // intro, cta, outro spécifique)
+    const existing = result[target.kind] ?? {};
+    result[target.kind] = {
+      ...existing,
+      [target.field]: setLocalized(
+        existing[target.field as keyof typeof existing] as LocaleString | undefined,
+        target.locale,
+        value,
+      ),
+    };
   }
 
-  if (Object.keys(unmapped).length > 0) result._unmapped = unmapped;
+  if (Object.keys(unmapped).length > 0) {
+    (result as EmailTemplates & { _unmapped?: Record<string, string> })._unmapped = unmapped;
+  }
   return Object.keys(result).length > 0 ? result : undefined;
 }
