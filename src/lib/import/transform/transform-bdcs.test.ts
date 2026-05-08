@@ -390,12 +390,18 @@ describe('transformBdcs', () => {
     it.each([
       ['APPROUVE', 'APPROUVE'],
       ['REDUX', 'REDUX'],
-      ['ATTENTE', 'EN_ATTENTE'],
+      ['ATTENTE', 'ATTENTE'],
       ['REFUSE', 'REFUSE'],
-      ['', 'EN_ATTENTE'], // default
+      ['', 'INDECIS'], // raw vide v1 → INDECIS (= pas encore décidé)
     ])('"%s" → %s', (input, expected) => {
       const r = transformBdcs({ actifs: [baseBdt(input)], archives: [] }, ctx, buildLookups());
       expect(r.bdcs[0]?.evalStatus).toBe(expected);
+    });
+
+    it('back-compat : raw vide && checkOk=true → APPROUVE (BDT pré-v7.0.x)', () => {
+      const bdt = { ...baseBdt(''), checkOk: true };
+      const r = transformBdcs({ actifs: [bdt], archives: [] }, ctx, buildLookups());
+      expect(r.bdcs[0]?.evalStatus).toBe('APPROUVE');
     });
   });
 

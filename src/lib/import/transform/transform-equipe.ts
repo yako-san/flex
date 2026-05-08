@@ -18,16 +18,21 @@ export type V1EquipeMember = {
   notes: string;
 };
 
-const TRUE_STRINGS = new Set(['true', 'vrai']);
-const FALSE_STRINGS = new Set(['false', 'faux']);
+// Parser tolérant FR/EN aligné sur V1 (`equipe.active`).
+// Variantes acceptées : oui/non, vrai/faux, true/false, 1/0, yes/no, y/n.
+// Fallback : actif si ambigu ou vide (préserve l'historique).
+const TRUE_STRINGS = new Set(['true', 'vrai', 'oui', '1', 'yes', 'y']);
+const FALSE_STRINGS = new Set(['false', 'faux', 'non', '0', 'no', 'n']);
 
-function parseActive(raw: boolean | string | undefined): boolean {
+function parseActive(raw: boolean | string | number | undefined | null): boolean {
   if (raw === undefined || raw === null) return true;
   if (typeof raw === 'boolean') return raw;
-  const lower = raw.trim().toLowerCase();
+  if (typeof raw === 'number') return raw !== 0;
+  const lower = String(raw).trim().toLowerCase();
+  if (lower === '') return true;
   if (TRUE_STRINGS.has(lower)) return true;
   if (FALSE_STRINGS.has(lower)) return false;
-  return true; // default si non reconnu
+  return true; // fallback : actif si ambigu (préserve l'historique)
 }
 
 export function transformEquipe(

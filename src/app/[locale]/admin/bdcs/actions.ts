@@ -44,7 +44,7 @@ async function recalcBdtTotals(tx: Tx, bdcId: string): Promise<void> {
 
 const createBdtSchema = z.object({
   veloId: z.string().trim().min(1),
-  evalStatus: z.enum(['EN_ATTENTE', 'APPROUVE', 'REDUX', 'REFUSE']),
+  evalStatus: z.enum(['INDECIS', 'ATTENTE', 'APPROUVE', 'REDUX', 'REFUSE']),
   archiveStatus: z.enum([
     'ACTIF',
     'ARCHIVE_FACTURE',
@@ -70,7 +70,7 @@ export async function createBdtAction(
 
   const parsed = createBdtSchema.safeParse({
     veloId: formData.get('veloId') ?? '',
-    evalStatus: formData.get('evalStatus') ?? 'EN_ATTENTE',
+    evalStatus: formData.get('evalStatus') ?? 'INDECIS',
     archiveStatus: formData.get('archiveStatus') ?? 'ACTIF',
     notes: formData.get('notes') || null,
   });
@@ -318,7 +318,7 @@ export async function removeBdtItemAction(
 
 const updateWorkflowSchema = z.object({
   bdcId: z.string().trim().min(1),
-  evalStatus: z.enum(['EN_ATTENTE', 'APPROUVE', 'REDUX', 'REFUSE']),
+  evalStatus: z.enum(['INDECIS', 'ATTENTE', 'APPROUVE', 'REDUX', 'REFUSE']),
   archiveStatus: z.enum([
     'ACTIF',
     'ARCHIVE_FACTURE',
@@ -350,7 +350,7 @@ export async function updateBdtWorkflowAction(
 
   const parsed = updateWorkflowSchema.safeParse({
     bdcId: formData.get('bdcId') ?? '',
-    evalStatus: formData.get('evalStatus') ?? 'EN_ATTENTE',
+    evalStatus: formData.get('evalStatus') ?? 'INDECIS',
     archiveStatus: formData.get('archiveStatus') ?? 'ACTIF',
     cbEvalEnvoye: formData.get('cbEvalEnvoye') === 'on',
     cbEval: formData.get('cbEval') === 'on',

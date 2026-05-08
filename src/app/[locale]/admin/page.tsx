@@ -125,10 +125,10 @@ export default async function AdminDashboardPage({ params }: Props) {
 
       <h2 style={h2}>BDT actifs par statut éval</h2>
       <div style={cardsGrid}>
-        {(['EN_ATTENTE', 'APPROUVE', 'REDUX', 'REFUSE'] as const).map((s) => (
+        {(['INDECIS', 'ATTENTE', 'APPROUVE', 'REDUX', 'REFUSE'] as const).map((s) => (
           <Stat
             key={s}
-            label={s.replace('_', ' ')}
+            label={s}
             value={(evalCounts[s] ?? 0).toLocaleString('fr-CA')}
           />
         ))}

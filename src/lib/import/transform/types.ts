@@ -132,7 +132,7 @@ export type V2VeloDraft = {
   legacyRawV1: Record<string, unknown> | null;
 };
 
-export type V2BdcEvalStatus = 'EN_ATTENTE' | 'APPROUVE' | 'REDUX' | 'REFUSE';
+export type V2BdcEvalStatus = 'INDECIS' | 'ATTENTE' | 'APPROUVE' | 'REDUX' | 'REFUSE';
 
 export type V2BdcArchiveStatus =
   | 'ACTIF'

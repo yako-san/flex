@@ -154,7 +154,7 @@ describe('persistImportV1', () => {
         id: 'b1',
         workshopId: 'workshop_test',
         veloId: 'v1',
-        evalStatus: 'EN_ATTENTE',
+        evalStatus: 'INDECIS',
         archiveStatus: 'ACTIF',
         cbEvalEnvoye: false,
         cbEval: false,

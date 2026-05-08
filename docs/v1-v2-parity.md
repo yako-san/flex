@@ -8,8 +8,20 @@ inline depuis la session v1.
 
 **Date audit** : 2026-05-08, par session v2 (Opus 4.7 / 1M context).
 
-**Statut** : audit initial — la v2 connaît maintenant la cible. À mettre
-à jour à chaque correction/porting batch.
+**Dernière mise à jour** : 2026-05-08, post-Sprint 1.
+
+**Statut** : Sprint 1 livré (drifts P1 corrigés). Sprint 2/3 en attente.
+
+## Changelog
+
+- **2026-05-08 / Sprint 1** : `BdcEvalStatus` aligné (`INDECIS`/`ATTENTE`
+  ajoutés, `EN_ATTENTE` renommé `ATTENTE`, back-compat `'' && checkOk →
+  APPROUVE`) ; `Bdc.avance{Montant,Mode,Note}` + enum `AvanceMode` ;
+  `BdcItem.cmdStatus` (enum `BdcPieceCmdStatus` 6 valeurs) + `cmdNote` +
+  `statusText` ; `Bdc.noteClientEval/Facture` (migration Velo→Bdc avec
+  copie pour BDT actifs uniquement) ; parser `parseActive` enrichi
+  (oui/non/yes/no/y/n/1/0) ; `src/lib/velo/status-labels.ts` : labels
+  FR/EN + couleurs V1 pour VeloStatus et BdcEvalStatus.
 
 ---
 
@@ -370,15 +382,15 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 
 ## 6. Plan d'action priorisé
 
-### Sprint 1 — corrections de drift (P1, ~6h)
+### Sprint 1 — corrections de drift (P1, ~8h) — ✅ LIVRÉ 2026-05-08
 
-1. **Aligner `BdcEvalStatus`** — ajouter `INDECIS` ou nullable, renommer `EN_ATTENTE` → `ATTENTE`. Migration + script de back-compat (`'' && checkOk → APPROUVE`). [2h]
-
-2. **Ajouter `Bdc.avance`** — colonnes `avanceMontant Decimal? / avanceMode enum / avanceNote String?`. Migration + UI dans BDT. [2h]
-
-3. **Ajouter `BdcItem.cmdStatus` (pour pièces)** — enum `LISTEE/ESTIMEE/A_COMMANDER/EN_COMMANDE/RECU_PARTIEL/RECUE` + `BdcItem.cmdNote`. Migration + UI dans BDT. [2h]
-
-4. **Mettre à jour CLAUDE.md** — préférences transversales (pas de validation émotionnelle, etc.). [10 min]
+1. ✅ **Aligner `BdcEvalStatus`** — `INDECIS` ajouté, `EN_ATTENTE` renommé `ATTENTE`. Back-compat `'' && checkOk → APPROUVE` codée dans `mapEvalStatus(raw, checkOk)`. Tests à jour (transform-bdcs.test).
+2. ✅ **`Bdc.avance{Montant,Mode,Note}`** — 3 colonnes Postgres + enum `AvanceMode (COMPTANT|INTERAC|CARTES)`. UI BDT à brancher en Sprint 2.
+3. ✅ **`BdcItem.cmdStatus` + `cmdNote` + `statusText`** — enum `BdcPieceCmdStatus (LISTEE|ESTIMEE|A_COMMANDER|EN_COMMANDE|RECU_PARTIEL|RECUE)`. Constraint CHECK `cmdStatus IS NULL OR kind='PIECE'`. UI à brancher en Sprint 2.
+4. ✅ **Notes client `Velo → Bdc`** — `Bdc.noteClientEval/Facture` ajoutés. Migration SQL copie depuis Velo pour BDT actifs uniquement. Velo.note_client_* gardé deprecated le temps de la transition.
+5. ✅ **CLAUDE.md** — préférences transversales (pas de validation émotionnelle, valider cause avant solution, push auto, blob de reprise, bump APP_VERSION).
+6. ✅ **`parseActive`** enrichi (oui/non/yes/no/y/n/1/0/vrai/faux/true/false).
+7. ✅ **`src/lib/velo/status-labels.ts`** — labels FR/EN + couleurs V1 pour VeloStatus + BdcEvalStatus. Appliqué sur listes vélos + BDT + dashboard + détail vélo.
 
 ### Sprint 2 — fonctions manquantes importantes (P2, ~12h)
 

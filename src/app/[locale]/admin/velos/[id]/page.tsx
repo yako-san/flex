@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { DeleteVeloButton } from './delete-button';
+import { bdcEvalStatusLabel, veloStatusLabel } from '@/lib/velo/status-labels';
 
 export const dynamic = 'force-dynamic';
 
@@ -117,7 +118,7 @@ export default async function VeloDetailPage({ params }: Props) {
       <Row label="Couleur">{velo.couleur ?? '—'}</Row>
       <Row label="Taille">{velo.taille ?? '—'}</Row>
       <Row label="N° série">{velo.numeroSerie ?? '—'}</Row>
-      <Row label="Status">{velo.status}</Row>
+      <Row label="Status">{veloStatusLabel(velo.status)}</Row>
 
       <h2 style={{ ...h2Style, marginTop: '2rem' }}>Mécaniciens assignés</h2>
       <Row label="Évaluation">{velo.evalMecano?.surnom ?? '—'}</Row>
@@ -175,7 +176,7 @@ export default async function VeloDetailPage({ params }: Props) {
                       voir →
                     </Link>
                   </td>
-                  <td style={tdStyle}>{b.evalStatus}</td>
+                  <td style={tdStyle}>{bdcEvalStatusLabel(b.evalStatus)}</td>
                   <td style={{ ...tdStyle, fontSize: '0.85rem' }}>{b.archiveStatus}</td>
                   <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '0.85rem' }}>
                     {facture ? (

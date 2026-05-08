@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { SearchBar } from '../_components/search-bar';
+import { bdcEvalStatusLabel } from '@/lib/velo/status-labels';
 
 export const dynamic = 'force-dynamic';
 
@@ -125,7 +126,7 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                 {[b.velo.marque?.nom, b.velo.modele, b.velo.couleur].filter(Boolean).join(', ') ||
                   '—'}
               </td>
-              <td style={tdStyle}>{b.evalStatus}</td>
+              <td style={tdStyle}>{bdcEvalStatusLabel(b.evalStatus)}</td>
               <td style={tdStyle}>
                 <ArchiveBadge status={b.archiveStatus} />
               </td>

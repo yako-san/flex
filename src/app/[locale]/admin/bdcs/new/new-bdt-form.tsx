@@ -36,10 +36,11 @@ export function NewBdtForm({ velos, defaultVeloId }: Props) {
       <div style={twoColStyle}>
         <div>
           <label style={labelStyle}>Statut éval initial</label>
-          <select name="evalStatus" defaultValue="EN_ATTENTE" style={inputStyle}>
-            <option value="EN_ATTENTE">En attente</option>
+          <select name="evalStatus" defaultValue="INDECIS" style={inputStyle}>
+            <option value="INDECIS">Indécis (par défaut)</option>
+            <option value="ATTENTE">En attente</option>
             <option value="APPROUVE">Approuvé</option>
-            <option value="REDUX">Redux</option>
+            <option value="REDUX">Redux (partiel)</option>
             <option value="REFUSE">Refusé</option>
           </select>
         </div>

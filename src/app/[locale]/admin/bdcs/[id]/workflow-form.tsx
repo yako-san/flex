@@ -43,9 +43,10 @@ export function WorkflowForm({ bdc }: Props) {
         <div>
           <label style={labelStyle}>Statut éval</label>
           <select name="evalStatus" defaultValue={bdc.evalStatus} style={inputStyle}>
-            <option value="EN_ATTENTE">En attente</option>
+            <option value="INDECIS">Indécis</option>
+            <option value="ATTENTE">En attente</option>
             <option value="APPROUVE">Approuvé</option>
-            <option value="REDUX">Redux</option>
+            <option value="REDUX">Redux (partiel)</option>
             <option value="REFUSE">Refusé</option>
           </select>
         </div>

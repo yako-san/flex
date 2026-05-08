@@ -1,9 +1,10 @@
 import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
-import { Prisma } from '@prisma/client';
+import { Prisma, type VeloStatus } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { SearchBar } from '../_components/search-bar';
+import { veloStatusColors, veloStatusLabel } from '@/lib/velo/status-labels';
 
 export const dynamic = 'force-dynamic';
 
@@ -131,21 +132,8 @@ export default async function VelosPage({ params, searchParams }: Props) {
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const colorMap: Record<string, { bg: string; fg: string }> = {
-    RV: { bg: '#e3f2fd', fg: '#1565c0' },
-    RECU: { bg: '#fff3e0', fg: '#e65100' },
-    EN_ATTENTE: { bg: '#fff9c4', fg: '#f57f17' },
-    EVAL: { bg: '#f3e5f5', fg: '#6a1b9a' },
-    APPROUVE: { bg: '#e8f5e9', fg: '#2e7d32' },
-    ON_BENCH: { bg: '#fff8e1', fg: '#ef6c00' },
-    CTRL_QLTE: { bg: '#e0f7fa', fg: '#00838f' },
-    FINI: { bg: '#e8f5e9', fg: '#1b5e20' },
-    LIVRE: { bg: '#e8eaf6', fg: '#283593' },
-    FACTURER: { bg: '#fce4ec', fg: '#ad1457' },
-    FACTURE: { bg: '#eeeeee', fg: '#424242' },
-  };
-  const c = colorMap[status] ?? { bg: '#f5f5f5', fg: '#666' };
+function StatusBadge({ status }: { status: VeloStatus }) {
+  const c = veloStatusColors(status);
   return (
     <span
       style={{
@@ -157,7 +145,7 @@ function StatusBadge({ status }: { status: string }) {
         fontWeight: 500,
       }}
     >
-      {status}
+      {veloStatusLabel(status)}
     </span>
   );
 }

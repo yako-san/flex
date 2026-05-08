@@ -460,7 +460,8 @@ model Velo {
 // =============================================================================
 
 enum BdcEvalStatus {
-  EN_ATTENTE
+  INDECIS // évaluation pas encore décidée par le client (équivalent v1 '' vide)
+  ATTENTE // attente d'une décision client (v1 "ATTENTE")
   APPROUVE
   REDUX // approuvé en réduit (partiel)
   REFUSE
@@ -487,12 +488,20 @@ enum RemiseType {
   @@map("remise_type")
 }
 
+enum AvanceMode {
+  COMPTANT
+  INTERAC
+  CARTES
+
+  @@map("avance_mode")
+}
+
 model Bdc {
   id         String @id // bdc_<ulid>
   workshopId String @map("workshop_id")
   veloId     String @map("velo_id")
 
-  evalStatus    BdcEvalStatus    @default(EN_ATTENTE) @map("eval_status")
+  evalStatus    BdcEvalStatus    @default(INDECIS) @map("eval_status")
   archiveStatus BdcArchiveStatus @default(ACTIF) @map("archive_status")
 
   // Workflow v1 : 4 checkboxes + 1 enum eval_status (cascade UI gérée côté app).
@@ -511,11 +520,20 @@ model Bdc {
   remisePceType  RemiseType? @map("remise_pce_type")
   remisePceValue Decimal?    @map("remise_pce_value") @db.Decimal(12, 2)
 
+  // Avance / acompte versé par le client lors de l'évaluation (v1.0.15+).
+  // N'affecte pas le calcul des taxes — sert à afficher le « reste à payer »
+  // sur le PDF facture. Les 3 colonnes sont écrites/lues ensemble.
+  avanceMontant Decimal?    @map("avance_montant") @db.Decimal(10, 2)
+  avanceMode    AvanceMode? @map("avance_mode")
+  avanceNote    String?     @map("avance_note")
+
   // Totaux cachés (recalculés sur write des items). Sources de vérité = items.
   totalServices Decimal @default(0) @map("total_services") @db.Decimal(12, 2)
   totalPieces   Decimal @default(0) @map("total_pieces") @db.Decimal(12, 2)
 
-  notes String?
+  notes             String?
+  noteClientEval    String? @map("note_client_eval") // visible PDF/courriel éval (v1 col V GAP)
+  noteClientFacture String? @map("note_client_facture") // visible PDF/courriel facture (v1 col W GAP)
 
   // Snapshot brut de la ligne v1 source (note_client/note_facture, items raw, etc.)
   legacyRawV1 Json? @map("legacy_raw_v1")
@@ -546,6 +564,25 @@ enum BdcItemKind {
   @@map("bdc_item_kind")
 }
 
+// Statut de la commande fournisseur sur un item kind=PIECE.
+// Mapping V1 (col R PCE_CHK : '...' / '—' / '√' / '$' / '#' / '@') :
+//   '...' (LISTEE)        : pièce listée (pas encore décidée)
+//   '—'   (ESTIMEE)       : pièce estimée (incluse dans éval)
+//   '√'   (A_COMMANDER)   : à commander auprès du fournisseur
+//   '$'   (EN_COMMANDE)   : commande envoyée fournisseur
+//   '#'   (RECU_PARTIEL)  : réception partielle
+//   '@'   (RECUE)         : pièce reçue, prête à être posée
+enum BdcPieceCmdStatus {
+  LISTEE
+  ESTIMEE
+  A_COMMANDER
+  EN_COMMANDE
+  RECU_PARTIEL
+  RECUE
+
+  @@map("bdc_piece_cmd_status")
+}
+
 model BdcItem {
   id         String      @id // bdci_<ulid>
   workshopId String      @map("workshop_id") // dénormalisé pour query rapide tenant-scope
@@ -564,6 +601,15 @@ model BdcItem {
   taxableSnapshot   Boolean @map("taxable_snapshot")
   qty               Decimal @default(1) @db.Decimal(10, 3)
   total             Decimal @db.Decimal(12, 2) // qty * unitPriceSnapshot après remises de ligne
+
+  // Spécifique kind=PIECE : workflow commande/réception fournisseur.
+  // Null si kind ∈ {SERVICE, FORFAIT}. Constraint CHECK ajoutée par migration.
+  cmdStatus BdcPieceCmdStatus? @map("cmd_status")
+  cmdNote   String?            @map("cmd_note") // note libre de commande fournisseur (v1 col W ITEM)
+
+  // Spécifique kind=SERVICE : statut texte libre du service (ex. "À refaire", "ok").
+  // Pour les services simples non-forfait. Les forfaits utilisent BdcItemTask.
+  statusText String? @map("status_text")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")

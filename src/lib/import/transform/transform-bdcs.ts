@@ -86,10 +86,12 @@ const EVAL_STATUS_MAP: Record<string, V2BdcEvalStatus> = {
   APPROUVE: 'APPROUVE',
   APPROUVÉ: 'APPROUVE',
   REDUX: 'REDUX',
-  ATTENTE: 'EN_ATTENTE',
-  EN_ATTENTE: 'EN_ATTENTE',
+  ATTENTE: 'ATTENTE',
+  EN_ATTENTE: 'ATTENTE', // back-compat ancien V2 (renommé en ATTENTE conforme V1)
+  'EN ATTENTE': 'ATTENTE',
   REFUSE: 'REFUSE',
   REFUSÉ: 'REFUSE',
+  INDECIS: 'INDECIS',
 };
 
 const ARCHIVE_STATUS_MAP: Record<string, V2BdcArchiveStatus> = {
@@ -108,9 +110,15 @@ const ARCHIVE_STATUS_MAP: Record<string, V2BdcArchiveStatus> = {
   ARCHIVE: 'ARCHIVE_LEGACY',
 };
 
-function mapEvalStatus(raw: string): V2BdcEvalStatus {
+// Back-compat V1 → V2 :
+//   raw='' && checkOk=true → APPROUVE  (BDT pré-v7.0.x où l'enum n'existait pas)
+//   raw='' (vide)          → INDECIS
+//   raw connu              → mapping direct
+//   raw inconnu            → INDECIS (préserve "pas de drift silencieux")
+function mapEvalStatus(raw: string, checkOk = false): V2BdcEvalStatus {
   const cleaned = (raw ?? '').trim().toUpperCase();
-  return EVAL_STATUS_MAP[cleaned] ?? 'EN_ATTENTE';
+  if (cleaned === '') return checkOk ? 'APPROUVE' : 'INDECIS';
+  return EVAL_STATUS_MAP[cleaned] ?? 'INDECIS';
 }
 
 function mapArchiveStatus(raw: string): V2BdcArchiveStatus | null {
@@ -234,7 +242,7 @@ function buildBdcDraft(
     id: generateId('bdc'),
     workshopId: ctx.workshopId,
     veloId,
-    evalStatus: mapEvalStatus(raw.evalStatus ?? ''),
+    evalStatus: mapEvalStatus(raw.evalStatus ?? '', raw.checkOk ?? false),
     archiveStatus,
     cbEvalEnvoye: raw.checkEval ?? false,
     cbEval: raw.checkOk ?? false,
