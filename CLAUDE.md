@@ -65,6 +65,25 @@ la session de bootstrap, corrigée depuis). C'est :
 - Server Actions avec useActionState
 - Soft-delete (deletedAt) sur entités principales
 
+## Base de données — IMPORTANT
+
+L'utilisateur a 2 projets Neon :
+- **`flex-v2`** — branche `production` — projet de **dev/test** non utilisé par
+  Vercel. Ne PAS y appliquer de migrations.
+- **`flex-prod`** — branche **`main`** — la **VRAIE prod**, branchée à
+  Vercel via l'intégration native Vercel-Neon. **TOUTES** les migrations
+  SQL doivent être appliquées ici.
+
+L'hostname prod actuel : `ep-broad-queen-anac9vrl-pooler.c-6.us-east-1.aws.neon.tech`
+
+Quand on fournit du SQL à yako-san pour une migration, **toujours rappeler**
+qu'il doit être sur `flex-prod` / `main`, sans quoi la migration tourne sur
+le mauvais projet et l'app prod plante avec `column does not exist`.
+
+`DATABASE_URL` Vercel est gérée par l'intégration Vercel-Neon et ne peut
+pas être éditée directement (juste « Manage Connection » / « Rotate »
+dans l'UI Vercel).
+
 ## Conventions git
 
 - Branche de travail courante : `claude/resume-from-handoff-HginU`
