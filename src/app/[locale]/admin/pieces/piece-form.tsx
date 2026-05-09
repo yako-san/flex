@@ -58,6 +58,17 @@ export function PieceForm({ initial }: Props) {
         </div>
       </div>
 
+      <div style={twoCol}>
+        <div>
+          <label style={lbl}>Groupe (sous-classification optionnelle)</label>
+          <input name="groupe" defaultValue={v('groupe')} placeholder="ex. 11-vit, 12-vit" style={inp} />
+        </div>
+        <div>
+          <label style={lbl}>Notes (libres)</label>
+          <input name="notes" defaultValue={v('notes')} placeholder="ex. Lot mars, à tester" style={inp} />
+        </div>
+      </div>
+
       <h3 style={h3}>Prix</h3>
       <p style={{ fontSize: '0.78rem', color: '#888', marginTop: 0, marginBottom: '0.75rem' }}>
         Prix vente HT est utilisé sur les BDT et ventes. Les autres champs sont
