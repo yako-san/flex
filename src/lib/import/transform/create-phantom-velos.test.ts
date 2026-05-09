@@ -164,8 +164,6 @@ describe('createPhantomVelosForOrphanedBdcs', () => {
       mecaMecanoId: null,
       ctrlMecanoId: null,
       noteVelo: null,
-      noteClientEval: null,
-      noteClientFacture: null,
       notes: null,
       legacyRawV1: null,
     };

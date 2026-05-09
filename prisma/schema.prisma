@@ -425,9 +425,11 @@ model Velo {
   ctrlMecanoId String? @map("ctrl_mecano_id")
 
   noteVelo          String? @map("note_velo") // interne
-  noteClientEval    String? @map("note_client_eval") // affiché PDF éval
-  noteClientFacture String? @map("note_client_facture") // affiché PDF facture
   notes             String? // libre interne
+  // noteClientEval / noteClientFacture déplacés sur Bdc en Sprint 2.10
+  // (V1 stockait par-vélo, V2 stocke par-BDT pour préserver l'historique
+  // multi-visites — un vélo qui repasse en atelier 3 ans plus tard a sa
+  // propre note d'éval, pas l'écho de l'ancienne).
 
   // Snapshot brut de la ligne v1 source (services/pieces concaténés, dates v1, etc.)
   legacyRawV1 Json? @map("legacy_raw_v1")

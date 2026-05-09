@@ -188,8 +188,8 @@ describe('transformVelos', () => {
         mecaMecanoId: 'eq_yako',
         ctrlMecanoId: null,
         noteVelo: 'NOTE TEST vélo',
-        noteClientEval: 'NOTE TEST ÉVAL',
-        noteClientFacture: 'NOTE TEST FACTURE',
+        // noteClientEval/Facture ne sont plus sur Velo (Sprint 2.10) —
+        // déplacés sur Bdc, voir transform-bdcs.test.ts.
       });
     });
   });

@@ -129,8 +129,8 @@ export type V2VeloDraft = {
   mecaMecanoId: string | null;
   ctrlMecanoId: string | null;
   noteVelo: string | null;
-  noteClientEval: string | null;
-  noteClientFacture: string | null;
+  // noteClientEval / noteClientFacture supprimés en Sprint 2.10 — désormais
+  // par-BDT (Bdc.noteClientEval, Bdc.noteClientFacture).
   notes: string | null;
   legacyRawV1: Record<string, unknown> | null;
 };
@@ -162,7 +162,9 @@ export type V2BdcDraft = {
   remisePceValue: string | null;
   totalServices: string;
   totalPieces: string;
-  notes: string | null;
+  notes: string | null; // notes internes
+  noteClientEval: string | null; // visible PDF/courriel éval (V1 col V GAP)
+  noteClientFacture: string | null; // visible PDF/courriel facture (V1 col W GAP)
   legacyRawV1: Record<string, unknown> | null;
 };
 

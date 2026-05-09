@@ -39,8 +39,6 @@ const velo = (overrides: Partial<V2VeloDraft>): V2VeloDraft => ({
   mecaMecanoId: null,
   ctrlMecanoId: null,
   noteVelo: null,
-  noteClientEval: null,
-  noteClientFacture: null,
   notes: null,
   legacyRawV1: null,
   ...overrides,

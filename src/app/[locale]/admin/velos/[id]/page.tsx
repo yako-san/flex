@@ -127,9 +127,11 @@ export default async function VeloDetailPage({ params }: Props) {
 
       <h2 style={{ ...h2Style, marginTop: '2rem' }}>Notes</h2>
       <Row label="Note vélo (interne)">{velo.noteVelo ?? '—'}</Row>
-      <Row label="Note client (éval)">{velo.noteClientEval ?? '—'}</Row>
-      <Row label="Note client (facture)">{velo.noteClientFacture ?? '—'}</Row>
       <Row label="Notes libres">{velo.notes ?? '—'}</Row>
+      <p style={{ color: '#888', fontSize: '0.78rem', margin: '0.5rem 0 0 0' }}>
+        Les notes client (éval / facture) sont désormais éditées par-BDT
+        directement (cf. fiche BDT).
+      </p>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem', marginBottom: '0.75rem' }}>
         <h2 style={{ ...h2Style, marginBottom: 0 }}>Historique BDT ({velo.bdcs.length})</h2>
