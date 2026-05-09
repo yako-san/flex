@@ -5,16 +5,19 @@ import { getActiveWorkshop } from '@/lib/workshop';
 import { LinkWorkshopForm } from './link-workshop-form';
 import { FiscalForm, type FiscalEntity } from './fiscal-form';
 import { LogoForm } from './logo-form';
+import { GmailConnectionPanel } from './gmail-connection-panel';
 import { getEmailProvider } from '@/lib/email/client';
 
 export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ gmail_ok?: string; gmail_err?: string }>;
 };
 
-export default async function SettingsPage({ params }: Props) {
+export default async function SettingsPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
 
   const { orgId, orgSlug } = await auth();
@@ -114,6 +117,22 @@ export default async function SettingsPage({ params }: Props) {
           </Link>
         </p>
       </div>
+
+      <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
+        Brouillons Gmail (mode hybride)
+      </h2>
+      <p style={{ color: '#666', marginBottom: '1rem', fontSize: '0.9rem' }}>
+        Connecte un compte Gmail pour créer des brouillons (au lieu d&apos;envoyer
+        directement). Pattern V1 — tu vérifies dans Gmail puis cliques Envoyer.
+        L&apos;envoi direct via SMTP/Resend reste disponible en bouton secondaire
+        sur chaque BDT.
+      </p>
+      <GmailConnectionPanel
+        connected={!!workshop?.googleRefreshToken}
+        email={workshop?.googleEmail ?? null}
+        successMessage={sp.gmail_ok ?? null}
+        errorMessage={sp.gmail_err ?? null}
+      />
 
       <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
         Workshop et organisation Clerk

@@ -3,6 +3,14 @@ import { prisma } from '@/lib/db';
 import { generateId } from '@/lib/ids/generate-id';
 import { getEmailProvider, getResend } from './client';
 import { getGmailTransporter } from './gmail';
+import { createGmailDraft } from './gmail-draft';
+
+// Mode d'envoi (Sprint 2.7) :
+//   'send'  — envoi direct via SMTP/Resend (pattern existant)
+//   'draft' — création d'un brouillon Gmail via Gmail API (refresh_token
+//             du Workshop). L'utilisateur ouvre Gmail, vérifie, clique
+//             Envoyer manuellement. Préserve le filet de relecture V1.
+export type SendMode = 'send' | 'draft';
 
 export type SendEmailInput = {
   workshopId: string;
@@ -16,16 +24,21 @@ export type SendEmailInput = {
   factureLogId?: string | null;
   clientId?: string | null;
   createdById?: string | null;
+  mode?: SendMode; // default 'send'
+  // Refresh token Gmail (uniquement requis si mode='draft')
+  googleRefreshToken?: string | null;
 };
 
 export type SendEmailResult =
-  | { ok: true; emailLogId: string; providerMsgId: string | null }
+  | { ok: true; emailLogId: string; providerMsgId: string | null; mode: SendMode }
   | { ok: false; error: string; emailLogId: string };
 
-// Envoie un email via le provider actif (Gmail SMTP ou Resend) +
-// persiste un EmailLog (audit trail).
+// Envoie un email via le provider actif (Gmail SMTP ou Resend) ou crée
+// un brouillon Gmail via Gmail API (mode='draft'). Persiste un EmailLog
+// (audit trail).
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
   const emailLogId = generateId('log');
+  const mode: SendMode = input.mode ?? 'send';
 
   await prisma.emailLog.create({
     data: {
@@ -43,6 +56,50 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
       createdById: input.createdById ?? null,
     },
   });
+
+  // Mode draft : Gmail API (gmail.compose) — pas d'envoi automatique.
+  if (mode === 'draft') {
+    if (!input.googleRefreshToken) {
+      await prisma.emailLog.update({
+        where: { id: emailLogId },
+        data: {
+          status: 'FAILED',
+          providerError: "Gmail non connecté — connecte le compte dans Paramètres",
+        },
+      });
+      return {
+        ok: false,
+        error: 'Gmail non connecté pour ce workshop',
+        emailLogId,
+      };
+    }
+    const draftResult = await createGmailDraft({
+      refreshToken: input.googleRefreshToken,
+      to: input.to,
+      from: input.from,
+      subject: input.subject,
+      htmlBody: input.html,
+      ...(input.attachments && input.attachments.length > 0
+        ? { attachments: input.attachments.map((a) => ({ filename: a.filename, content: a.content })) }
+        : {}),
+    });
+    if (!draftResult.ok) {
+      await prisma.emailLog.update({
+        where: { id: emailLogId },
+        data: { status: 'FAILED', providerError: draftResult.error },
+      });
+      return { ok: false, error: draftResult.error, emailLogId };
+    }
+    await prisma.emailLog.update({
+      where: { id: emailLogId },
+      data: {
+        status: 'DRAFT',
+        sentAt: new Date(), // moment de création du draft
+        providerMsgId: `draft_${draftResult.draftId}`,
+      },
+    });
+    return { ok: true, emailLogId, providerMsgId: draftResult.draftId, mode };
+  }
 
   const provider = getEmailProvider();
   if (provider === 'NONE') {
@@ -109,7 +166,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
       where: { id: emailLogId },
       data: { status: 'SENT', sentAt: new Date(), providerMsgId },
     });
-    return { ok: true, emailLogId, providerMsgId };
+    return { ok: true, emailLogId, providerMsgId, mode };
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erreur provider inconnue';
     await prisma.emailLog.update({

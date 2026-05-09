@@ -251,6 +251,8 @@ export default async function BdcDetailPage({ params }: Props) {
             suiviEnvoye={bdc.cbSuiviEnvoye}
             factureLogId={factureLog?.id ?? null}
             factureNumero={factureLog?.factureNumero ?? null}
+            gmailConnected={!!workshop.googleRefreshToken}
+            gmailEmail={workshop.googleEmail}
           />
           <h2 style={{ ...h2Style, marginTop: '2rem' }}>Workflow</h2>
           <WorkflowForm bdc={bdc} key={bdc.updatedAt.toISOString()} />

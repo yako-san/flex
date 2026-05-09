@@ -8,12 +8,12 @@ inline depuis la session v1.
 
 **Date audit** : 2026-05-08, par session v2 (Opus 4.7 / 1M context).
 
-**Dernière mise à jour** : 2026-05-08, post-Sprint 3.
+**Dernière mise à jour** : 2026-05-09, post-Sprint 2.7 (Gmail draft hybride).
 
-**Statut** : Sprint 1 + Sprint 2 (sauf 2.7 et 2.8 bloqués config externe)
-+ Sprint 3 entièrement livrés. Parité fonctionnelle V1↔V2 atteinte
-hors OAuth Google et Vercel Blob (config externe Vercel requise pour
-débloquer 2.7 + 2.8).
+**Statut** : Sprint 1 + Sprint 2 (sauf 2.8) + Sprint 3 entièrement livrés.
+Sprint 2.7 (Gmail draft hybride) débloqué et livré le 2026-05-09 après
+configuration OAuth Google côté GCP + Vercel. Reste 2.8 (photos Vercel
+Blob) — débloqué côté config (BLOB_READ_WRITE_TOKEN injecté), prêt à coder.
 
 ## Changelog
 
@@ -95,6 +95,21 @@ débloquer 2.7 + 2.8).
   `bwip-js`), grille 5×13 = 65 étiquettes par page. Filtres URL :
   `ids`, `categorie`, `fournisseur`, `withSku`. Bouton sur
   `/admin/pieces`.
+
+- **2026-05-09 / Sprint 2.7 — Gmail draft hybride** : OAuth Google
+  configuré côté GCP/Vercel par yako-san. Schema :
+  `Workshop.googleRefreshToken + googleEmail`. Routes API :
+  `/api/auth/google/{start,callback,disconnect}` (state cookie CSRF,
+  exchange code → tokens, persist refresh_token).
+  `src/lib/email/google-oauth.ts` (helpers OAuth) +
+  `src/lib/email/gmail-draft.ts` (createGmailDraft via Gmail API
+  `users.drafts.create`, MIME multipart base64url). `EmailStatus.DRAFT`
+  ajouté. `sendEmail` accepte mode='send'|'draft'. Les 3 actions
+  email-actions BDT (eval/facture/suivi) acceptent `mode` + reçoivent
+  `googleRefreshToken` du workshop. UI `EmailButtons` : toggle
+  📝 Brouillon Gmail / 🚀 Envoyer maintenant (default brouillon si
+  Gmail connecté, sinon envoi direct). UI Settings :
+  `GmailConnectionPanel` (Connecter / Reconnecter / Déconnecter).
 
 ---
 
@@ -406,7 +421,7 @@ V2 a une table unique pour les 3 sources V1 (BDT, ventes directes, legacy) — b
 ### 2.2 Bilan routes
 
 - **Existantes** : 61 / 76 (80 %) — +5 routes vs audit initial (log-status, snapshot, suivi-courriel, adhoc-receive, refresh partiel)
-- **À porter P2 (important)** : 2 (Gmail draft hybride bloqué OAuth, photos clients/vélo bloqué Vercel Blob)
+- **À porter P2 (important)** : 1 (photos clients/vélo — débloqué côté config, à coder)
 - **À porter P3 (cosmétique)** : 4 (merge-adhoc, export labels, archives export, import-brompton)
 - **Délibérément abandonnées** : 8 (Square, Google sync, sheets cache, etc.)
 
@@ -473,7 +488,7 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 - ✅ **2.5 — Courriel de suivi post-livraison** — `Bdc.cbSuiviEnvoye` + `EmailKind.BDT_SUIVI` + `suiviEmailTemplate` + bouton EmailButtons.
 - ✅ **2.6 — PO ADHOC** — création + réception en 1 étape. `Po.isAdhoc` + `PoItem.categorie/notes`. `createAdhocPoAction` (auto-création Piece, StockMovement immédiat). UI `/admin/pos/adhoc` multi-items.
 - ✅ **2.9 — `/api/admin/snapshot`** — backup JSON 22 tables, depuis `/admin/maintenance`.
-- ⏸️ **2.7 — Couche Gmail draft hybride** — bloqué : nécessite OAuth Google côté Vercel (scope `gmail.compose`). À débloquer manuellement avant code.
+- ✅ **2.7 — Couche Gmail draft hybride** — livré 2026-05-09. OAuth flow + lib gmail-draft + email-actions hybrides + UI EmailButtons toggle + UI Settings panel.
 - ⏸️ **2.8 — Photos clients + vélo (Vercel Blob)** — bloqué : nécessite token `BLOB_READ_WRITE_TOKEN` côté Vercel env. À débloquer manuellement avant code.
 - ✅ **2.10 — Drop `Velo.noteClientEval/Facture` deprecated** — migration SQL avec copie Velo→Bdc le plus récent (incluant BDT archivés) avant DROP COLUMN. Schema/transforms/page vélo nettoyés.
 
@@ -494,7 +509,7 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 
 - ✅ ~~**Schema export V1 1.1.0**~~ — livré côté V1 (commit dcf3848) et hydraté côté V2 via refresh partiel.
 - **Design system V1** (zip Claude Design ou repo flex-rev-app) — pour appliquer le look jaune/dark au lieu du styling inline actuel. Toujours en attente.
-- **OAuth Google** côté Vercel — pour Sprint 2.7 (Gmail draft hybride).
+- ✅ ~~**OAuth Google** côté Vercel~~ — débloqué 2026-05-09 (client OAuth Flex créé sur projet GCP `flex-rev`, env vars GOOGLE_CLIENT_ID/SECRET/SCOPES injectées sur Vercel prod+preview+dev). Sprint 2.7 livré.
 - **Vercel Blob token** côté env Vercel — pour Sprint 2.8 (photos).
 
 ---
