@@ -6,6 +6,7 @@ import {
   sendFactureEmailAction,
   sendSuiviEmailAction,
   type EmailState,
+  type EmailMode,
 } from './email-actions';
 
 type Kind = 'eval' | 'facture' | 'suivi';
@@ -17,6 +18,10 @@ type Props = {
   suiviEnvoye: boolean;
   factureLogId: string | null;
   factureNumero: string | null;
+  /** Si Workshop a connecté un Gmail (Sprint 2.7), affiche le toggle
+   *  brouillon. Sinon, masqué (envoi direct only). */
+  gmailConnected: boolean;
+  gmailEmail: string | null;
 };
 
 export function EmailButtons({
@@ -26,11 +31,16 @@ export function EmailButtons({
   suiviEnvoye,
   factureLogId,
   factureNumero: _factureNumero,
+  gmailConnected,
+  gmailEmail,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const [show, setShow] = useState<Kind | null>(null);
   const [msg, setMsg] = useState('');
   const [result, setResult] = useState<EmailState | null>(null);
+  // Mode par défaut : 'draft' si Gmail connecté (filet de relecture V1),
+  // sinon 'send' direct (SMTP/Resend).
+  const [mode, setMode] = useState<EmailMode>(gmailConnected ? 'draft' : 'send');
 
   if (!clientCourriel) {
     return (
@@ -46,11 +56,11 @@ export function EmailButtons({
     startTransition(async () => {
       const r =
         kind === 'eval'
-          ? await sendEvalEmailAction(bdcId, msg.trim() || null)
+          ? await sendEvalEmailAction(bdcId, msg.trim() || null, mode)
           : kind === 'suivi'
-            ? await sendSuiviEmailAction(bdcId, msg.trim() || null)
+            ? await sendSuiviEmailAction(bdcId, msg.trim() || null, mode)
             : factureLogId
-              ? await sendFactureEmailAction(factureLogId, msg.trim() || null)
+              ? await sendFactureEmailAction(factureLogId, msg.trim() || null, mode)
               : { error: 'Pas de facture émise', success: false };
       setResult(r);
       if (r.success) {
@@ -99,6 +109,26 @@ export function EmailButtons({
           <div style={{ fontSize: '0.78rem', color: '#666', marginBottom: '0.4rem' }}>
             Destinataire : <code>{clientCourriel}</code>
           </div>
+
+          {gmailConnected ? (
+            <div style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.4rem' }}>
+              <ModeBtn
+                active={mode === 'draft'}
+                onClick={() => setMode('draft')}
+                title={`Crée un brouillon dans ${gmailEmail ?? 'Gmail'} — tu vérifies + envoies manuellement`}
+              >
+                📝 Brouillon Gmail
+              </ModeBtn>
+              <ModeBtn
+                active={mode === 'send'}
+                onClick={() => setMode('send')}
+                title="Envoi direct via SMTP/Resend (sans relecture)"
+              >
+                🚀 Envoyer maintenant
+              </ModeBtn>
+            </div>
+          ) : null}
+
           <textarea
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
@@ -131,7 +161,9 @@ export function EmailButtons({
               fontWeight: 600,
             }}
           >
-            {pending ? 'Envoi…' : 'Envoyer maintenant'}
+            {pending
+              ? mode === 'draft' ? 'Création brouillon…' : 'Envoi…'
+              : mode === 'draft' ? 'Créer le brouillon dans Gmail' : 'Envoyer maintenant'}
           </button>
         </div>
       ) : null}
@@ -143,10 +175,45 @@ export function EmailButtons({
       ) : null}
       {result?.success ? (
         <div style={{ color: '#2e7d32', fontSize: '0.8rem', padding: '0.4rem 0.6rem', background: '#e8f5e9', borderRadius: 4 }}>
-          ✓ Courriel envoyé.
+          {result.mode === 'draft'
+            ? '✓ Brouillon créé dans Gmail. Ouvre Gmail pour vérifier et envoyer.'
+            : '✓ Courriel envoyé.'}
         </div>
       ) : null}
     </div>
+  );
+}
+
+function ModeBtn({
+  active,
+  onClick,
+  title,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      style={{
+        flex: 1,
+        padding: '0.4rem 0.6rem',
+        background: active ? '#1565c0' : 'white',
+        color: active ? 'white' : '#1565c0',
+        border: '1px solid #1565c0',
+        borderRadius: 4,
+        cursor: 'pointer',
+        fontSize: '0.78rem',
+        fontWeight: active ? 600 : 400,
+      }}
+    >
+      {children}
+    </button>
   );
 }
 

@@ -58,6 +58,13 @@ model Workshop {
   stripeCustomerId     String? @unique @map("stripe_customer_id")
   stripeSubscriptionId String? @unique @map("stripe_subscription_id")
 
+  // Connexion Gmail OAuth (Sprint 2.7) — pour créer des brouillons via
+  // Gmail API. Le refresh_token est stocké en clair (à chiffrer en
+  // Sprint billing). googleEmail = adresse du compte connecté (affichage).
+  // Null si pas connecté → fallback sur SMTP/Resend pour envoi direct.
+  googleRefreshToken String? @map("google_refresh_token")
+  googleEmail        String? @map("google_email")
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -994,6 +1001,7 @@ enum EmailKind {
 enum EmailStatus {
   PENDING
   SENT
+  DRAFT // brouillon Gmail créé via gmail.compose, envoi manuel par l'utilisateur
   FAILED
   BOUNCED
 

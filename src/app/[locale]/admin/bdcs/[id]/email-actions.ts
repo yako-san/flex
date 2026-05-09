@@ -22,7 +22,14 @@ import { buildFactureHtml } from '@/lib/pdf-html/templates/facture';
 import { htmlToPdf } from '@/lib/pdf-html/render';
 import type { ItemRow } from '@/lib/pdf-html/templates/types';
 
-export type EmailState = { error?: string; success?: boolean; emailLogId?: string };
+export type EmailMode = 'send' | 'draft';
+
+export type EmailState = {
+  error?: string;
+  success?: boolean;
+  emailLogId?: string;
+  mode?: EmailMode;
+};
 
 function fromAddress(workshop: {
   name: string;
@@ -46,9 +53,12 @@ function fromAddress(workshop: {
 }
 
 // Envoie l'éval BDT par courriel au client (PDF en pièce jointe).
+// mode='send' (default) → envoi direct via SMTP/Resend.
+// mode='draft' → crée un brouillon dans le Gmail connecté du workshop.
 export async function sendEvalEmailAction(
   bdcId: string,
   customMessage: string | null,
+  mode: EmailMode = 'send',
 ): Promise<EmailState> {
   const { userId } = await auth();
   if (!userId) return { error: 'Non authentifié' };
@@ -113,24 +123,28 @@ export async function sendEvalEmailAction(
     ],
     bdcId,
     createdById: userId,
+    mode,
+    googleRefreshToken: workshop.googleRefreshToken,
   });
 
   if (!result.ok) return { error: result.error, emailLogId: result.emailLogId };
 
-  // Marque l'éval comme envoyée
+  // Marque l'éval comme envoyée (que ce soit un draft ou un envoi direct —
+  // dans les 2 cas l'utilisateur a "fait l'action" pour cet éval).
   await prisma.bdc.update({
     where: { id: bdcId },
     data: { cbEvalEnvoye: true },
   });
 
   revalidatePath(`/[locale]/admin/bdcs/${bdcId}`, 'page');
-  return { success: true, emailLogId: result.emailLogId };
+  return { success: true, emailLogId: result.emailLogId, mode };
 }
 
 // Envoie la facture par courriel au client (PDF en pièce jointe).
 export async function sendFactureEmailAction(
   factureLogId: string,
   customMessage: string | null,
+  mode: EmailMode = 'send',
 ): Promise<EmailState> {
   const { userId } = await auth();
   if (!userId) return { error: 'Non authentifié' };
@@ -255,6 +269,8 @@ export async function sendFactureEmailAction(
     bdcId: facture.bdcId,
     clientId: facture.clientId,
     createdById: userId,
+    mode,
+    googleRefreshToken: workshop.googleRefreshToken,
   });
 
   if (!result.ok) return { error: result.error, emailLogId: result.emailLogId };
@@ -262,7 +278,7 @@ export async function sendFactureEmailAction(
   if (facture.bdcId) {
     revalidatePath(`/[locale]/admin/bdcs/${facture.bdcId}`, 'page');
   }
-  return { success: true, emailLogId: result.emailLogId };
+  return { success: true, emailLogId: result.emailLogId, mode };
 }
 
 // Envoie un courriel de suivi post-livraison au client (sans PDF en pièce
@@ -272,6 +288,7 @@ export async function sendFactureEmailAction(
 export async function sendSuiviEmailAction(
   bdcId: string,
   customMessage: string | null,
+  mode: EmailMode = 'send',
 ): Promise<EmailState> {
   const { userId } = await auth();
   if (!userId) return { error: 'Non authentifié' };
@@ -328,6 +345,8 @@ export async function sendSuiviEmailAction(
     html: bodyHtml,
     bdcId,
     createdById: userId,
+    mode,
+    googleRefreshToken: workshop.googleRefreshToken,
   });
 
   if (!result.ok) return { error: result.error, emailLogId: result.emailLogId };
@@ -338,5 +357,5 @@ export async function sendSuiviEmailAction(
   });
 
   revalidatePath(`/[locale]/admin/bdcs/${bdcId}`, 'page');
-  return { success: true, emailLogId: result.emailLogId };
+  return { success: true, emailLogId: result.emailLogId, mode };
 }
