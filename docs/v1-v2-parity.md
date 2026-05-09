@@ -8,9 +8,11 @@ inline depuis la session v1.
 
 **Date audit** : 2026-05-08, par session v2 (Opus 4.7 / 1M context).
 
-**Dernière mise à jour** : 2026-05-08, post-Sprint 1.
+**Dernière mise à jour** : 2026-05-08, post-Sprint 2.6 + 2.9 (en cours).
 
-**Statut** : Sprint 1 livré (drifts P1 corrigés). Sprint 2/3 en attente.
+**Statut** : Sprint 1 + Sprint 2.1–2.6 + 2.9 livrés. Reste 2.7 (Gmail
+draft, OAuth Google requis), 2.8 (photos, Vercel Blob requis), 2.10
+(drop colonnes Velo deprecated).
 
 ## Changelog
 
@@ -22,6 +24,57 @@ inline depuis la session v1.
   copie pour BDT actifs uniquement) ; parser `parseActive` enrichi
   (oui/non/yes/no/y/n/1/0) ; `src/lib/velo/status-labels.ts` : labels
   FR/EN + couleurs V1 pour VeloStatus et BdcEvalStatus.
+
+- **2026-05-08 / Sprint 2.1+2.2+2.3** : UI Sprint 1 câblée — formulaire
+  BDT avec section avance (montant + mode + note) et notes client (eval
+  + facture séparées de notes interne) ; composant `PieceCmdEditor`
+  inline sur items pièces (badge sigle ...,—,√,$,#,@ + popup statut +
+  textarea note) ; PDFs/courriels lisent `noteClientEval/Facture` depuis
+  Bdc (au lieu de Velo) ; émission facture snapshot
+  `bdc.noteClientFacture` → `FactureLog.notes` immutable.
+
+- **2026-05-08 / Schema export V1 1.1.0** : type `V1Dump` étendu (clés
+  optionnelles `templates`, `tailles`, `parametres`) ;
+  `transform-templates.ts` mappe les clés V1 explicites
+  (`eval_subject_fr`, `eval_message_en`, fragments
+  `greeting/intro/cta/outro`, `signature_yako`/`cf`, etc.) →
+  `Workshop.emailTemplates` structuré multi-locale FR/EN ;
+  `dump.tailles` répliqué sur chaque marque ; `dump.parametres`
+  préservé dans `Workshop.legacyV1Extras`.
+
+- **2026-05-08 / Refresh partiel V1 1.1.0** : action serveur
+  `refreshFromDumpAction` qui hydrate UNIQUEMENT les nouveaux champs
+  `Workshop.emailTemplates` + `Marque.taillesDisponibles` +
+  `legacyV1Extras.parametres` sans toucher aux clients/vélos/BDT déjà
+  importés. UI dédiée sur `/admin/import` (workshop existant).
+
+- **2026-05-08 / Templates multi-locale** : `EmailTemplates` refondu en
+  `{ subject?: LocaleString; body?: LocaleString } & TemplateFragments`
+  pour eval/facture/vente/courrielSuivi ; `evalEmailTemplate/Subject`
+  +  `factureEmailTemplate/Subject` + `suiviEmailTemplate/Subject`
+  prennent `clientLang` et sélectionnent la bonne locale via
+  `pickLocale` (fallback FR↔EN automatique). UI templates avec onglets
+  🇫🇷/🇬🇧 et fragments granulaires repliables. ClientInfo.lang ajouté.
+
+- **2026-05-08 / Sprint 2.4** : facture statut PAYE/EMIS/ANNULE + mode
+  paiement éditable inline depuis page client (composant
+  `FactureStatutControls`) ; action `setFactureStatutAction` (V1
+  équivalent `/api/factures/log-status`).
+
+- **2026-05-08 / Sprint 2.5** : courriel de suivi post-livraison BDT.
+  `Bdc.cbSuiviEnvoye` + `EmailKind.BDT_SUIVI` ; `suiviEmailTemplate/
+  Subject` (multi-locale) ; `sendSuiviEmailAction` ; bouton sur fiche
+  BDT « Envoyer le courriel de suivi » (vert si déjà envoyé).
+
+- **2026-05-08 / Sprint 2.6** : PO ADHOC — création + réception en 1
+  étape. `Po.isAdhoc` + `PoItem.categorie/notes` ; action
+  `createAdhocPoAction` (auto-création Piece si nouvelle, snapshot prix
+  achat→vente avec marge 50% défaut, StockMovement immédiat) ; UI
+  `/admin/pos/adhoc` multi-items + bouton vert sur liste POs.
+
+- **2026-05-08 / Sprint 2.9** : `/api/admin/snapshot` — backup JSON
+  complet du workshop (22 tables) téléchargeable depuis
+  `/admin/maintenance`. Métadonnées + counts + decimals préservés.
 
 ---
 
@@ -288,7 +341,7 @@ V2 a une table unique pour les 3 sources V1 (BDT, ventes directes, legacy) — b
 | V1 | V2 | Statut |
 |---|---|---|
 | `/api/admin/export-v1` | (pas applicable côté V2) | — |
-| `/api/admin/snapshot` | ❌ | 🟡 [P2] Backup DB snapshot — à porter |
+| `/api/admin/snapshot` | `/api/admin/snapshot` (route Next.js) + bouton sur `/admin/maintenance` | ✅ Sprint 2.9 |
 | `/api/bdc` (CRUD) | server actions /admin/bdcs | ✅ |
 | `/api/bdc/[id]/evaluation` (PDF + email draft) | `/api/admin/bdcs/[id]/eval.pdf` + `email-actions.sendEvalEmailAction` | ✅ |
 | `/api/bdc/[id]/facturer` | `email-actions.sendFactureEmailAction` (BDC) + `/api/admin/factures/[id]/pdf` | ✅ partiel |
@@ -297,7 +350,7 @@ V2 a une table unique pour les 3 sources V1 (BDT, ventes directes, legacy) — b
 | `/api/bdc/[id]/note` | server actions BDT | ✅ |
 | `/api/bdc/[id]/remises` | (en édition BDT direct) | ✅ partiel |
 | `/api/bdc/[id]/archiver` | server action | ✅ |
-| `/api/bdc/[id]/suivi-courriel` | ❌ | 🟡 [P2] Courriel de suivi (post-livraison) — template SMS_SUIVI déjà ajouté en V2, route à brancher |
+| `/api/bdc/[id]/suivi-courriel` | `sendSuiviEmailAction` + bouton sur fiche BDT | ✅ Sprint 2.5 |
 | `/api/clients` (CRUD) | server actions /admin/clients | ✅ |
 | `/api/clients/[nom]/velos` | (relation Prisma direct) | ✅ |
 | `/api/clients/photos` | ❌ | 🟡 [P2] Photos clients — Vercel Blob à brancher |
@@ -311,12 +364,12 @@ V2 a une table unique pour les 3 sources V1 (BDT, ventes directes, legacy) — b
 | `/api/catalogue/export/labels` | ❌ | 🟢 [P3] Étiquettes imprimables avec code-barre |
 | `/api/catalogue/pieces/import-brompton` | ❌ | 🟢 [P3] Import xlsx Brompton spécifique. Couvert par import CSV générique V2 ? |
 | `/api/po` (CRUD) + `/api/po/[poNumber]/finalize` | server actions /admin/pos | ✅ partiel (finalize = recevoir, déjà fait via `receivePoAction`) |
-| **`/api/po/adhoc-receive`** | ❌ **MANQUE** | 🟠 [P2] Création PO ADHOC depuis réception — workflow important |
-| **`/api/po/[poNumber]/merge-adhoc`** | ❌ | 🟠 [P2] Fusion PO ADHOC dans PO cible |
+| **`/api/po/adhoc-receive`** | `createAdhocPoAction` + UI `/admin/pos/adhoc` | ✅ Sprint 2.6 |
+| **`/api/po/[poNumber]/merge-adhoc`** | ❌ | 🟢 [P3] Fusion PO ADHOC dans PO cible — pas implémenté (peu de demande pratique). À faire si besoin se présente. |
 | `/api/po/[poNumber]/sync-stock` | (StockMovement automatique sur reception) | ✅ |
 | `/api/po/import` | `/api/admin/import-v1` (couvre la migration) | ✅ initial |
 | `/api/ventes` (CRUD) + `/api/ventes/[id]/items` + `/api/ventes/[id]/facture` + `/api/ventes/[id]/archive` | server actions /admin/ventes | ✅ |
-| `/api/factures/log-status` | ❌ | 🟠 [P2] Marquer facture comme PAYÉE + mode paiement — important pour suivi de caisse |
+| `/api/factures/log-status` | server action `setFactureStatutAction` + UI `FactureStatutControls` | ✅ Sprint 2.4 |
 | `/api/parametres/emails` | UI /admin/settings/email-templates | ✅ |
 | `/api/parametres/equipe` | server actions /admin/equipe | ✅ |
 | `/api/health/google` | (abandonné V2) | ➖ |
@@ -332,10 +385,9 @@ V2 a une table unique pour les 3 sources V1 (BDT, ventes directes, legacy) — b
 
 ### 2.2 Bilan routes
 
-- **Existantes** : 56 / 76 (74 %)
-- **À porter P1 (bloquant)** : 1 (`avance`)
-- **À porter P2 (important)** : 8 (`adhoc-receive`, `merge-adhoc`, `log-status`, `snapshot`, photos clients, photos vélo, suivi-courriel, repair/test admin)
-- **À porter P3 (cosmétique)** : 3 (export labels, archives export, import-brompton)
+- **Existantes** : 61 / 76 (80 %) — +5 routes vs audit initial (log-status, snapshot, suivi-courriel, adhoc-receive, refresh partiel)
+- **À porter P2 (important)** : 2 (Gmail draft hybride bloqué OAuth, photos clients/vélo bloqué Vercel Blob)
+- **À porter P3 (cosmétique)** : 4 (merge-adhoc, export labels, archives export, import-brompton)
 - **Délibérément abandonnées** : 8 (Square, Google sync, sheets cache, etc.)
 
 ---
@@ -394,16 +446,22 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 6. ✅ **`parseActive`** enrichi (oui/non/yes/no/y/n/1/0/vrai/faux/true/false).
 7. ✅ **`src/lib/velo/status-labels.ts`** — labels FR/EN + couleurs V1 pour VeloStatus + BdcEvalStatus. Appliqué sur listes vélos + BDT + dashboard + détail vélo.
 
-### Sprint 2 — fonctions manquantes importantes (P2, ~15h)
+### Sprint 2 — fonctions manquantes importantes (P2, ~15h) — partiellement livré
 
-5. **`/api/po/adhoc-receive` + merge-adhoc** — workflow PO ADHOC. [4h]
-6. **`/api/factures/log-status`** — marquer facture comme PAYÉE + mode paiement. [2h]
-7. **Couche Gmail draft hybride** — brouillon Gmail par défaut + bouton secondaire « Envoyer maintenant » (envoi direct via SMTP/Resend déjà en place). API Gmail `gmail.compose` scope. Toggle UI sur factures + évaluations. [3h]
-8. **`Bdc.suivi-courriel`** — courriel post-livraison (template SMS_SUIVI déjà prêt). [1h]
-9. **Photos clients + vélo** (Vercel Blob). [3h]
-10. **`/api/admin/snapshot`** — backup DB. [2h]
-11. **Brancher UI nouvelles colonnes Sprint 1** : champs avance dans BDT, dropdown cmdStatus + cmdNote sur items pièces, lecture `noteClientEval/Facture` depuis Bdc dans PDFs/courriels. [inclus dans 5–9 ci-dessus]
-12. **Fin Sprint 2** : droper `Velo.noteClientEval/Facture` (deprecated) une fois toutes les routes/PDFs branchés sur Bdc. [migration ALTER DROP COLUMN, 15 min]
+- ✅ **2.1 + 2.2 + 2.3 — Brancher UI nouvelles colonnes Sprint 1** : champs avance dans BDT (workflow-form), composant `PieceCmdEditor` inline sur items pièces (badge + popup), notes client lues depuis Bdc dans PDFs eval/facture + courriels (snapshot facture immutable).
+- ✅ **2.4 — `setFactureStatutAction`** — facture statut PAYE/EMIS/ANNULE + mode paiement. UI `FactureStatutControls` (badge cliquable + popup) sur page client.
+- ✅ **2.5 — Courriel de suivi post-livraison** — `Bdc.cbSuiviEnvoye` + `EmailKind.BDT_SUIVI` + `suiviEmailTemplate` + bouton EmailButtons.
+- ✅ **2.6 — PO ADHOC** — création + réception en 1 étape. `Po.isAdhoc` + `PoItem.categorie/notes`. `createAdhocPoAction` (auto-création Piece, StockMovement immédiat). UI `/admin/pos/adhoc` multi-items.
+- ✅ **2.9 — `/api/admin/snapshot`** — backup JSON 22 tables, depuis `/admin/maintenance`.
+- ⏸️ **2.7 — Couche Gmail draft hybride** — bloqué : nécessite OAuth Google côté Vercel (scope `gmail.compose`). À débloquer manuellement avant code.
+- ⏸️ **2.8 — Photos clients + vélo (Vercel Blob)** — bloqué : nécessite token `BLOB_READ_WRITE_TOKEN` côté Vercel env. À débloquer manuellement avant code.
+- 🟡 **2.10 — Drop `Velo.noteClientEval/Facture` deprecated** — migration `ALTER TABLE velo DROP COLUMN`. À faire après vérif qu'aucune lecture/écriture ne pointe encore sur Velo (audit pending).
+
+### Bonus livrés Sprint 2 (hors plan initial)
+
+- ✅ **Schema export V1 1.1.0** — `transform-templates.ts` + ajout `dump.tailles` répliqué sur marques + `dump.parametres` dans `legacyV1Extras`.
+- ✅ **Refresh partiel** (`refreshFromDumpAction`) — re-import 1.1.0 sans recréer le workshop.
+- ✅ **Templates multi-locale FR/EN** — UI onglets, fragments granulaires, signatures par lead.
 
 ### Sprint 3 — finitions (P3, ~6h)
 
@@ -414,8 +472,10 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 
 ### En attente
 
-- **Schema export V1 1.1.0** (yako-san le demande à la session V1) — pour hydrater `Workshop.emailTemplates`, `Marque.taillesDisponibles`, `parametres`.
-- **Design system V1** (zip Claude Design ou repo flex-rev-app) — pour appliquer le look jaune/dark au lieu du styling inline actuel.
+- ✅ ~~**Schema export V1 1.1.0**~~ — livré côté V1 (commit dcf3848) et hydraté côté V2 via refresh partiel.
+- **Design system V1** (zip Claude Design ou repo flex-rev-app) — pour appliquer le look jaune/dark au lieu du styling inline actuel. Toujours en attente.
+- **OAuth Google** côté Vercel — pour Sprint 2.7 (Gmail draft hybride).
+- **Vercel Blob token** côté env Vercel — pour Sprint 2.8 (photos).
 
 ---
 
@@ -427,7 +487,7 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 - **Postgres au lieu de Sheets** — perte du caractère "éditable manuellement" mais gain en intégrité
 - **Clerk au lieu de NextAuth** — multi-tenant + organizations
 - **next-intl FR + EN** au lieu de FR seul
-- **Email hybride** : brouillon Gmail par défaut (pattern V1) + bouton secondaire « Envoyer maintenant » optionnel (envoi direct SMTP/Resend) — à implémenter Sprint 2. Décision V1 : préserver le filet « relire avant d'envoyer » pour factures/évaluations, autoriser l'envoi direct pour les communications routinières.
+- **Email hybride** : brouillon Gmail par défaut (pattern V1) + bouton secondaire « Envoyer maintenant » optionnel (envoi direct SMTP/Resend). **Phase 1 livrée** (envoi direct SMTP Gmail / Resend en place + multi-locale FR/EN + templates V1 hydratés via refresh 1.1.0). **Phase 2 bloquée** sur OAuth Google côté Vercel pour le mode brouillon Gmail (`gmail.compose` scope).
 - **Sortie de Square** — réservations natives
 - **shadcn/ui prévu** au lieu d'inline styles (pas encore appliqué — en attente Design System)
 
