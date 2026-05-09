@@ -247,7 +247,9 @@ model Piece {
   sku          String?
   codeBarre    String? @map("code_barre")
   categorie    String?
+  groupe       String? // groupement V1 (sous-classification dans la catégorie)
   fournisseur  String?
+  notes        String? // notes libres sur la pièce (V1 col AE)
 
   prixAchat Decimal? @map("prix_achat") @db.Decimal(12, 2)
   prixBase  Decimal? @map("prix_base") @db.Decimal(12, 2)

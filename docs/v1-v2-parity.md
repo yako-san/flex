@@ -8,11 +8,12 @@ inline depuis la session v1.
 
 **Date audit** : 2026-05-08, par session v2 (Opus 4.7 / 1M context).
 
-**Dernière mise à jour** : 2026-05-08, post-Sprint 2.10.
+**Dernière mise à jour** : 2026-05-08, post-Sprint 3.
 
-**Statut** : Sprint 1 + Sprint 2.1–2.6 + 2.9 + 2.10 livrés. Reste 2.7
-(Gmail draft, OAuth Google requis) + 2.8 (photos, Vercel Blob requis) —
-les deux bloqués sur config externe Vercel. Sprint 3 prêt à démarrer.
+**Statut** : Sprint 1 + Sprint 2 (sauf 2.7 et 2.8 bloqués config externe)
++ Sprint 3 entièrement livrés. Parité fonctionnelle V1↔V2 atteinte
+hors OAuth Google et Vercel Blob (config externe Vercel requise pour
+débloquer 2.7 + 2.8).
 
 ## Changelog
 
@@ -83,6 +84,17 @@ les deux bloqués sur config externe Vercel. Sprint 3 prêt à démarrer.
   `Bdc` (V1 source = `noteClient`/`noteClientFacture` cols V/W ligne
   GAP). `transform-velos`, `create-phantom-velos`, `V2VeloDraft`,
   page vélo : nettoyés. Tests à jour.
+
+- **2026-05-08 / Sprint 3.1 + 3.2** : `Piece.notes` + `Piece.groupe`
+  ajoutés (V1 col AE notes, V1 groupe sous-classification dans la
+  catégorie). UI form pièce + action serveur étendus. `Service.
+  categoriePrio` était déjà en place dans le schema.
+
+- **2026-05-08 / Sprint 3.3** : `/api/admin/export/labels` —
+  étiquettes A4 imprimables avec code-barre Code 128 SVG (lib
+  `bwip-js`), grille 5×13 = 65 étiquettes par page. Filtres URL :
+  `ids`, `categorie`, `fournisseur`, `withSku`. Bouton sur
+  `/admin/pieces`.
 
 ---
 
@@ -471,12 +483,12 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 - ✅ **Refresh partiel** (`refreshFromDumpAction`) — re-import 1.1.0 sans recréer le workshop.
 - ✅ **Templates multi-locale FR/EN** — UI onglets, fragments granulaires, signatures par lead.
 
-### Sprint 3 — finitions (P3, ~6h)
+### Sprint 3 — finitions (P3) — ✅ LIVRÉ 2026-05-08
 
-13. **Champs Piece manquants** (`groupe, notes`) — `flag, surplus, skuUrl` abandonnés (cf décision v1-reference §a/d). [1h]
-14. **`Service.categoriePrio`**. [30 min]
-15. **PoItem.notes / categorie**. [30 min]
-16. **`/api/catalogue/export/labels`** — étiquettes imprimables avec code-barre. [3h]
+13. ✅ **Champs Piece** : `notes` + `groupe` ajoutés (V1 col AE + sous-classification). UI + action.
+14. ✅ **`Service.categoriePrio`** : déjà présent dans le schema initial.
+15. ✅ **PoItem.notes / categorie** : déjà livré en Sprint 2.6 (PO ADHOC).
+16. ✅ **`/api/catalogue/export/labels`** : page HTML A4 imprimable avec code-barre Code 128 SVG via bwip-js, 65 étiquettes/page (5×13), filtres URL, bouton sur `/admin/pieces`.
 
 ### En attente
 

@@ -52,6 +52,15 @@ export default async function PiecesPage({ params, searchParams }: Props) {
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <SearchBar placeholder="SKU, code-barre, nom, catégorie…" />
           <a href="/api/admin/export/pieces" style={csvBtn}>↓ CSV</a>
+          <a
+            href={`/api/admin/export/labels${trimmed ? `?categorie=${encodeURIComponent(trimmed)}` : '?withSku=1'}`}
+            target="_blank"
+            rel="noreferrer"
+            style={csvBtn}
+            title="Étiquettes imprimables A4 avec code-barre"
+          >
+            🏷️ Étiquettes
+          </a>
           <Link href={`/${locale}/admin/pieces/new`} style={btnPrimary}>+ Nouvelle pièce</Link>
         </div>
       </div>
