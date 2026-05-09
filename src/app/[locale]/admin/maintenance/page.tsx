@@ -59,6 +59,29 @@ export default async function MaintenancePage({ params }: Props) {
         <Stat label="Ventes brouillon (jamais facturées)" value={venteBrouillon} />
       </div>
 
+      <h2 style={{ ...h2, marginTop: '2rem' }}>Snapshot complet de la base</h2>
+      <p style={{ color: '#666', fontSize: '0.9rem' }}>
+        Télécharge un fichier JSON contenant <strong>toutes les données</strong> du
+        workshop actif (clients, vélos, BDT, ventes, factures, mouvements de
+        stock, audit logs, etc.). Lecture seule, ne modifie rien. Utile pour
+        backup avant opération destructive ou audit point-in-time.
+      </p>
+      <a
+        href="/api/admin/snapshot"
+        style={{
+          display: 'inline-block',
+          padding: '0.55rem 1.1rem',
+          background: '#1565c0',
+          color: 'white',
+          border: 0,
+          borderRadius: 4,
+          textDecoration: 'none',
+          fontSize: '0.9rem',
+        }}
+      >
+        ⬇ Télécharger snapshot JSON
+      </a>
+
       <h2 style={{ ...h2, marginTop: '2rem' }}>Recalculer le stock</h2>
       <p style={{ color: '#666', fontSize: '0.9rem' }}>
         Reconstruit <code>Piece.stockPhysique</code> et <code>Piece.stockReserve</code>{' '}
