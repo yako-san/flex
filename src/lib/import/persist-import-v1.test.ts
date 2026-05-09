@@ -143,8 +143,6 @@ describe('persistImportV1', () => {
         mecaMecanoId: null,
         ctrlMecanoId: null,
         noteVelo: null,
-        noteClientEval: null,
-        noteClientFacture: null,
         notes: null,
         legacyRawV1: null,
       },
@@ -167,6 +165,8 @@ describe('persistImportV1', () => {
         totalServices: '0',
         totalPieces: '0',
         notes: null,
+        noteClientEval: null,
+        noteClientFacture: null,
         legacyRawV1: null,
       },
     ];

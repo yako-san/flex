@@ -127,8 +127,7 @@ function buildPhantomFromArchive(
     mecaMecanoId: resolveMecano(arch.mecaMecano, lookups.equipe),
     ctrlMecanoId: resolveMecano(arch.ctrlMecano, lookups.equipe),
     noteVelo: normalizeNonValue(arch.noteVelo),
-    noteClientEval: null,
-    noteClientFacture: normalizeNonValue(arch.noteClientFacture),
+    // noteClientEval/Facture déplacés sur Bdc (Sprint 2.10)
     notes: normalizeNonValue(arch.noteInterne),
     legacyRawV1: arch as unknown as Record<string, unknown>,
   };
@@ -162,8 +161,6 @@ function buildPhantomFromActif(
     mecaMecanoId: null,
     ctrlMecanoId: null,
     noteVelo: null,
-    noteClientEval: null,
-    noteClientFacture: normalizeNonValue(bdc.noteClientFacture),
     notes: null,
     legacyRawV1: bdc as unknown as Record<string, unknown>,
   };

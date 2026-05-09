@@ -8,11 +8,11 @@ inline depuis la session v1.
 
 **Date audit** : 2026-05-08, par session v2 (Opus 4.7 / 1M context).
 
-**Dernière mise à jour** : 2026-05-08, post-Sprint 2.6 + 2.9 (en cours).
+**Dernière mise à jour** : 2026-05-08, post-Sprint 2.10.
 
-**Statut** : Sprint 1 + Sprint 2.1–2.6 + 2.9 livrés. Reste 2.7 (Gmail
-draft, OAuth Google requis), 2.8 (photos, Vercel Blob requis), 2.10
-(drop colonnes Velo deprecated).
+**Statut** : Sprint 1 + Sprint 2.1–2.6 + 2.9 + 2.10 livrés. Reste 2.7
+(Gmail draft, OAuth Google requis) + 2.8 (photos, Vercel Blob requis) —
+les deux bloqués sur config externe Vercel. Sprint 3 prêt à démarrer.
 
 ## Changelog
 
@@ -75,6 +75,14 @@ draft, OAuth Google requis), 2.8 (photos, Vercel Blob requis), 2.10
 - **2026-05-08 / Sprint 2.9** : `/api/admin/snapshot` — backup JSON
   complet du workshop (22 tables) téléchargeable depuis
   `/admin/maintenance`. Métadonnées + counts + decimals préservés.
+
+- **2026-05-08 / Sprint 2.10** : drop `Velo.noteClientEval/Facture`
+  deprecated. Migration SQL avec ROW_NUMBER() pour copier les notes
+  Velo→Bdc le plus récent (BDT archivés inclus) avant DROP COLUMN.
+  `transform-bdcs` écrit désormais `noteClientEval/Facture` dans
+  `Bdc` (V1 source = `noteClient`/`noteClientFacture` cols V/W ligne
+  GAP). `transform-velos`, `create-phantom-velos`, `V2VeloDraft`,
+  page vélo : nettoyés. Tests à jour.
 
 ---
 
@@ -455,7 +463,7 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 - ✅ **2.9 — `/api/admin/snapshot`** — backup JSON 22 tables, depuis `/admin/maintenance`.
 - ⏸️ **2.7 — Couche Gmail draft hybride** — bloqué : nécessite OAuth Google côté Vercel (scope `gmail.compose`). À débloquer manuellement avant code.
 - ⏸️ **2.8 — Photos clients + vélo (Vercel Blob)** — bloqué : nécessite token `BLOB_READ_WRITE_TOKEN` côté Vercel env. À débloquer manuellement avant code.
-- 🟡 **2.10 — Drop `Velo.noteClientEval/Facture` deprecated** — migration `ALTER TABLE velo DROP COLUMN`. À faire après vérif qu'aucune lecture/écriture ne pointe encore sur Velo (audit pending).
+- ✅ **2.10 — Drop `Velo.noteClientEval/Facture` deprecated** — migration SQL avec copie Velo→Bdc le plus récent (incluant BDT archivés) avant DROP COLUMN. Schema/transforms/page vélo nettoyés.
 
 ### Bonus livrés Sprint 2 (hors plan initial)
 

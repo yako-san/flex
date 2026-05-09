@@ -138,8 +138,8 @@ export function transformVelos(
       mecaMecanoId: resolveMecano(raw.meca, lookups.equipe),
       ctrlMecanoId: resolveMecano(raw.ctrl, lookups.equipe),
       noteVelo: normalizeNonValue(raw.noteVelo),
-      noteClientEval: normalizeNonValue(raw.noteClientEval),
-      noteClientFacture: normalizeNonValue(raw.noteClientFacture),
+      // noteClientEval/Facture sont désormais sur Bdc (Sprint 2.10).
+      // Le V1 stockait sur Velo, mais V2 les écrit dans transform-bdcs.
       notes: normalizeNonValue(raw.notes),
       legacyRawV1: raw as unknown as Record<string, unknown>,
     });

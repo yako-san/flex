@@ -231,12 +231,9 @@ function buildBdcDraft(
 ): V2BdcDraft {
   const remiseSvc = mapRemise(raw.remiseSvc);
   const remisePce = mapRemise(raw.remisePce);
-  const noteRaw =
-    'noteInterne' in raw && raw.noteInterne
-      ? raw.noteInterne
-      : raw.noteClient !== ''
-      ? raw.noteClient
-      : raw.noteClientFacture;
+  // Note interne du BDT (col W ARCHIVES `noteInterne` si présente, sinon vide)
+  const noteInterne =
+    'noteInterne' in raw && raw.noteInterne ? raw.noteInterne : '';
 
   return {
     id: generateId('bdc'),
@@ -252,9 +249,14 @@ function buildBdcDraft(
     remiseSvcValue: remiseSvc.value,
     remisePceType: remisePce.type,
     remisePceValue: remisePce.value,
+    // Notes client visibles dans PDFs/courriels (col V/W ligne GAP).
+    // V2 stocke par-BDT (V1 stockait pareil mais V2 initial avait porté
+    // sur Velo par erreur, corrigé en Sprint 1.4 + 2.10).
+    noteClientEval: normalizeNonValue(raw.noteClient ?? '') || null,
+    noteClientFacture: normalizeNonValue(raw.noteClientFacture ?? '') || null,
     totalServices: String(raw.totalServices ?? 0),
     totalPieces: String(raw.totalPieces ?? 0),
-    notes: normalizeNonValue(noteRaw ?? ''),
+    notes: normalizeNonValue(noteInterne) || null,
     legacyRawV1: raw as unknown as Record<string, unknown>,
   };
 }
