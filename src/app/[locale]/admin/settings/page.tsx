@@ -15,7 +15,52 @@ type Props = {
   searchParams: Promise<{ gmail_ok?: string; gmail_err?: string }>;
 };
 
-export default async function SettingsPage({ params, searchParams }: Props) {
+export default async function SettingsPage(props: Props) {
+  try {
+    return await renderSettings(props);
+  } catch (e) {
+    return renderCrash(e);
+  }
+}
+
+/**
+ * Affiche un dump verbose de l'erreur **uniquement en preview Vercel**
+ * (VERCEL_ENV=preview). En prod, re-throw → boundary catch + message
+ * minimal sans fuite d'info sensible.
+ */
+function renderCrash(e: unknown): never | React.ReactElement {
+  if (process.env['VERCEL_ENV'] !== 'preview') {
+    throw e;
+  }
+  const err = e instanceof Error ? e : new Error(String(e));
+  return (
+    <main style={{ padding: '2rem', maxWidth: 900, fontFamily: 'ui-monospace, monospace' }}>
+      <h2 style={{ color: '#c62828', marginTop: 0 }}>SettingsPage crash (preview only)</h2>
+      <p style={{ fontSize: '0.85rem', color: '#666' }}>
+        Ce dump n&apos;apparaît qu&apos;en preview Vercel. En production, l&apos;erreur
+        est masquée et capturée par l&apos;error boundary.
+      </p>
+      <h3>Message</h3>
+      <pre style={{ background: '#fff3cd', padding: '0.75rem 1rem', borderRadius: 6, whiteSpace: 'pre-wrap' }}>
+        {err.message || '(aucun message)'}
+      </pre>
+      <h3>Stack</h3>
+      <pre style={{ background: '#fafafa', border: '1px solid #e0e0e0', padding: '0.75rem 1rem', borderRadius: 6, fontSize: '0.78rem', whiteSpace: 'pre-wrap', overflow: 'auto' }}>
+        {err.stack ?? '(aucune stack)'}
+      </pre>
+      <h3>Cause probable</h3>
+      <p>
+        Si message contient <code>column does not exist</code> ou{' '}
+        <code>Unknown field</code> : la branche Neon de cette preview n&apos;a pas
+        les migrations récentes. Soit redéclencher la preview après une migration
+        sur main, soit vérifier l&apos;intégration Vercel-Neon (chaque preview
+        crée une branche DB indépendante).
+      </p>
+    </main>
+  );
+}
+
+async function renderSettings({ params, searchParams }: Props) {
   const { locale } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
