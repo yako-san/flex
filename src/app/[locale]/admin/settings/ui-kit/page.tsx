@@ -13,5 +13,5 @@ type Props = { params: Promise<{ locale: string }> };
 export default async function SettingsUiKitPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <UiKitContent eyebrow="paramètres · ui kit" />;
+  return <UiKitContent eyebrow="paramètres · ui kit" locale={locale} />;
 }

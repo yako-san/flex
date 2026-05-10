@@ -26,6 +26,16 @@ import {
 import { UiKitPillsToggle } from './pills-toggle-demo';
 import { UiKitCheckboxes } from './checkbox-demo';
 import { SidebarPreview } from './sidebar-preview';
+import {
+  DemoRemiseInput,
+  DemoBDCTotaux,
+  DemoAjoutItemsModal,
+  DemoArchiveChoiceDialog,
+  DemoClientAutocomplete,
+  DemoVeloFormFields,
+} from './domain-demos';
+import { BDCHeader, BDCHeaderActions } from '@/components/domain/bdc-header';
+import { FactureStatusPanel } from '@/components/domain/facture-status-panel';
 
 const STATUTS_VELO = [
   'rv', 'recu', 'eval', 'attente', 'approuve', 'on-bench', 'ctrl-qlte', 'fini', 'facturer', 'facture', 'livre',
@@ -38,6 +48,8 @@ const ETAPES = ['etape-eval', 'etape-meca', 'etape-ctrl'] as const;
 type Props = {
   /** Sur-titre affiché dans le PageHeader (ex: "settings · ui kit"). */
   eyebrow?: string;
+  /** Locale courante (utilisée dans les liens BDCHeader, etc.). */
+  locale?: string;
 };
 
 /**
@@ -45,7 +57,7 @@ type Props = {
  * être rendu sans auth ni DB. Réutilisé par /admin/settings/ui-kit (auth) et
  * /dev/ui-kit (public, debug Sprint 4).
  */
-export function UiKitContent({ eyebrow = 'dev · qa visuelle' }: Props) {
+export function UiKitContent({ eyebrow = 'dev · qa visuelle', locale = 'fr-CA' }: Props) {
   return (
     <div className="space-y-12 pb-24">
       <PageHeader
@@ -313,6 +325,75 @@ export function UiKitContent({ eyebrow = 'dev · qa visuelle' }: Props) {
             <SidebarPreview />
           </div>
         </div>
+      </Section>
+
+      <Section title="Phase 2 — RemiseInput (% / $)">
+        <DemoRemiseInput />
+      </Section>
+
+      <Section title="Phase 2 — BDCHeader (carte sticky fiche BDT)">
+        <BDCHeader
+          locale={locale}
+          bdcNumero={145}
+          veloNumero={119}
+          client={{ id: 'c1', prenom: 'Julie', nom: 'St-Arnault' }}
+          velo={{ marque: 'Raleigh', modele: 'Superbe', couleur: 'blanc' }}
+          evalStatus="APPROUVE"
+          archiveStatus="ACTIF"
+          mecanos={[
+            { id: 'me1', nom: 'yako' },
+            { id: 'me2', nom: 'paul' },
+          ]}
+          evalMecanoId="me1"
+          mecaMecanoId="me1"
+          ctrlMecanoId={null}
+          cbEvalEnvoye={true}
+          cbEval={true}
+          cbBonSortie={false}
+          cbArchiver={false}
+          actions={
+            <BDCHeaderActions
+              onSendEval={() => {}}
+              onEmitFacture={() => {}}
+              onArchive={() => {}}
+            />
+          }
+        />
+      </Section>
+
+      <Section title="Phase 2 — BDCTotaux (avec lien avance + reste-à-payer)">
+        <DemoBDCTotaux />
+        <p className="text-xs text-[var(--text-secondary-60)]">
+          Clique sur « avance ? » pour ouvrir le modal · saisis un montant pour voir le total
+          barré + le reste-à-payer en jaune.
+        </p>
+      </Section>
+
+      <Section title="Phase 2 — FactureStatusPanel">
+        <FactureStatusPanel
+          factureNumero="2025-0144"
+          date="2026-04-23"
+          statut="PAYE"
+          modePaiement="INTERAC"
+          grandTotal={224.79}
+          pdfUrl="#"
+        />
+      </Section>
+
+      <Section title="Phase 2 — AjoutItemsModal (Services + Pièces, multi-sélection)">
+        <DemoAjoutItemsModal />
+      </Section>
+
+      <Section title="Phase 2 — ArchiveChoiceDialog v1.0.19 (4 boutons en un clic)">
+        <DemoArchiveChoiceDialog />
+      </Section>
+
+      <Section title="Phase 2 — ClientAutocomplete (recherche live)">
+        <DemoClientAutocomplete />
+      </Section>
+
+      <Section title="Phase 2 — VeloFormFields (Marque + Modèle + Couleur + Taille)">
+        <DemoVeloFormFields />
       </Section>
 
       <Section title="Notes implémentation">

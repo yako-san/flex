@@ -23,7 +23,7 @@ export default async function PublicUiKitPage({ params }: Props) {
   setRequestLocale(locale);
   return (
     <main className="min-h-screen bg-[var(--gris-fond)] py-6">
-      <UiKitContent eyebrow="dev · public · qa visuelle" />
+      <UiKitContent eyebrow="dev · public · qa visuelle" locale={locale} />
     </main>
   );
 }
