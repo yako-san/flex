@@ -671,7 +671,7 @@ Composants génériques dans `src/components/ui/` :
   `STAFF` avec label gris small-caps.
 
 **Livrable Phase 1** : composants dans `src/components/ui/` + page interne
-**`/admin/_dev/ui-kit`** listant chaque composant avec ses variantes
+**`/admin/dev/ui-kit`** listant chaque composant avec ses variantes
 côte à côte, pour QA visuel rapide en preview Vercel.
 
 #### Phase 2 — Composants domaine (1 j)
@@ -773,7 +773,7 @@ Ordre de port :
 
 #### Décisions verrouillées
 
-- ✅ Storybook interne `/admin/_dev/ui-kit` : OUI.
+- ✅ Storybook interne `/admin/dev/ui-kit` : OUI.
 - ✅ Sidebar latérale jaune desktop / header collapse mobile iOS, double-état
   collapsed/expanded.
 - ✅ shadcn/ui (= Tailwind + Radix) + restyle V1 agressif.
