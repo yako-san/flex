@@ -14,9 +14,11 @@ import {
   Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AddButton, UtilButton } from '@/components/ui/icon-button';
+import { AddButton, UtilButton, IconButton } from '@/components/ui/icon-button';
 import { Pill } from '@/components/ui/pill';
 import { PageHeader } from '@/components/ui/page-header';
+import { Input, Textarea } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   DataTable,
   DataTableHead,
@@ -37,6 +39,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { UiKitPillsToggle } from './_pills-toggle-demo';
+import { UiKitCheckboxes } from './_checkbox-demo';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,29 +94,71 @@ export default async function UiKitPage({ params }: Props) {
         </div>
       </Section>
 
-      <Section title="Boutons">
+      <Section title="Boutons (V1 pill 30px radius, h4 uppercase 0.1em)">
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="primary">Primary</Button>
-          <Button variant="jaune">Jaune signature</Button>
-          <Button variant="danger">Danger</Button>
-          <Button variant="outline">Outline</Button>
+          <Button variant="primary">Enregistrer</Button>
+          <Button variant="secondary">Annuler</Button>
+          <Button variant="danger">Supprimer</Button>
+          <Button variant="dark">Émettre facture</Button>
           <Button variant="ghost">Ghost</Button>
-          <Button variant="link">Link</Button>
+          <Button variant="link">Voir détail</Button>
           <Button disabled>Disabled</Button>
         </div>
         <div className="flex items-center gap-3 pt-3">
-          <Button size="sm">SM</Button>
-          <Button size="md">MD</Button>
-          <Button size="lg">LG</Button>
+          <Button size="sm">SM 32px</Button>
+          <Button size="md">MD 38px</Button>
+          <Button size="lg">LG 44px</Button>
         </div>
       </Section>
 
-      <Section title="IconButton (AddButton 37×37 / UtilButton 32×32)">
-        <div className="flex items-center gap-3">
-          <AddButton aria-label="Ajouter"><Plus size={20} /></AddButton>
-          <UtilButton aria-label="Rechercher"><Search size={16} /></UtilButton>
-          <UtilButton aria-label="Étiquettes"><QrCode size={16} /></UtilButton>
+      <Section title="IconButton (AddButton 40×40 jaune+shadow / UtilButton 32×32 gris)">
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-center gap-2">
+            <AddButton aria-label="Ajouter"><Plus size={24} /></AddButton>
+            <span className="text-xs text-[var(--text-secondary-50)]">add (jaune)</span>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <IconButton tone="addOutline" aria-label="Ajouter (outline)"><Plus size={24} /></IconButton>
+            <span className="text-xs text-[var(--text-secondary-50)]">addOutline</span>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <UtilButton aria-label="Rechercher"><Search size={16} /></UtilButton>
+            <span className="text-xs text-[var(--text-secondary-50)]">util (32×32)</span>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <UtilButton aria-label="Étiquettes"><QrCode size={16} /></UtilButton>
+            <span className="text-xs text-[var(--text-secondary-50)]">util qr</span>
+          </div>
         </div>
+      </Section>
+
+      <Section title="Inputs / Labels (V1 input-system + label-system)">
+        <div className="grid max-w-xl grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <Label htmlFor="ui-prenom">Prénom</Label>
+            <Input id="ui-prenom" placeholder="Jean" />
+          </div>
+          <div>
+            <Label htmlFor="ui-tel">Téléphone</Label>
+            <Input id="ui-tel" type="tel" placeholder="514 555-1234" />
+          </div>
+          <div>
+            <Label htmlFor="ui-mail">Courriel</Label>
+            <Input id="ui-mail" type="email" placeholder="jean@exemple.ca" />
+          </div>
+          <div>
+            <Label htmlFor="ui-disabled">Champ désactivé</Label>
+            <Input id="ui-disabled" disabled value="—" readOnly />
+          </div>
+          <div className="md:col-span-2">
+            <Label htmlFor="ui-notes">Notes (textarea)</Label>
+            <Textarea id="ui-notes" placeholder="Commentaire libre…" rows={3} />
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Checkbox custom (20×20, transparent + border noir 50%)">
+        <UiKitCheckboxes />
       </Section>
 
       <Section title="Pills — statuts vélo">
@@ -169,6 +214,61 @@ export default async function UiKitPage({ params }: Props) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </Section>
+
+      <Section title="Hiérarchie typo V1">
+        <div className="space-y-2 rounded-xl border border-[var(--gris-bord)] bg-white p-6">
+          <h1>H1 · 3rem · weight 400 · Helvetica</h1>
+          <h2>H2 · 1.8rem · weight 900</h2>
+          <h3>H3 · 1.3rem · weight 600 · pas uppercase</h3>
+          <h4>H4 · 0.9rem · uppercase 0.1em · weight 900</h4>
+          <h5>H5 · 0.65rem · weight 600</h5>
+          <h6>H6 · 0.5rem · italic · weight 600</h6>
+          <p className="text-base">Body — Helvetica Neue, lorem ipsum dolor sit amet.</p>
+          <p className="text-gray-400">text-gray-400 → noir 50% (override Tailwind bleuté)</p>
+          <p className="text-gray-500">text-gray-500 → noir 60%</p>
+          <p className="text-gray-600">text-gray-600 → noir 70%</p>
+          <p className="text-gray-700">text-gray-700 → noir 80%</p>
+        </div>
+      </Section>
+
+      <Section title="Listes alternées V1 (.list-row-even / .list-row-odd / .list-row-highlight)">
+        <DataTable>
+          <DataTableHead>
+            <tr>
+              <DataTableHeadCell>Item</DataTableHeadCell>
+              <DataTableHeadCell>Notes</DataTableHeadCell>
+              <DataTableHeadCell align="right">Qté</DataTableHeadCell>
+              <DataTableHeadCell align="right">Prix</DataTableHeadCell>
+            </tr>
+          </DataTableHead>
+          <tbody>
+            <DataTableRow zebra="even">
+              <DataTableCell>Shimano Tourney TY21-GS</DataTableCell>
+              <DataTableCell>—</DataTableCell>
+              <DataTableCell align="right" mono>1</DataTableCell>
+              <DataTableCell align="right" mono>12,00 $</DataTableCell>
+            </DataTableRow>
+            <DataTableRow zebra="odd">
+              <DataTableCell>Jagwire Câbles freins Basics VTT</DataTableCell>
+              <DataTableCell>OOS</DataTableCell>
+              <DataTableCell align="right" mono>2</DataTableCell>
+              <DataTableCell align="right" mono>38,00 $</DataTableCell>
+            </DataTableRow>
+            <DataTableRow zebra="even">
+              <DataTableCell>Babac Boulons 45mm alliage</DataTableCell>
+              <DataTableCell>—</DataTableCell>
+              <DataTableCell align="right" mono>5</DataTableCell>
+              <DataTableCell align="right" mono>8,75 $</DataTableCell>
+            </DataTableRow>
+            <DataTableRow zebra="highlight">
+              <DataTableCell>Pièce mise en évidence</DataTableCell>
+              <DataTableCell>highlight</DataTableCell>
+              <DataTableCell align="right" mono>1</DataTableCell>
+              <DataTableCell align="right" mono>—</DataTableCell>
+            </DataTableRow>
+          </tbody>
+        </DataTable>
       </Section>
 
       <Section title="DataTable + RowGroup (Inventaire mock)">

@@ -53,15 +53,27 @@ export function DataTableHeadCell({
   );
 }
 
+/**
+ * Variants V1 zebra alternées : `even` (rgba blanc 0.7), `odd` (rgba blanc
+ * 0.85), `highlight` (vert pâle V1). Ces variantes utilisent les classes
+ * `.list-row-*` définies dans globals.css — overridable via Workshop.theme.
+ */
 export function DataTableRow({
   className,
   selected,
+  zebra,
   ...props
-}: React.HTMLAttributes<HTMLTableRowElement> & { selected?: boolean }) {
+}: React.HTMLAttributes<HTMLTableRowElement> & {
+  selected?: boolean;
+  zebra?: 'even' | 'odd' | 'highlight';
+}) {
   return (
     <tr
       className={cn(
         'border-b border-[var(--gris-bord)] transition-colors hover:bg-[var(--overlay-light-50)]',
+        zebra === 'even' && 'list-row-even',
+        zebra === 'odd' && 'list-row-odd',
+        zebra === 'highlight' && 'list-row-highlight',
         selected && 'bg-[var(--overlay-light-85)]',
         className,
       )}
