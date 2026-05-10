@@ -89,6 +89,9 @@ export async function sendEvalEmailAction(
   const totalEstime = ctx.totalServices + ctx.totalPieces - ctx.remises;
   const templates = getEmailTemplates(workshop.emailTemplates);
   const clientLang = ctx.client.lang ?? null;
+  const veloLabel =
+    [ctx.velo.marque, ctx.velo.modele, ctx.velo.couleur].filter(Boolean).join(', ') ||
+    `Vélo ${String(ctx.velo.veloNumero).padStart(4, '0')}`;
   const bodyHtml = evalEmailTemplate({
     workshop: {
       name: workshop.name,
@@ -101,8 +104,17 @@ export async function sendEvalEmailAction(
     clientPrenom: ctx.client.prenom,
     clientNom: ctx.client.nom,
     bdcShortId: bdcId.slice(-4),
+    veloLabel,
     totalEstime,
+    noteClient: ctx.noteClientEval,
+    items: ctx.items.map((it) => ({
+      kind: it.kind,
+      label: it.label,
+      qty: it.qty,
+      total: it.total,
+    })),
     customMessage,
+    date: new Date(),
   });
   const subject = evalEmailSubject({
     templates,

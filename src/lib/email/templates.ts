@@ -3,10 +3,18 @@
 // les CSS modernes. Les bodies par défaut peuvent être surchargés par
 // workshop.emailTemplates (Paramètres → Templates courriel) — multi-locale
 // FR + EN, sélection automatique selon Client.lang.
+//
+// Pas de logo intégré dans le HTML : V1 = email texte simple, le client mail
+// (Gmail, etc.) ajoute déjà la signature de l'expéditeur. Évite la
+// duplication visuelle. Le sujet et le corps peuvent contenir des
+// placeholders V1 ({{prenom}}, {{id}}, {{date}}, {{veloDesc}},
+// {{services}}, {{pieces}}, {{noteClient}}, {{clientNom}}) qui sont
+// remplacés au rendu.
 
 import { escapeHtml } from '@/lib/pdf-html/templates/styles';
 import {
   renderTemplate,
+  nl2br,
   pickLocale,
   DEFAULT_EVAL_BODY_FR,
   DEFAULT_EVAL_BODY_EN,
@@ -40,20 +48,18 @@ const baseStyles = `
   font-size: 14px;
 `;
 
+// Shell minimal — pas de logo (V1 pattern). La signature workshop reste,
+// mais le client mail ajoutera aussi sa propre signature.
 function shell(opts: { workshop: WorkshopBranding; bodyHtml: string }): string {
   const { workshop, bodyHtml } = opts;
-  const logo = workshop.logoBase64
-    ? `<img src="${workshop.logoBase64}" alt="${E(workshop.name)}" style="width: 60px; height: 60px; object-fit: contain;" />`
-    : '';
   const signature = workshop.signatureText
     ? `<p style="color: #666; font-size: 12px; margin-top: 24px; white-space: pre-wrap;">${E(workshop.signatureText)}</p>`
-    : `<p style="color: #666; font-size: 12px; margin-top: 24px;">${E(workshop.raisonSociale ?? workshop.name)}</p>`;
+    : '';
   return `<!doctype html>
 <html lang="fr">
 <head><meta charset="utf-8"></head>
 <body style="${baseStyles}">
-  <div style="max-width: 580px; margin: 0 auto; padding: 24px;">
-    ${logo}
+  <div style="max-width: 580px; margin: 0 auto; padding: 16px;">
     ${bodyHtml}
     ${signature}
   </div>
@@ -75,6 +81,28 @@ function normalizeLocale(raw: string | null | undefined): Locale {
   return 'fr';
 }
 
+// Format date courte locale (fr-CA / en-CA).
+function formatDate(d: Date, locale: Locale): string {
+  return d.toLocaleDateString(locale === 'en' ? 'en-CA' : 'fr-CA');
+}
+
+// Construit la liste HTML des services et pièces à partir des items du BDT.
+// Format : 1 item par ligne, format "• Nom — qty × prix = total".
+function formatItemsList(
+  items: Array<{ kind: 'SERVICE' | 'PIECE' | 'FORFAIT'; label: string; qty: number; total: number }>,
+  filterKind: 'SERVICE_OR_FORFAIT' | 'PIECE',
+): string {
+  const filtered = items.filter((it) =>
+    filterKind === 'PIECE' ? it.kind === 'PIECE' : it.kind === 'SERVICE' || it.kind === 'FORFAIT',
+  );
+  if (filtered.length === 0) return '';
+  const lines = filtered.map((it) => {
+    const qtyTxt = it.qty !== 1 ? `${it.qty} × ` : '';
+    return `• ${E(it.label)} — ${qtyTxt}${it.total.toFixed(2)} $`;
+  });
+  return lines.join('<br />');
+}
+
 export function evalEmailTemplate(opts: {
   workshop: WorkshopBranding;
   templates?: EmailTemplates;
@@ -82,19 +110,36 @@ export function evalEmailTemplate(opts: {
   clientPrenom: string;
   clientNom?: string | null;
   bdcShortId: string;
+  veloLabel?: string | null;
   totalEstime: number;
+  noteClient?: string | null;
+  items?: Array<{ kind: 'SERVICE' | 'PIECE' | 'FORFAIT'; label: string; qty: number; total: number }>;
   customMessage?: string | null;
+  date?: Date;
 }): string {
   const locale = normalizeLocale(opts.clientLang);
   const fallback = locale === 'en' ? DEFAULT_EVAL_BODY_EN : DEFAULT_EVAL_BODY_FR;
   const tpl = pickLocale(opts.templates?.eval?.body, locale) || fallback;
-  const rendered = renderTemplate(tpl, {
-    clientPrenom: opts.clientPrenom,
-    clientNom: opts.clientNom ?? '',
-    bdcShortId: opts.bdcShortId,
-    totalEstime: opts.totalEstime.toFixed(2),
-    workshopName: opts.workshop.name,
-  });
+  const date = opts.date ?? new Date();
+  const items = opts.items ?? [];
+  const rendered = nl2br(
+    renderTemplate(tpl, {
+      // V2 names (legacy)
+      clientPrenom: opts.clientPrenom,
+      clientNom: opts.clientNom ?? '',
+      bdcShortId: opts.bdcShortId,
+      totalEstime: opts.totalEstime.toFixed(2),
+      workshopName: opts.workshop.name,
+      // V1 names (depuis dump.templates)
+      prenom: opts.clientPrenom,
+      veloDesc: opts.veloLabel ?? '',
+      id: opts.bdcShortId,
+      date: formatDate(date, locale),
+      noteClient: opts.noteClient ?? '',
+      services: formatItemsList(items, 'SERVICE_OR_FORFAIT'),
+      pieces: formatItemsList(items, 'PIECE'),
+    }),
+  );
   return shell({
     workshop: opts.workshop,
     bodyHtml: `${rendered}${customMessageBlock(opts.customMessage)}`,
@@ -106,13 +151,17 @@ export function evalEmailSubject(opts: {
   clientLang?: string | null;
   bdcShortId: string;
   workshopName: string;
+  date?: Date;
 }): string {
   const locale = normalizeLocale(opts.clientLang);
   const fallback = locale === 'en' ? DEFAULT_EVAL_SUBJECT_EN : DEFAULT_EVAL_SUBJECT_FR;
   const tpl = pickLocale(opts.templates?.eval?.subject, locale) || fallback;
+  const date = opts.date ?? new Date();
   return renderTemplate(tpl, {
     bdcShortId: opts.bdcShortId,
     workshopName: opts.workshopName,
+    id: opts.bdcShortId,
+    date: formatDate(date, locale),
   });
 }
 
@@ -126,18 +175,26 @@ export function factureEmailTemplate(opts: {
   grandTotal: number;
   modePaiement?: string | null;
   customMessage?: string | null;
+  date?: Date;
 }): string {
   const locale = normalizeLocale(opts.clientLang);
   const fallback = locale === 'en' ? DEFAULT_FACTURE_BODY_EN : DEFAULT_FACTURE_BODY_FR;
   const tpl = pickLocale(opts.templates?.facture?.body, locale) || fallback;
-  const rendered = renderTemplate(tpl, {
-    clientPrenom: opts.clientPrenom,
-    clientNom: opts.clientNom ?? '',
-    factureNumero: opts.factureNumero,
-    grandTotal: opts.grandTotal.toFixed(2),
-    modePaiement: opts.modePaiement?.toLowerCase() ?? '',
-    workshopName: opts.workshop.name,
-  });
+  const date = opts.date ?? new Date();
+  const rendered = nl2br(
+    renderTemplate(tpl, {
+      clientPrenom: opts.clientPrenom,
+      clientNom: opts.clientNom ?? '',
+      factureNumero: opts.factureNumero,
+      grandTotal: opts.grandTotal.toFixed(2),
+      modePaiement: opts.modePaiement?.toLowerCase() ?? '',
+      workshopName: opts.workshop.name,
+      // V1 names
+      prenom: opts.clientPrenom,
+      id: opts.factureNumero,
+      date: formatDate(date, locale),
+    }),
+  );
   return shell({
     workshop: opts.workshop,
     bodyHtml: `${rendered}${customMessageBlock(opts.customMessage)}`,
@@ -149,13 +206,17 @@ export function factureEmailSubject(opts: {
   clientLang?: string | null;
   factureNumero: string;
   workshopName: string;
+  date?: Date;
 }): string {
   const locale = normalizeLocale(opts.clientLang);
   const fallback = locale === 'en' ? DEFAULT_FACTURE_SUBJECT_EN : DEFAULT_FACTURE_SUBJECT_FR;
   const tpl = pickLocale(opts.templates?.facture?.subject, locale) || fallback;
+  const date = opts.date ?? new Date();
   return renderTemplate(tpl, {
     factureNumero: opts.factureNumero,
     workshopName: opts.workshopName,
+    id: opts.factureNumero,
+    date: formatDate(date, locale),
   });
 }
 
@@ -167,16 +228,24 @@ export function suiviEmailTemplate(opts: {
   clientNom?: string | null;
   veloLabel?: string | null;
   customMessage?: string | null;
+  date?: Date;
 }): string {
   const locale = normalizeLocale(opts.clientLang);
   const fallback = locale === 'en' ? DEFAULT_SUIVI_BODY_EN : DEFAULT_SUIVI_BODY_FR;
   const tpl = pickLocale(opts.templates?.courrielSuivi?.body, locale) || fallback;
-  const rendered = renderTemplate(tpl, {
-    clientPrenom: opts.clientPrenom,
-    clientNom: opts.clientNom ?? '',
-    veloLabel: opts.veloLabel ?? '',
-    workshopName: opts.workshop.name,
-  });
+  const date = opts.date ?? new Date();
+  const rendered = nl2br(
+    renderTemplate(tpl, {
+      clientPrenom: opts.clientPrenom,
+      clientNom: opts.clientNom ?? '',
+      veloLabel: opts.veloLabel ?? '',
+      workshopName: opts.workshop.name,
+      // V1 names
+      prenom: opts.clientPrenom,
+      veloDesc: opts.veloLabel ?? '',
+      date: formatDate(date, locale),
+    }),
+  );
   return shell({
     workshop: opts.workshop,
     bodyHtml: `${rendered}${customMessageBlock(opts.customMessage)}`,
@@ -187,11 +256,14 @@ export function suiviEmailSubject(opts: {
   templates?: EmailTemplates;
   clientLang?: string | null;
   workshopName: string;
+  date?: Date;
 }): string {
   const locale = normalizeLocale(opts.clientLang);
   const fallback = locale === 'en' ? DEFAULT_SUIVI_SUBJECT_EN : DEFAULT_SUIVI_SUBJECT_FR;
   const tpl = pickLocale(opts.templates?.courrielSuivi?.subject, locale) || fallback;
+  const date = opts.date ?? new Date();
   return renderTemplate(tpl, {
     workshopName: opts.workshopName,
+    date: formatDate(date, locale),
   });
 }

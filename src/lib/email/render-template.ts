@@ -1,15 +1,22 @@
 // Substitue les placeholders {{key}} par les valeurs fournies. Les clés
-// inconnues sont laissées intactes ; les valeurs nulles deviennent vides.
+// inconnues sont remplacées par chaîne vide (sinon elles apparaissent
+// littéralement dans le courriel client — pollution visible).
 export function renderTemplate(
   template: string,
   values: Record<string, string | number | null | undefined>,
 ): string {
-  return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (m, key) => {
-    if (!(key in values)) return m;
+  return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, key) => {
     const v = values[key as keyof typeof values];
     if (v === null || v === undefined) return '';
     return String(v);
   });
+}
+
+// Convertit les `\n` bruts en `<br>` pour préserver les passages à la
+// ligne dans les emails HTML (le HTML ignore les whitespaces normalement).
+// Idempotent si le contenu utilise déjà des `<br>` ou `<p>`.
+export function nl2br(s: string): string {
+  return s.replace(/\r?\n/g, '<br />\n');
 }
 
 // =============================================================================
