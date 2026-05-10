@@ -28,13 +28,13 @@ import { UiKitCheckboxes } from './checkbox-demo';
 import { SidebarPreview } from './sidebar-preview';
 import {
   DemoRemiseInput,
+  DemoBDCHeader,
   DemoBDCTotaux,
   DemoAjoutItemsModal,
   DemoArchiveChoiceDialog,
   DemoClientAutocomplete,
   DemoVeloFormFields,
 } from './domain-demos';
-import { BDCHeader, BDCHeaderActions } from '@/components/domain/bdc-header';
 import { FactureStatusPanel } from '@/components/domain/facture-status-panel';
 
 const STATUTS_VELO = [
@@ -332,33 +332,7 @@ export function UiKitContent({ eyebrow = 'dev · qa visuelle', locale = 'fr-CA' 
       </Section>
 
       <Section title="Phase 2 — BDCHeader (carte sticky fiche BDT)">
-        <BDCHeader
-          locale={locale}
-          bdcNumero={145}
-          veloNumero={119}
-          client={{ id: 'c1', prenom: 'Julie', nom: 'St-Arnault' }}
-          velo={{ marque: 'Raleigh', modele: 'Superbe', couleur: 'blanc' }}
-          evalStatus="APPROUVE"
-          archiveStatus="ACTIF"
-          mecanos={[
-            { id: 'me1', nom: 'yako' },
-            { id: 'me2', nom: 'paul' },
-          ]}
-          evalMecanoId="me1"
-          mecaMecanoId="me1"
-          ctrlMecanoId={null}
-          cbEvalEnvoye={true}
-          cbEval={true}
-          cbBonSortie={false}
-          cbArchiver={false}
-          actions={
-            <BDCHeaderActions
-              onSendEval={() => {}}
-              onEmitFacture={() => {}}
-              onArchive={() => {}}
-            />
-          }
-        />
+        <DemoBDCHeader locale={locale} />
       </Section>
 
       <Section title="Phase 2 — BDCTotaux (avec lien avance + reste-à-payer)">

@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { RemiseInput, type RemiseType } from '@/components/domain/remise-input';
 import { BDCTotaux, type Avance } from '@/components/domain/bdc-totaux';
+import { BDCHeader, BDCHeaderActions } from '@/components/domain/bdc-header';
 import { AjoutItemsModal } from '@/components/domain/ajout-items-modal';
 import { ArchiveChoiceDialog } from '@/components/domain/archive-choice-dialog';
 import {
@@ -11,6 +12,38 @@ import {
 } from '@/components/domain/client-autocomplete';
 import { VeloFormFields, type VeloDraft, type Marque } from '@/components/domain/velo-form-fields';
 import { Button } from '@/components/ui/button';
+
+export function DemoBDCHeader({ locale }: { locale: string }) {
+  return (
+    <BDCHeader
+      locale={locale}
+      bdcNumero={145}
+      veloNumero={119}
+      client={{ id: 'c1', prenom: 'Julie', nom: 'St-Arnault' }}
+      velo={{ marque: 'Raleigh', modele: 'Superbe', couleur: 'blanc' }}
+      evalStatus="APPROUVE"
+      archiveStatus="ACTIF"
+      mecanos={[
+        { id: 'me1', nom: 'yako' },
+        { id: 'me2', nom: 'paul' },
+      ]}
+      evalMecanoId="me1"
+      mecaMecanoId="me1"
+      ctrlMecanoId={null}
+      cbEvalEnvoye={true}
+      cbEval={true}
+      cbBonSortie={false}
+      cbArchiver={false}
+      actions={
+        <BDCHeaderActions
+          onSendEval={() => alert('demo : envoyer éval')}
+          onEmitFacture={() => alert('demo : émettre facture')}
+          onArchive={() => alert('demo : archiver')}
+        />
+      }
+    />
+  );
+}
 
 export function DemoRemiseInput() {
   const [val, setVal] = React.useState<{ value: number | null; type: RemiseType }>({
