@@ -1,18 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
-import {
-  Wrench,
-  Cog,
-  Clock,
-  Banknote,
-  PackageOpen,
-  ClipboardList,
-  LayoutDashboard,
-  Users,
-  Archive,
-  Plus,
-  QrCode,
-  Search,
-} from 'lucide-react';
+import { Plus, QrCode, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddButton, UtilButton, IconButton } from '@/components/ui/icon-button';
 import { Pill } from '@/components/ui/pill';
@@ -27,7 +14,6 @@ import {
   DataTableCell,
   RowGroup,
 } from '@/components/ui/data-table';
-import { Sidebar, type SidebarItem } from '@/components/ui/sidebar';
 import {
   Dialog,
   DialogContent,
@@ -40,22 +26,11 @@ import {
 } from '@/components/ui/dialog';
 import { UiKitPillsToggle } from './_pills-toggle-demo';
 import { UiKitCheckboxes } from './_checkbox-demo';
+import { SidebarPreview } from './_sidebar-preview';
 
 export const dynamic = 'force-dynamic';
 
 type Props = { params: Promise<{ locale: string }> };
-
-const sidebarItems: SidebarItem[] = [
-  { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
-  { href: '/admin/inventaire', icon: Wrench, label: 'Inventaire', badge: 7, badgeVariant: 'vert' },
-  { href: '/admin/clients', icon: Users, label: 'Clients' },
-  { href: '/admin/pieces', icon: Cog, label: 'Pièces', badge: 49, badgeVariant: 'rouge' },
-  { href: '/admin/services', icon: Clock, label: 'Services' },
-  { href: '/admin/ventes', icon: Banknote, label: 'Ventes', badge: 1, badgeVariant: 'rouge' },
-  { href: '/admin/reception', icon: PackageOpen, label: 'Réception' },
-  { href: '/admin/commandes', icon: ClipboardList, label: 'Commandes' },
-  { href: '/admin/archives', icon: Archive, label: 'Archives' },
-];
 
 const STATUTS_VELO = [
   'rv', 'recu', 'eval', 'attente', 'approuve', 'on-bench', 'ctrl-qlte', 'fini', 'facturer', 'facture', 'livre',
@@ -370,21 +345,3 @@ function Swatch({ label, varName, textLight }: { label: string; varName: string;
   );
 }
 
-function SidebarPreview() {
-  return (
-    <Sidebar
-      items={sidebarItems}
-      header={
-        <div className="space-y-1">
-          <div className="text-2xl font-bold tracking-tight">F/V</div>
-          <div className="text-[10px] opacity-70">v2.0.0</div>
-        </div>
-      }
-      footer={
-        <div className="flex h-9 items-center justify-center rounded-full bg-black/15 text-xs font-bold">
-          yk
-        </div>
-      }
-    />
-  );
-}
