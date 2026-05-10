@@ -101,7 +101,8 @@ export default async function BdcDetailPage({ params }: Props) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>
-            BDT — Vélo{' '}
+            BDT <span style={{ fontFamily: 'monospace' }}>{String(bdc.numero).padStart(4, '0')}</span>
+            {' '}— Vélo{' '}
             <Link href={`/${locale}/admin/velos/${bdc.velo.id}`} style={linkStyle}>
               <span style={{ fontFamily: 'monospace' }}>
                 {String(bdc.velo.veloNumero).padStart(4, '0')}

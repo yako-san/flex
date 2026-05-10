@@ -103,7 +103,7 @@ export async function sendEvalEmailAction(
     clientLang,
     clientPrenom: ctx.client.prenom,
     clientNom: ctx.client.nom,
-    veloNumero: ctx.velo.veloNumero,
+    veloNumero: ctx.bdcNumero,
     veloLabel,
     totalEstime,
     noteClient: ctx.noteClientEval,
@@ -117,7 +117,7 @@ export async function sendEvalEmailAction(
   const subject = evalEmailSubject({
     templates,
     clientLang,
-    veloNumero: ctx.velo.veloNumero,
+    veloNumero: ctx.bdcNumero,
     workshopName: workshop.name,
     date: new Date(),
   });

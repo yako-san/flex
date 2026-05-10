@@ -7,6 +7,9 @@ export type BdcPdfContext = {
   client: ClientInfo;
   velo: VeloInfo;
   bdcId: string;
+  /** Numéro séquentiel propre BDT (atelier-scope, V2). Affiché sur PDF +
+   *  courriels client comme identifiant lisible. Distinct de velo.veloNumero. */
+  bdcNumero: number;
   /** Note client visible sur le PDF d'évaluation (Bdc.noteClientEval) */
   noteClientEval: string | null;
   /** Note client visible sur le PDF de facture (Bdc.noteClientFacture) */
@@ -117,6 +120,7 @@ export async function loadBdcPdfContext(
     client,
     velo,
     bdcId,
+    bdcNumero: bdc.numero,
     noteClientEval: bdc.noteClientEval,
     noteClientFacture: bdc.noteClientFacture,
     notesInternes: bdc.notes,

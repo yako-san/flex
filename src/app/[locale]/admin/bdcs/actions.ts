@@ -85,21 +85,45 @@ export async function createBdtAction(
   });
   if (!velo) return { error: 'Vélo introuvable' };
 
+  // Allocation atomique d'un numéro séquentiel BDT via Counter.
   const id = generateId('bdc');
-  await prisma.bdc.create({
-    data: {
-      id,
-      workshopId: workshop.id,
-      veloId: data.veloId,
-      evalStatus: data.evalStatus,
-      archiveStatus: data.archiveStatus,
-      notes: data.notes ?? null,
-    },
+  const numero = await prisma.$transaction(async (tx) => {
+    const counter = await tx.counter.findFirst({
+      where: { workshopId: workshop.id, kind: 'BDT_SEQUENCE' },
+    });
+    const next = (counter?.current ?? 0) + 1;
+    if (counter) {
+      await tx.counter.update({
+        where: { id: counter.id },
+        data: { current: next },
+      });
+    } else {
+      await tx.counter.create({
+        data: {
+          id: generateId('ctr'),
+          workshopId: workshop.id,
+          kind: 'BDT_SEQUENCE',
+          current: next,
+        },
+      });
+    }
+    await tx.bdc.create({
+      data: {
+        id,
+        workshopId: workshop.id,
+        veloId: data.veloId,
+        numero: next,
+        evalStatus: data.evalStatus,
+        archiveStatus: data.archiveStatus,
+        notes: data.notes ?? null,
+      },
+    });
+    return next;
   });
 
   revalidatePath('/[locale]/admin/bdcs', 'page');
   revalidatePath(`/[locale]/admin/velos/${data.veloId}`, 'page');
-  redirect(`/fr-CA/admin/bdcs/${id}`);
+  redirect(`/fr-CA/admin/bdcs/${id}?numero=${numero}`);
 }
 
 // =============================================================================
