@@ -8,7 +8,7 @@ inline depuis la session v1.
 
 **Date audit** : 2026-05-08, par session v2 (Opus 4.7 / 1M context).
 
-**Dernière mise à jour** : 2026-05-09, post-Sprint 2.7 (Gmail draft hybride).
+**Dernière mise à jour** : 2026-05-10, ajout plan Sprint 4 (port UI/UX V1).
 
 **Statut** : Sprint 1 + Sprint 2 (sauf 2.8) + Sprint 3 entièrement livrés.
 Sprint 2.7 (Gmail draft hybride) débloqué et livré le 2026-05-09 après
@@ -511,6 +511,134 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 - **Design system V1** (zip Claude Design ou repo flex-rev-app) — pour appliquer le look jaune/dark au lieu du styling inline actuel. Toujours en attente.
 - ✅ ~~**OAuth Google** côté Vercel~~ — débloqué 2026-05-09 (client OAuth Flex créé sur projet GCP `flex-rev`, env vars GOOGLE_CLIENT_ID/SECRET/SCOPES injectées sur Vercel prod+preview+dev). Sprint 2.7 livré.
 - **Vercel Blob token** côté env Vercel — pour Sprint 2.8 (photos).
+
+---
+
+### Sprint 4 — Port UI/UX V1 (P1 visuel) — 📋 PLAN À VALIDER
+
+**Contexte** : la V2 est fonctionnellement à parité (Sprints 1+2+3 livrés)
+mais le styling reste inline / ad-hoc. yako-san a remonté que la V2 "ne
+ressemble pas" à la V1 qu'il utilise tous les jours (formulaire Nouveau BDT
+en tête, hiérarchie visuelle, pills de statut, header sticky, palette
+jaune/dark). Sprint 4 = porter le **look & feel V1** sans toucher à la
+logique métier.
+
+**Critère de réussite** : visuellement reconnaissable par yako-san comme
+« la même app que V1 », pas pixel-perfect. 6 screenshots V1 + section 0.1
+du mega-bundle (inventaire des écrans) = source de vérité visuelle.
+`docs/v2-handoff/v1-ui-bundle.md` section 10 = checklist source.
+
+**Hors scope Sprint 4** : refonte DB, nouveaux écrans, shadcn/ui complet
+(on garde Tailwind + tokens custom V1, on n'introduit pas de lib UI lourde).
+
+#### Phase 1 — Infrastructure UI (1 jour)
+
+Pose les fondations partagées par toutes les pages.
+
+- **`globals.css`** : tokens couleurs V1 (`--jaune: #fff056`, `--rouge: #d92020`,
+  `--dark: #1a1a1a`, `--gris-bord: #e0e0e0`, `--gris-fond: #fafafa`),
+  reset typo, fontes système, classes utilitaires partagées.
+- **`<PageHeader>`** sticky : titre + sous-ligne compteur + zone droite
+  (search + actions + bouton primaire jaune). Remplace les `<div style={{
+  display:flex, justifyContent:space-between }}>` actuels (cf.
+  `bdcs/page.tsx:70`).
+- **`<Modal>`** via `@headlessui/react` (déjà dépendance ?) : overlay sombre,
+  carte centrée, bouton fermer, escape + click-outside. Pattern V1 réutilisé
+  pour Nouveau BDT, édition piece, etc.
+- **`<Sidebar>`** : navigation gauche dark avec icônes + labels FR, état
+  actif jaune. Remplace nav actuelle si elle existe.
+- **`<Pill>`** : badge statut générique (props `variant: success|warning|
+  danger|info|neutral`). Remplace les `<ArchiveBadge>`, `bdcEvalStatusLabel`
+  inline (cf. `bdcs/page.tsx:157`).
+- **`<AddButton>` (37×37) + `<UtilButton>` (32×32)** : boutons icône-only
+  réutilisés partout (ajouter ligne, supprimer, dupliquer).
+
+**Livrable** : composants dans `src/components/ui/` + storybook minimal
+(page `/admin/_dev/ui-kit` listant chaque composant avec ses variantes,
+pour QA rapide par yako-san).
+
+#### Phase 2 — Composants domaine (1 jour)
+
+Composants spécifiques métier, réutilisés sur plusieurs pages.
+
+- **`<BDCHeader>`** : carte sticky en haut de `/admin/bdcs/[id]` — numéro
+  BDT padé + numéro vélo + client (lien) + marque/modèle/couleur + statut
+  éval (pill) + statut archive (pill) + actions rapides (envoyer éval,
+  émettre facture, archiver).
+- **`<BDCTotaux>`** : panneau droit avec sous-total services / pièces,
+  remises (services + pièces), TPS/TVQ, grand total. Format monospace
+  aligné droite.
+- **`<FactureStatusPanel>`** : encart facture émise (numéro, date, mode
+  paiement, statut, lien PDF).
+- **`<PieceCmdEditor>`** : déjà livré Sprint 2.2, à restyler avec tokens V1
+  (badge sigle + popup statut).
+- **`<RemiseInput>`** : input combiné % / $ (toggle type + valeur) — pattern
+  V1 partagé entre BDT (remise services + pièces) et facture.
+
+**Livrable** : composants dans `src/components/domain/`, ajoutés à la page
+ui-kit pour QA.
+
+#### Phase 3 — Pages (1 jour)
+
+Câbler les composants sur les pages réelles, dans cet ordre :
+
+1. **`/admin/bdcs/[id]`** (PRIORITÉ — page la plus dense, plus gros impact
+   visuel) : BDCHeader + BDCTotaux + FactureStatusPanel + tableau items
+   restylé. yako-san y passe 80% de son temps.
+2. **`/admin/bdcs`** (liste) : PageHeader + table avec Pills statut +
+   AddButton aligné V1.
+3. **`/admin/bdcs/new`** : refondre selon spec V1 — **priorité à
+   « Nouveau Vélo »** (Marque dropdown + Modèle/Couleur libres + Taille
+   dropdown), bouton secondaire « Vélo existant » qui ouvre un Modal de
+   recherche. Référence : screenshot V1 + remontée yako-san explicite.
+4. **`/admin/velos`** + **`/admin/velos/[id]`** : PageHeader + table + carte
+   détail avec sections (infos / BDT historiques / photos quand 2.8 livré).
+5. **`/admin/clients`** + **`/admin/clients/[id]`** : même pattern.
+6. **`/admin/pieces`** + **`/admin/pieces/[id]`** : table + bouton étiquettes
+   déjà OK, juste restyler.
+7. **`/admin/factures`**, **`/admin/ventes`**, **`/admin/pos`** : tables
+   homogènes.
+8. **`/admin/settings`**, **`/admin/import`**, **`/admin/maintenance`** :
+   restyler header + cartes.
+
+**Livrable** : pages migrées, anciens styles inline supprimés au fur et
+à mesure.
+
+#### Phase 4 — Polish (0.5 jour)
+
+- Audit responsive mobile (yako-san consulte parfois sur tablette atelier).
+- Vérification dark/light : on reste **light V1** (fond blanc, sidebar dark).
+- Suppression du code mort (anciens `csvBtn`, `tableStyle` inline répétés
+  partout).
+- Capture d'écran avant/après pour validation par yako-san.
+
+#### Estimation totale
+
+**3.5 jours** (Phase 1: 1j, Phase 2: 1j, Phase 3: 1j, Phase 4: 0.5j).
+À moduler si yako-san veut prioriser certaines pages et différer les
+autres en Sprint 4.5.
+
+#### Questions à yako-san avant de coder
+
+1. **Storybook minimal** (`/admin/_dev/ui-kit`) : OK pour QA visuel rapide
+   ou trop de surface ? Si pas OK, je valide chaque composant directement
+   sur la page où il est utilisé.
+2. **Sidebar** : actuellement la nav admin est en haut (header). On bascule
+   en sidebar gauche dark style V1 ou on garde le header horizontal ?
+3. **Tailwind vs CSS modules** : V2 utilise déjà Tailwind. On reste 100%
+   Tailwind + tokens dans `globals.css` ou on ajoute des CSS modules pour
+   les composants complexes (PageHeader, BDCHeader) ? Recommandation :
+   100% Tailwind, plus simple à maintenir.
+4. **`/admin/bdcs/new` refonte** : on garde le formulaire actuel comme
+   fallback (toggle « Mode V1 / Mode V2 ») le temps de valider, ou on
+   remplace direct ? Recommandation : remplacer direct, branche dédiée,
+   yako-san valide en preview Vercel avant merge.
+5. **Ordre des pages Phase 3** : OK pour commencer par `/admin/bdcs/[id]`
+   ou tu préfères voir le résultat sur une page plus simple d'abord
+   (ex: `/admin/clients`) ?
+
+**Pas de code Sprint 4 avant validation explicite par yako-san de ce plan
++ réponses aux 5 questions ci-dessus.**
 
 ---
 
