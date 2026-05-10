@@ -514,131 +514,285 @@ V2 est en avance ou à parité sur tout le code "métier portable". Bonne nouvel
 
 ---
 
-### Sprint 4 — Port UI/UX V1 (P1 visuel) — 📋 PLAN À VALIDER
+### Sprint 4 — Port UI/UX V1 (P1 visuel) — ✅ PLAN VALIDÉ V1+V2 (2026-05-10)
 
-**Contexte** : la V2 est fonctionnellement à parité (Sprints 1+2+3 livrés)
-mais le styling reste inline / ad-hoc. yako-san a remonté que la V2 "ne
-ressemble pas" à la V1 qu'il utilise tous les jours (formulaire Nouveau BDT
-en tête, hiérarchie visuelle, pills de statut, header sticky, palette
-jaune/dark). Sprint 4 = porter le **look & feel V1** sans toucher à la
-logique métier.
+**Contexte** : V2 fonctionnellement à parité (Sprints 1+2+3 livrés), styling
+encore inline / ad-hoc. Sprint 4 = porter le **look & feel V1** fidèlement,
+sans toucher à la logique métier ni introduire de variantes V2 silencieuses.
 
 **Critère de réussite** : visuellement reconnaissable par yako-san comme
-« la même app que V1 », pas pixel-perfect. 6 screenshots V1 + section 0.1
-du mega-bundle (inventaire des écrans) = source de vérité visuelle.
-`docs/v2-handoff/v1-ui-bundle.md` section 10 = checklist source.
+« la même app que V1 ». Pas pixel-perfect. 6 screenshots V1 + section 0.1
+mega-bundle = source de vérité visuelle. `v1-ui-bundle.md` section 10 =
+checklist.
 
-**Hors scope Sprint 4** : refonte DB, nouveaux écrans, shadcn/ui complet
-(on garde Tailwind + tokens custom V1, on n'introduit pas de lib UI lourde).
+**Philosophie validée** : port fidèle V1 ; toute « amélioration V2 » que je
+voudrais conserver doit être **listée explicitement et validée par yako-san
+avant code**. Les itérations UI/UX agent dédié = Sprint 4.5+ après livrable.
 
-#### Phase 1 — Infrastructure UI (1 jour)
+**Hors scope** : refonte DB, nouveaux écrans, nouvelles features.
 
-Pose les fondations partagées par toutes les pages.
+#### Stack UI retenue
 
-- **`globals.css`** : tokens couleurs V1 (`--jaune: #fff056`, `--rouge: #d92020`,
-  `--dark: #1a1a1a`, `--gris-bord: #e0e0e0`, `--gris-fond: #fafafa`),
-  reset typo, fontes système, classes utilitaires partagées.
-- **`<PageHeader>`** sticky : titre + sous-ligne compteur + zone droite
-  (search + actions + bouton primaire jaune). Remplace les `<div style={{
-  display:flex, justifyContent:space-between }}>` actuels (cf.
-  `bdcs/page.tsx:70`).
-- **`<Modal>`** via `@headlessui/react` (déjà dépendance ?) : overlay sombre,
-  carte centrée, bouton fermer, escape + click-outside. Pattern V1 réutilisé
-  pour Nouveau BDT, édition piece, etc.
-- **`<Sidebar>`** : navigation gauche dark avec icônes + labels FR, état
-  actif jaune. Remplace nav actuelle si elle existe.
-- **`<Pill>`** : badge statut générique (props `variant: success|warning|
-  danger|info|neutral`). Remplace les `<ArchiveBadge>`, `bdcEvalStatusLabel`
-  inline (cf. `bdcs/page.tsx:157`).
-- **`<AddButton>` (37×37) + `<UtilButton>` (32×32)** : boutons icône-only
-  réutilisés partout (ajouter ligne, supprimer, dupliquer).
+- **Tailwind CSS v4** (à installer — V2 actuelle n'a PAS Tailwind, c'est du
+  `style={{...}}` inline pur).
+- **shadcn/ui** : CLI qui copie les composants dans `src/components/ui/` —
+  on possède le code, on restyle agressivement vers palette V1 dès le début.
+  Pas de look « shadcn par défaut » nulle part dans l'app finale.
+- **Radix UI primitives** (sous le capot de shadcn) pour accessibilité.
+- **lucide-react** (écosystème natif shadcn) — pas Heroicons. Mapping V1
+  → Lucide ci-dessous (sémantique conservée).
+- **Pas de CSS modules** — 100% Tailwind + tokens CSS variables.
 
-**Livrable** : composants dans `src/components/ui/` + storybook minimal
-(page `/admin/_dev/ui-kit` listant chaque composant avec ses variantes,
-pour QA rapide par yako-san).
+#### Tokens couleurs V1 (à poser dans `globals.css` Phase 1)
 
-#### Phase 2 — Composants domaine (1 jour)
+```css
+:root {
+  /* Palette signature */
+  --jaune:     #fff056;
+  --jaune-h:   #e6d84e;  /* hover */
+  --rouge:     #d92020;
+  --rouge-h:   #b81818;
+  --gris-bg:   #757575;  /* PageHeader */
 
-Composants spécifiques métier, réutilisés sur plusieurs pages.
+  /* Statuts vélo — bg / fg */
+  --st-rv-bg:         #fff056;  --st-rv-fg:         #000000;
+  --st-recu-bg:       #fff056;  --st-recu-fg:       #000000;
+  --st-eval-bg:       #88fa4e;  --st-eval-fg:       #000000;
+  --st-attente-bg:    #fb923c;  --st-attente-fg:    #000000;
+  --st-approuve-bg:   #62e335;  --st-approuve-fg:   #000000;
+  --st-on-bench-bg:   #5cd62b;  --st-on-bench-fg:   #000000;
+  --st-ctrl-qlte-bg:  #2e7d32;  --st-ctrl-qlte-fg:  #ffffff;
+  --st-fini-bg:       #fce4ec;  --st-fini-fg:       #c62828;
+  --st-facturer-bg:   #e53935;  --st-facturer-fg:   #ffffff;
+  --st-facture-bg:    #ffcdd2;  --st-facture-fg:    #b71c1c;
+  --st-livre-bg:      #e0e0e0;  --st-livre-fg:      #333333;
 
-- **`<BDCHeader>`** : carte sticky en haut de `/admin/bdcs/[id]` — numéro
-  BDT padé + numéro vélo + client (lien) + marque/modèle/couleur + statut
-  éval (pill) + statut archive (pill) + actions rapides (envoyer éval,
-  émettre facture, archiver).
-- **`<BDCTotaux>`** : panneau droit avec sous-total services / pièces,
-  remises (services + pièces), TPS/TVQ, grand total. Format monospace
-  aligné droite.
+  /* Statuts pièces (cmd) — bg / fg */
+  --cmd-listee-bg:    #ffffff;  --cmd-listee-fg:    #000000;
+  --cmd-estimee-bg:   #ffcfc9;  --cmd-estimee-fg:   #b10202;
+  --cmd-a-cmder-bg:   #d4edbc;  --cmd-a-cmder-fg:   #11734b;
+  --cmd-en-cmde-bg:   #ffff00;  --cmd-en-cmde-fg:   #473821;  /* JAUNE PUR, pas signature */
+  --cmd-recu-part-bg: #ffe0b2;  --cmd-recu-part-fg: #e65100;
+  --cmd-recue-bg:     #00ff00;  --cmd-recue-fg:     #000000;
+
+  /* Étapes mécaniciens */
+  --etape-eval-bg:    #d9ead3;  --etape-eval-fg:    #38761d;
+  --etape-meca-bg:    #b6d7a8;  --etape-meca-fg:    #38761d;
+  --etape-ctrl-bg:    #93c47d;  --etape-ctrl-fg:    #274e13;
+
+  /* Alpha / overlays V1 (boîtes sombres + listes alternées + texte secondaire) */
+  --overlay-dark-20: rgba(0,0,0,0.20);    /* ToolbarBlock, pill total */
+  --overlay-light-50: rgba(255,255,255,0.50);
+  --overlay-light-70: rgba(255,255,255,0.70);
+  --overlay-light-85: rgba(255,255,255,0.85);
+  --text-secondary-50: rgba(0,0,0,0.50);
+  --text-secondary-60: rgba(0,0,0,0.60);
+  --text-secondary-70: rgba(0,0,0,0.70);
+
+  /* Hiérarchie typo */
+  --h1-size: 3.0rem;   --h1-weight: 400;  /* Helvetica Thin */
+  --h2-size: 1.8rem;   --h2-weight: 900;
+  --h3-size: 1.3rem;   --h3-weight: 600;
+  --h4-size: 0.9rem;   --h4-weight: 900;  /* uppercase tracking 0.1em */
+  --h5-size: 0.65rem;  --h5-weight: 600;
+  --h6-size: 0.5rem;   --h6-weight: 600;
+  --th-size: 11px;     --th-weight: 600;  /* lowercase */
+}
+```
+
+**Note multi-tenant** : ces tokens passeront en `Workshop.theme` (JSONB DB)
++ éditeur UI `/admin/settings/theme` — différé en **Sprint 4.5** (hors
+scope Sprint 4). Phase 1 = valeurs en dur dans `globals.css`.
+
+#### Mapping icônes V1 (Heroicons) → V2 (Lucide)
+
+```
+WrenchScrewdriverIcon     → Wrench
+Cog6ToothIcon / Cog8ToothIcon → Cog / Settings
+ClockIcon                 → Clock
+BanknotesIcon             → Banknote
+InboxArrowDownIcon        → PackageOpen / Inbox
+ClipboardDocumentListIcon → ClipboardList
+ChartBarSquareIcon        → LayoutDashboard
+UserGroupIcon             → Users
+ArchiveBoxIcon            → Archive
+PlusIcon                  → Plus
+QrCodeIcon                → QrCode
+MagnifyingGlassIcon       → Search
+Bars3Icon                 → Menu
+```
+
+#### Layout global
+
+- **Desktop** : sidebar **latérale jaune verticale double-état** (collapsed
+  60px par défaut, expanded 200px sur `/dashboard` ou hover-expand temporaire
+  ailleurs). Logo Flex `F/V` + version + icônes + avatar Google bas (hover →
+  signOut).
+- **Mobile (iOS)** : sidebar collapse en **header horizontal** ; long-press
+  version = signOut.
+- Badges numériques sur icônes : BDT actifs vert, ventes non fact rouge,
+  stock bas rouge.
+- Main = card arrondie sur fond gris foncé, contenu sur fond clair.
+
+#### Phase 0 — Setup (0.25 j)
+
+- `npm install -D tailwindcss@^4 @tailwindcss/postcss postcss`
+- Config `tailwind.config.ts` + `postcss.config.mjs`.
+- `npx shadcn@latest init` → config tokens + base CSS.
+- `npx shadcn@latest add button dialog dropdown-menu select popover tooltip input label badge separator scroll-area` → composants base posés dans `src/components/ui/`.
+- `npm install lucide-react` (déjà dépendance shadcn).
+- Restyle immédiat de chaque composant vers palette V1 (jaune/dark) avant
+  utilisation.
+- `globals.css` final avec tous les tokens ci-dessus.
+
+#### Phase 1 — Infrastructure UI (1 j)
+
+Composants génériques dans `src/components/ui/` :
+
+- **`<Sidebar>`** : double-état collapsed (60px) / expanded (200px) ;
+  expanded par défaut sur `/dashboard` uniquement, hover-expand ailleurs ;
+  icônes Lucide ; état actif souligné jaune ; badges compteur ; avatar bas
+  hover → signOut ; long-press version mobile = signOut.
+- **`<PageHeader>`** sticky : sur-titre gris (`vélos en atelier`) + titre H1
+  grand thin + tooltip `?` + zone droite (UtilButtons ronds + AddButton
+  jaune `+`).
+- **`<Modal>`** (wrapper shadcn Dialog) : overlay `--overlay-dark-20`,
+  carte centrée, escape + click-outside.
+- **`<Pill>`** : badge statut variants `rv | recu | eval | attente |
+  approuve | on-bench | ctrl-qlte | fini | facturer | facture | livre |
+  staff | neutral` (couleurs alignées V1).
+- **`<PillsToggle>`** *(ajout V1.B)* : composant générique de tabs
+  (CLIENT/VÉLO sur fiche BDT, Éval/Facture sur note client, ÉMIS/PAYÉ/
+  ANNULÉ + Comptant/Interac/Cartes sur FactureStatusPanel).
+- **`<AddButton>`** (37×37 rond jaune) + **`<UtilButton>`** (32×32 rond
+  gris/jaune).
+- **`<DataTable>`** : table sticky-header, hover, sections groupables.
+- **`<RowGroup>`** : ligne séparation `NOUVEAU` / `WIP` / `FACTURÉ` /
+  `STAFF` avec label gris small-caps.
+
+**Livrable Phase 1** : composants dans `src/components/ui/` + page interne
+**`/admin/_dev/ui-kit`** listant chaque composant avec ses variantes
+côte à côte, pour QA visuel rapide en preview Vercel.
+
+#### Phase 2 — Composants domaine (1 j)
+
+Composants spécifiques métier dans `src/components/domain/` :
+
+- **`<BDCHeader>`** : carte sticky `/admin/inventaire/[id]` — numéro BDT
+  padé `0145` + n° vélo + client (lien) + marque/modèle/couleur + Pill
+  éval + Pill archive + **dropdowns mécanos inline** (eval/meca/ctrl) +
+  **checkboxes workflow** (Évaluation envoyée, OK, Bon de sortie, Archiver)
+  avec transitions auto via `nextStatusOnAssign` *(précision V1.E)*.
+- **`<BDCTotaux>`** : panneau totaux. Sous-total services / pièces, remises,
+  TPS/TVQ, grand total monospace aligné droite. **Lien souligné « avance ? »
+  intégré au pill total** *(précision V1.D)* → ouvre modal édition (montant
+  + mode + note). Avance saisie → pill devient `avance : 50,00 $ · Interac`
+  cliquable, total barré, **reste-à-payer en gros jaune**.
 - **`<FactureStatusPanel>`** : encart facture émise (numéro, date, mode
-  paiement, statut, lien PDF).
-- **`<PieceCmdEditor>`** : déjà livré Sprint 2.2, à restyler avec tokens V1
-  (badge sigle + popup statut).
-- **`<RemiseInput>`** : input combiné % / $ (toggle type + valeur) — pattern
-  V1 partagé entre BDT (remise services + pièces) et facture.
+  paiement, statut, lien PDF) avec PillsToggle ÉMIS/PAYÉ/ANNULÉ +
+  Comptant/Interac/Cartes.
+- **`<RemiseInput>`** : input combiné % / $ (toggle type + valeur).
+- **`<PieceCmdEditor>`** : déjà livré Sprint 2.2 → restyler avec tokens
+  cmd-* (badge sigle `…/—/√/$/#/@`).
+- **`<AjoutItemsModal>`** *(ajout V1.C)* : modal Services + Pièces du BDT
+  — toggle SERVICES/PIÈCES haut + filtre catégorie + liste cochable
+  groupée par sous-catégorie. Pattern clé du flow BDT.
+- **`<ArchiveChoiceDialog>` v1.0.19** *(ajout V1.C)* : 4 boutons
+  (Comptant/Interac/Cartes/Refusé) qui en un clic marquent PAYÉ + mode +
+  archivent. Code complet `v1-ui-bundle.md` section 5 — pas le redécouvrir.
+- **`<ClientAutocomplete>`** : recherche live client (à conserver depuis
+  V2, c'est une amélioration V2 → audit-listée pour validation yako-san).
+- **`<VeloFormFields>`** : Marque (dropdown) + Modèle/Couleur (libres) +
+  Taille (dropdown selon marque). Réutilisé `/inventaire/new` et
+  `/velos/new`.
+- **`<StatusBadgeRow>`** : ligne complète colorée selon statut (background
+  ON BENCH vert, FACTURÉ rose, etc.).
 
-**Livrable** : composants dans `src/components/domain/`, ajoutés à la page
-ui-kit pour QA.
+**Livrable Phase 2** : composants ajoutés à la page ui-kit.
 
-#### Phase 3 — Pages (1 jour)
+#### Phase 3 — Pages (1 j)
 
-Câbler les composants sur les pages réelles, dans cet ordre :
+**Renommages slugs** :
+- `/admin/bdcs` → **`/admin/inventaire`** (terminologie V1).
+- `/admin/bdcs/[id]` → **`/admin/inventaire/[id]`**.
+- `/admin/pos` → **`/admin/reception`** (= V1 `/catalogue/reception`).
+- Ajout **`/admin/commandes`** (= V1 `/commandes`, liste/historique POs).
 
-1. **`/admin/bdcs/[id]`** (PRIORITÉ — page la plus dense, plus gros impact
-   visuel) : BDCHeader + BDCTotaux + FactureStatusPanel + tableau items
-   restylé. yako-san y passe 80% de son temps.
-2. **`/admin/bdcs`** (liste) : PageHeader + table avec Pills statut +
-   AddButton aligné V1.
-3. **`/admin/bdcs/new`** : refondre selon spec V1 — **priorité à
-   « Nouveau Vélo »** (Marque dropdown + Modèle/Couleur libres + Taille
-   dropdown), bouton secondaire « Vélo existant » qui ouvre un Modal de
-   recherche. Référence : screenshot V1 + remontée yako-san explicite.
-4. **`/admin/velos`** + **`/admin/velos/[id]`** : PageHeader + table + carte
-   détail avec sections (infos / BDT historiques / photos quand 2.8 livré).
-5. **`/admin/clients`** + **`/admin/clients/[id]`** : même pattern.
-6. **`/admin/pieces`** + **`/admin/pieces/[id]`** : table + bouton étiquettes
-   déjà OK, juste restyler.
-7. **`/admin/factures`**, **`/admin/ventes`**, **`/admin/pos`** : tables
-   homogènes.
-8. **`/admin/settings`**, **`/admin/import`**, **`/admin/maintenance`** :
-   restyler header + cartes.
+Ordre de port :
 
-**Livrable** : pages migrées, anciens styles inline supprimés au fur et
-à mesure.
+1. **`/admin/inventaire/[id]`** (PRIORITÉ — page la plus dense, plus gros
+   impact visuel) : BDCHeader + BDCTotaux + FactureStatusPanel +
+   AjoutItemsModal + ArchiveChoiceDialog + tableau items restylé.
+2. **`/admin/inventaire`** *(remplace liste plate `/admin/bdcs`)* : vue
+   groupée par sections **NOUVEAU / WIP / FACTURÉ / STAFF** avec couleurs
+   de fond par statut, dropdowns inline, Pills colorées.
+3. **`/admin/dashboard`** *(ajout V1.A)* : hub principal V1, 3 colonnes
+   KPIs + sections : Rendez-vous Square 14j (badge NEW), BDT terminés,
+   BDT à suivi, Pièces à commander, Dernières factures, Dernières ventes ;
+   4 KPI cards (BDT actif, Stock à commander, Suivis, Revenus mois).
+   Chaque section = composant `<Section>` icône + titre + compteur + liste
+   scrollable + état vide *(précision V1.H)*.
+4. **`/admin/menu`** *(ajout V1.A)* : big menu mobile iOS, 6 squircle
+   cards 2×3.
+5. **`/admin/inventaire/new`** : refonte selon spec V1 — **priorité
+   « Nouveau Vélo »** (Marque + Modèle/Couleur + Taille), bouton secondaire
+   « Vélo existant » qui ouvre Modal recherche. **Audit V2 → V1 préalable**
+   avant code (Zod validation, useActionState, autocomplete, …) ; je liste
+   à yako-san ce qui mérite d'être conservé.
+6. **`/admin/velos`** + **`/admin/velos/[id]`** : PageHeader + table +
+   carte détail (infos / BDT historiques / photos quand 2.8 livré).
+7. **`/admin/clients`** + **`/admin/clients/[id]`**.
+8. **`/admin/pieces`** + **`/admin/pieces/[id]`** : restyler. Le bouton
+   étiquettes A4 reste (feature V2 conservée).
+9. **`/admin/factures`**, **`/admin/ventes`**.
+10. **`/admin/reception`** (= `/catalogue/reception` V1) +
+    **`/admin/commandes`** : groupement par fournisseur, header jaune par
+    groupe (nom + count + total), boutons EXPORT (gris) + TRANSFÉRER EN
+    RÉCEPTION (noir) **par fournisseur** ; Pill statut `$` jaune dropdown
+    par ligne ; badge OOS rouge ; stock vert ; stepper qté inline ;
+    catégories dropdown ; tabs `catalogue | fournisseurs | commandes |
+    réception`.
+11. **`/admin/settings`**, **`/admin/import`**, **`/admin/maintenance`**,
+    **`/admin/archives`**.
 
-#### Phase 4 — Polish (0.5 jour)
+#### Phase 4 — Polish (0.5 j)
 
-- Audit responsive mobile (yako-san consulte parfois sur tablette atelier).
-- Vérification dark/light : on reste **light V1** (fond blanc, sidebar dark).
-- Suppression du code mort (anciens `csvBtn`, `tableStyle` inline répétés
-  partout).
-- Capture d'écran avant/après pour validation par yako-san.
+- Audit responsive iOS Safari spécifiquement (sidebar header mobile).
+- Suppression des styles inline morts (`csvBtn`, `tableStyle`, `thStyle`,
+  `tdStyle` répétés partout).
+- Captures avant/après pour validation finale yako-san.
+- Lighthouse / axe-core pour audit accessibilité (cible 90+).
 
-#### Estimation totale
+#### Estimation totale : 3.75 j
 
-**3.5 jours** (Phase 1: 1j, Phase 2: 1j, Phase 3: 1j, Phase 4: 0.5j).
-À moduler si yako-san veut prioriser certaines pages et différer les
-autres en Sprint 4.5.
+- Phase 0 : 0.25 j (setup Tailwind + shadcn)
+- Phase 1 : 1 j (infra UI + ui-kit)
+- Phase 2 : 1 j (composants domaine)
+- Phase 3 : 1 j (pages, +0.25j vu pages ajoutées dashboard/menu/reception)
+- Phase 4 : 0.5 j
 
-#### Questions à yako-san avant de coder
+#### Décisions verrouillées
 
-1. **Storybook minimal** (`/admin/_dev/ui-kit`) : OK pour QA visuel rapide
-   ou trop de surface ? Si pas OK, je valide chaque composant directement
-   sur la page où il est utilisé.
-2. **Sidebar** : actuellement la nav admin est en haut (header). On bascule
-   en sidebar gauche dark style V1 ou on garde le header horizontal ?
-3. **Tailwind vs CSS modules** : V2 utilise déjà Tailwind. On reste 100%
-   Tailwind + tokens dans `globals.css` ou on ajoute des CSS modules pour
-   les composants complexes (PageHeader, BDCHeader) ? Recommandation :
-   100% Tailwind, plus simple à maintenir.
-4. **`/admin/bdcs/new` refonte** : on garde le formulaire actuel comme
-   fallback (toggle « Mode V1 / Mode V2 ») le temps de valider, ou on
-   remplace direct ? Recommandation : remplacer direct, branche dédiée,
-   yako-san valide en preview Vercel avant merge.
-5. **Ordre des pages Phase 3** : OK pour commencer par `/admin/bdcs/[id]`
-   ou tu préfères voir le résultat sur une page plus simple d'abord
-   (ex: `/admin/clients`) ?
+- ✅ Storybook interne `/admin/_dev/ui-kit` : OUI.
+- ✅ Sidebar latérale jaune desktop / header collapse mobile iOS, double-état
+  collapsed/expanded.
+- ✅ shadcn/ui (= Tailwind + Radix) + restyle V1 agressif.
+- ✅ Lucide pour icônes (cohérence shadcn ; sémantique V1 conservée via
+  mapping).
+- ✅ Refonte `/admin/inventaire/new` directe + audit V2 préalable à
+  valider yako-san.
+- ✅ Renommages slugs : bdcs→inventaire, pos→reception, +commandes,
+  +dashboard, +menu, +archives.
+- ✅ Ordre Phase 3 : inventaire/[id] → inventaire → dashboard → menu →
+  new → reste.
+- ⏸️ Éditeur tokens UI multi-tenant : Sprint 4.5 (hors scope Sprint 4).
 
-**Pas de code Sprint 4 avant validation explicite par yako-san de ce plan
-+ réponses aux 5 questions ci-dessus.**
+#### Hors scope Sprint 4 → Sprint 4.5+
+
+- Page `/admin/settings/theme` : éditeur color picker pour chaque token,
+  persistance `Workshop.theme` JSONB, injection runtime via CSS variables
+  data-attr.
+- Itérations UI/UX agent dédié (post-livrable visuel V1 fidèle).
 
 ---
 
