@@ -37,7 +37,12 @@ export default async function BdcsPage({ params, searchParams }: Props) {
             { velo: { client: { prenom: { contains: trimmed, mode: Prisma.QueryMode.insensitive } } } },
             { velo: { marque: { nom: { contains: trimmed, mode: Prisma.QueryMode.insensitive } } } },
             { factures: { some: { factureNumero: { contains: trimmed, mode: Prisma.QueryMode.insensitive } } } },
-            ...(numeroAsInt !== undefined ? [{ velo: { veloNumero: numeroAsInt } }] : []),
+            ...(numeroAsInt !== undefined
+              ? [
+                  { numero: numeroAsInt },
+                  { velo: { veloNumero: numeroAsInt } },
+                ]
+              : []),
           ],
         }
       : {}),
@@ -89,6 +94,7 @@ export default async function BdcsPage({ params, searchParams }: Props) {
       <table style={tableStyle}>
         <thead>
           <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
+            <th style={thStyle}>BDT #</th>
             <th style={thStyle}>Vélo #</th>
             <th style={thStyle}>Client</th>
             <th style={thStyle}>Vélo</th>
@@ -102,13 +108,16 @@ export default async function BdcsPage({ params, searchParams }: Props) {
         <tbody>
           {bdcs.map((b) => (
             <tr key={b.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-              <td style={{ ...tdStyle, fontFamily: 'monospace' }}>
+              <td style={{ ...tdStyle, fontFamily: 'monospace', fontWeight: 600 }}>
                 <Link
                   href={`/${locale}/admin/bdcs/${b.id}`}
                   style={{ color: '#1565c0', textDecoration: 'none' }}
                 >
-                  {String(b.velo.veloNumero).padStart(4, '0')}
+                  {String(b.numero).padStart(4, '0')}
                 </Link>
+              </td>
+              <td style={{ ...tdStyle, fontFamily: 'monospace', color: '#888', fontSize: '0.85rem' }}>
+                {String(b.velo.veloNumero).padStart(4, '0')}
               </td>
               <td style={tdStyle}>
                 {b.velo.client ? (

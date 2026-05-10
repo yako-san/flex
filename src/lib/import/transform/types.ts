@@ -150,6 +150,7 @@ export type V2BdcDraft = {
   id: string;
   workshopId: string;
   veloId: string; // FK requise
+  numero: number; // séquentiel atelier-scope (Sprint 2.8+)
   evalStatus: V2BdcEvalStatus;
   archiveStatus: V2BdcArchiveStatus;
   cbEvalEnvoye: boolean;

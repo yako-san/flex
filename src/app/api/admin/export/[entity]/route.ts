@@ -129,7 +129,8 @@ export async function GET(
     });
     const csv = toCsv(rows.map((b) => ({
       id: b.id,
-      veloNumero: b.velo.veloNumero,
+      numero: String(b.numero).padStart(4, '0'),
+      veloNumero: String(b.velo.veloNumero).padStart(4, '0'),
       client: b.velo.client ? `${b.velo.client.prenom} ${b.velo.client.nom}` : '',
       marque: b.velo.marque?.nom ?? '',
       modele: b.velo.modele ?? '',
@@ -141,7 +142,8 @@ export async function GET(
       grandTotalFacture: b.factures.reduce((acc, f) => acc + Number(f.grandTotal), 0).toFixed(2),
       createdAt: b.createdAt,
     })), [
-      { key: 'id' }, { key: 'veloNumero', label: 'Vélo n°' }, { key: 'client' },
+      { key: 'id' }, { key: 'numero', label: 'BDT n°' },
+      { key: 'veloNumero', label: 'Vélo n°' }, { key: 'client' },
       { key: 'marque' }, { key: 'modele' }, { key: 'evalStatus', label: 'Éval' },
       { key: 'archiveStatus', label: 'Archive' }, { key: 'totalServices' },
       { key: 'totalPieces' }, { key: 'facturesNumeros', label: 'Factures' },

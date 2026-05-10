@@ -512,6 +512,14 @@ model Bdc {
   workshopId String @map("workshop_id")
   veloId     String @map("velo_id")
 
+  // Numéro séquentiel atelier-scope (Sprint 2.8 — numéro propre BDT,
+  // distinct de Velo.veloNumero). Affiché sur l'éval, la facture, les
+  // courriels client. Géré via Counter type=BDT_SEQUENCE. Préserve le
+  // pattern V1 où le numéro affiché s'incrémente à chaque BDT créé,
+  // permettant à un même vélo d'avoir plusieurs BDT distincts dans le
+  // temps (visites successives sur des années différentes).
+  numero Int @map("numero")
+
   evalStatus    BdcEvalStatus    @default(INDECIS) @map("eval_status")
   archiveStatus BdcArchiveStatus @default(ACTIF) @map("archive_status")
 
@@ -561,6 +569,7 @@ model Bdc {
   items    BdcItem[]
   factures FactureLog[]
 
+  @@unique([workshopId, numero])
   @@index([workshopId, evalStatus])
   @@index([workshopId, archiveStatus])
   @@index([workshopId, deletedAt])
@@ -928,6 +937,7 @@ enum CounterKind {
   FACTURE_SEQUENCE
   VELO_SEQUENCE
   PO_SEQUENCE
+  BDT_SEQUENCE
 
   @@map("counter_kind")
 }

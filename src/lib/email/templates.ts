@@ -86,21 +86,25 @@ function formatDate(d: Date, locale: Locale): string {
   return d.toLocaleDateString(locale === 'en' ? 'en-CA' : 'fr-CA');
 }
 
-// Construit la liste HTML des services et pièces à partir des items du BDT.
-// Format : 1 item par ligne, format "• Nom — qty × prix = total".
+// Construit la liste HTML des items (services ou pièces) à partir du BDT.
+// Format V1 : juste les noms, un par ligne, séparés par <br>. Pas de qty
+// ni de prix (le PDF en pièce jointe contient le détail).
 function formatItemsList(
-  items: Array<{ kind: 'SERVICE' | 'PIECE' | 'FORFAIT'; label: string; qty: number; total: number }>,
+  items: Array<{ kind: 'SERVICE' | 'PIECE' | 'FORFAIT'; label: string }>,
   filterKind: 'SERVICE_OR_FORFAIT' | 'PIECE',
 ): string {
   const filtered = items.filter((it) =>
     filterKind === 'PIECE' ? it.kind === 'PIECE' : it.kind === 'SERVICE' || it.kind === 'FORFAIT',
   );
   if (filtered.length === 0) return '';
-  const lines = filtered.map((it) => {
-    const qtyTxt = it.qty !== 1 ? `${it.qty} × ` : '';
-    return `• ${E(it.label)} — ${qtyTxt}${it.total.toFixed(2)} $`;
-  });
-  return lines.join('<br />');
+  return filtered.map((it) => E(it.label)).join('<br />');
+}
+
+// Numéro padded au format V1 : 42 → '0042'. Sert pour {{id}} dans les
+// templates d'éval (V1 utilise le numéro vélo séquentiel atelier-scope
+// comme identifiant lisible, pas l'ULID hex du BDT).
+function padNumero(n: number): string {
+  return String(n).padStart(4, '0');
 }
 
 export function evalEmailTemplate(opts: {
@@ -109,11 +113,11 @@ export function evalEmailTemplate(opts: {
   clientLang?: string | null;
   clientPrenom: string;
   clientNom?: string | null;
-  bdcShortId: string;
+  veloNumero: number; // numéro séquentiel atelier-scope (ex 42 → '0042')
   veloLabel?: string | null;
   totalEstime: number;
   noteClient?: string | null;
-  items?: Array<{ kind: 'SERVICE' | 'PIECE' | 'FORFAIT'; label: string; qty: number; total: number }>;
+  items?: Array<{ kind: 'SERVICE' | 'PIECE' | 'FORFAIT'; label: string }>;
   customMessage?: string | null;
   date?: Date;
 }): string {
@@ -122,18 +126,19 @@ export function evalEmailTemplate(opts: {
   const tpl = pickLocale(opts.templates?.eval?.body, locale) || fallback;
   const date = opts.date ?? new Date();
   const items = opts.items ?? [];
+  const idPadded = padNumero(opts.veloNumero);
   const rendered = nl2br(
     renderTemplate(tpl, {
       // V2 names (legacy)
       clientPrenom: opts.clientPrenom,
       clientNom: opts.clientNom ?? '',
-      bdcShortId: opts.bdcShortId,
+      bdcShortId: idPadded,
       totalEstime: opts.totalEstime.toFixed(2),
       workshopName: opts.workshop.name,
       // V1 names (depuis dump.templates)
       prenom: opts.clientPrenom,
       veloDesc: opts.veloLabel ?? '',
-      id: opts.bdcShortId,
+      id: idPadded,
       date: formatDate(date, locale),
       noteClient: opts.noteClient ?? '',
       services: formatItemsList(items, 'SERVICE_OR_FORFAIT'),
@@ -149,7 +154,7 @@ export function evalEmailTemplate(opts: {
 export function evalEmailSubject(opts: {
   templates?: EmailTemplates;
   clientLang?: string | null;
-  bdcShortId: string;
+  veloNumero: number;
   workshopName: string;
   date?: Date;
 }): string {
@@ -157,10 +162,11 @@ export function evalEmailSubject(opts: {
   const fallback = locale === 'en' ? DEFAULT_EVAL_SUBJECT_EN : DEFAULT_EVAL_SUBJECT_FR;
   const tpl = pickLocale(opts.templates?.eval?.subject, locale) || fallback;
   const date = opts.date ?? new Date();
+  const idPadded = padNumero(opts.veloNumero);
   return renderTemplate(tpl, {
-    bdcShortId: opts.bdcShortId,
+    bdcShortId: idPadded,
     workshopName: opts.workshopName,
-    id: opts.bdcShortId,
+    id: idPadded,
     date: formatDate(date, locale),
   });
 }
@@ -172,6 +178,11 @@ export function factureEmailTemplate(opts: {
   clientPrenom: string;
   clientNom?: string | null;
   factureNumero: string;
+  // Si présent (facture BDT) → {{id}} = veloNumero padded (V1 pattern :
+  // pas de numéro propre au BDT, on hérite du vélo). Absent → {{id}}
+  // = factureNumero (vente directe sans vélo).
+  veloNumero?: number | null;
+  veloLabel?: string | null;
   grandTotal: number;
   modePaiement?: string | null;
   customMessage?: string | null;
@@ -181,6 +192,7 @@ export function factureEmailTemplate(opts: {
   const fallback = locale === 'en' ? DEFAULT_FACTURE_BODY_EN : DEFAULT_FACTURE_BODY_FR;
   const tpl = pickLocale(opts.templates?.facture?.body, locale) || fallback;
   const date = opts.date ?? new Date();
+  const idPadded = opts.veloNumero != null ? padNumero(opts.veloNumero) : opts.factureNumero;
   const rendered = nl2br(
     renderTemplate(tpl, {
       clientPrenom: opts.clientPrenom,
@@ -191,7 +203,8 @@ export function factureEmailTemplate(opts: {
       workshopName: opts.workshop.name,
       // V1 names
       prenom: opts.clientPrenom,
-      id: opts.factureNumero,
+      veloDesc: opts.veloLabel ?? '',
+      id: idPadded,
       date: formatDate(date, locale),
     }),
   );
@@ -205,6 +218,7 @@ export function factureEmailSubject(opts: {
   templates?: EmailTemplates;
   clientLang?: string | null;
   factureNumero: string;
+  veloNumero?: number | null;
   workshopName: string;
   date?: Date;
 }): string {
@@ -212,10 +226,11 @@ export function factureEmailSubject(opts: {
   const fallback = locale === 'en' ? DEFAULT_FACTURE_SUBJECT_EN : DEFAULT_FACTURE_SUBJECT_FR;
   const tpl = pickLocale(opts.templates?.facture?.subject, locale) || fallback;
   const date = opts.date ?? new Date();
+  const idPadded = opts.veloNumero != null ? padNumero(opts.veloNumero) : opts.factureNumero;
   return renderTemplate(tpl, {
     factureNumero: opts.factureNumero,
     workshopName: opts.workshopName,
-    id: opts.factureNumero,
+    id: idPadded,
     date: formatDate(date, locale),
   });
 }

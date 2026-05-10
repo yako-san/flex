@@ -228,6 +228,7 @@ function buildBdcDraft(
   veloId: string,
   archiveStatus: V2BdcArchiveStatus,
   ctx: ImportContext,
+  numero: number, // séquentiel atelier-scope, attribué par l'orchestrateur
 ): V2BdcDraft {
   const remiseSvc = mapRemise(raw.remiseSvc);
   const remisePce = mapRemise(raw.remisePce);
@@ -239,6 +240,7 @@ function buildBdcDraft(
     id: generateId('bdc'),
     workshopId: ctx.workshopId,
     veloId,
+    numero,
     evalStatus: mapEvalStatus(raw.evalStatus ?? '', raw.checkOk ?? false),
     archiveStatus,
     cbEvalEnvoye: raw.checkEval ?? false,
@@ -271,6 +273,10 @@ export function transformBdcs(
   const tasks: V2BdcItemTaskDraft[] = [];
   const skipped: BdcsImportResult['skipped'] = [];
 
+  // Compteur local pour attribuer un numéro séquentiel à chaque BDT
+  // dans l'ordre d'apparition (actifs d'abord, archives ensuite).
+  let nextNumero = 1;
+
   function handleBdc(raw: V1Bdc | V1BdcArchive, archiveStatus: V2BdcArchiveStatus) {
     const veloId = lookupVelo(raw.id, lookups.velos);
     if (veloId === null) {
@@ -282,7 +288,7 @@ export function transformBdcs(
       return;
     }
 
-    const draft = buildBdcDraft(raw, veloId, archiveStatus, ctx);
+    const draft = buildBdcDraft(raw, veloId, archiveStatus, ctx, nextNumero++);
     bdcs.push(draft);
 
     let position = 0;
