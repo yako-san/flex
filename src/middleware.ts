@@ -12,6 +12,7 @@ export const PUBLIC_ROUTES = [
   '/:locale',
   '/:locale/sign-in(.*)',
   '/:locale/sign-up(.*)',
+  '/:locale/dev/(.*)',  // doc UI publique (Sprint 4 — voir /dev/ui-kit)
   '/api/health',
   '/api/workshop/logo',
 ] as const;

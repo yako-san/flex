@@ -1,4 +1,3 @@
-import { setRequestLocale } from 'next-intl/server';
 import { Plus, QrCode, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddButton, UtilButton, IconButton } from '@/components/ui/icon-button';
@@ -24,13 +23,9 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-import { UiKitPillsToggle } from './_pills-toggle-demo';
-import { UiKitCheckboxes } from './_checkbox-demo';
-import { SidebarPreview } from './_sidebar-preview';
-
-export const dynamic = 'force-dynamic';
-
-type Props = { params: Promise<{ locale: string }> };
+import { UiKitPillsToggle } from './pills-toggle-demo';
+import { UiKitCheckboxes } from './checkbox-demo';
+import { SidebarPreview } from './sidebar-preview';
 
 const STATUTS_VELO = [
   'rv', 'recu', 'eval', 'attente', 'approuve', 'on-bench', 'ctrl-qlte', 'fini', 'facturer', 'facture', 'livre',
@@ -40,14 +35,21 @@ const STATUTS_CMD = [
 ] as const;
 const ETAPES = ['etape-eval', 'etape-meca', 'etape-ctrl'] as const;
 
-export default async function UiKitPage({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+type Props = {
+  /** Sur-titre affiché dans le PageHeader (ex: "settings · ui kit"). */
+  eyebrow?: string;
+};
 
+/**
+ * Vitrine complète des composants UI Flex V2. Server Component pur — peut
+ * être rendu sans auth ni DB. Réutilisé par /admin/settings/ui-kit (auth) et
+ * /dev/ui-kit (public, debug Sprint 4).
+ */
+export function UiKitContent({ eyebrow = 'dev · qa visuelle' }: Props) {
   return (
     <div className="space-y-12 pb-24">
       <PageHeader
-        eyebrow="dev · qa visuelle"
+        eyebrow={eyebrow}
         title="UI Kit"
         hint="composants Sprint 4"
         subline="Vitrine des primitives Flex V2 — palette V1, tokens CSS variables, multi-tenant ready."
@@ -177,7 +179,7 @@ export default async function UiKitPage({ params }: Props) {
               </DialogDescription>
             </DialogHeader>
             <p className="text-sm text-[var(--text-secondary-70)]">
-              Pattern V1 réutilisé pour modale d'avance, ajout d'items, archivage, etc.
+              Pattern V1 réutilisé pour modale d&apos;avance, ajout d&apos;items, archivage, etc.
             </p>
             <DialogFooter>
               <DialogClose asChild>
@@ -344,4 +346,3 @@ function Swatch({ label, varName, textLight }: { label: string; varName: string;
     </div>
   );
 }
-

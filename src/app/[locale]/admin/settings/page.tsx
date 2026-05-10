@@ -202,6 +202,31 @@ export default async function SettingsPage({ params, searchParams }: Props) {
           Aucun workshop. Va dans <strong>Import v1</strong> pour charger le dump.
         </p>
       ) : null}
+
+      <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
+        Apparence
+      </h2>
+      <p style={{ color: '#666', marginBottom: '1rem', fontSize: '0.9rem' }}>
+        Vitrine des composants UI Flex V2 (Sprint 4 — port look &amp; feel V1).
+        Utile pour QA visuel et référence design.
+      </p>
+      <Link
+        href={`/${locale}/admin/settings/ui-kit` as never}
+        style={{
+          display: 'inline-block',
+          padding: '0.5rem 1rem',
+          background: '#fff056',
+          color: '#000',
+          borderRadius: 30,
+          fontWeight: 700,
+          textDecoration: 'none',
+          fontSize: '0.85rem',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+        }}
+      >
+        Ouvrir le UI Kit →
+      </Link>
     </div>
   );
 }
