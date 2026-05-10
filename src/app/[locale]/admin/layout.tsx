@@ -31,14 +31,60 @@ const navItems = [
   { href: 'admin/maintenance', label: 'Maintenance' },
 ];
 
+/**
+ * Helper défensif : appelle `auth()` Clerk en wrapping toute exception
+ * (ENV manquante, Clerk service down, etc.). Retourne `clerkOk: false`
+ * au lieu de crash 500.
+ */
+async function safeAuth(): Promise<{ userId: string | null; clerkOk: boolean }> {
+  if (!process.env['CLERK_SECRET_KEY']) {
+    return { userId: null, clerkOk: false };
+  }
+  try {
+    const { userId } = await auth();
+    return { userId: userId ?? null, clerkOk: true };
+  } catch {
+    return { userId: null, clerkOk: false };
+  }
+}
+
+/**
+ * Helper défensif sur DB : retourne `dbOk: false` au lieu de crash si la
+ * DB ne répond pas (preview Vercel mal configurée, Neon en sleep, etc.).
+ */
+async function safeWorkshop(): Promise<{
+  workshop: Awaited<ReturnType<typeof getActiveWorkshop>>;
+  dbOk: boolean;
+}> {
+  try {
+    const workshop = await getActiveWorkshop();
+    return { workshop, dbOk: true };
+  } catch {
+    return { workshop: null, dbOk: false };
+  }
+}
+
 export default async function AdminLayout({ children, params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { userId } = await auth();
+  const { userId, clerkOk } = await safeAuth();
+
+  // Mode dégradé : Clerk indisponible (preview sans env, dev sans clés).
+  if (!clerkOk) {
+    return (
+      <DegradedLayout
+        locale={locale}
+        message="Auth Clerk indisponible (variables d'environnement manquantes ou service down)."
+      >
+        {children}
+      </DegradedLayout>
+    );
+  }
+
   if (!userId) redirect(`/${locale}/sign-in`);
 
-  const workshop = await getActiveWorkshop();
+  const { workshop, dbOk } = await safeWorkshop();
 
   return (
     <div
@@ -68,7 +114,11 @@ export default async function AdminLayout({ children, params }: Props) {
             }}
           />
           <div style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem' }}>
-            {workshop ? `Workshop : ${workshop.name}` : 'Aucun workshop lié'}
+            {workshop
+              ? `Workshop : ${workshop.name}`
+              : dbOk
+              ? 'Aucun workshop lié'
+              : 'DB indisponible'}
           </div>
         </div>
 
@@ -104,7 +154,71 @@ export default async function AdminLayout({ children, params }: Props) {
         </div>
       </aside>
 
-      <main style={{ padding: '2rem 2.5rem', overflow: 'auto' }}>{children}</main>
+      <main style={{ padding: '2rem 2.5rem', overflow: 'auto' }}>
+        {!dbOk ? (
+          <div
+            role="alert"
+            style={{
+              background: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: 8,
+              padding: '0.75rem 1rem',
+              marginBottom: '1.5rem',
+              fontSize: '0.9rem',
+            }}
+          >
+            ⚠️ Base de données indisponible — certaines pages peuvent être
+            incomplètes.{' '}
+            <Link href={`/${locale}/dev/health`} style={{ color: '#1565c0' }}>
+              Voir le diagnostic →
+            </Link>
+          </div>
+        ) : null}
+        {children}
+      </main>
+    </div>
+  );
+}
+
+function DegradedLayout({
+  children,
+  locale,
+  message,
+}: {
+  children: ReactNode;
+  locale: string;
+  message: string;
+}) {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+        background: '#fafafa',
+      }}
+    >
+      <div
+        role="alert"
+        style={{
+          background: '#fff3cd',
+          borderBottom: '1px solid #ffeaa7',
+          padding: '0.75rem 1.5rem',
+          fontSize: '0.9rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+        }}
+      >
+        <span>⚠️ Mode dégradé : {message}</span>
+        <Link
+          href={`/${locale}/dev/health`}
+          style={{ color: '#1565c0', fontWeight: 600, textDecoration: 'none' }}
+        >
+          Diagnostic →
+        </Link>
+      </div>
+      <main style={{ padding: '2rem 2.5rem' }}>{children}</main>
     </div>
   );
 }
