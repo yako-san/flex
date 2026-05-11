@@ -17,7 +17,7 @@ const navItems = [
   { href: 'admin', label: 'Tableau de bord' },
   { href: 'admin/clients', label: 'Clients' },
   { href: 'admin/velos', label: 'Vélos' },
-  { href: 'admin/bdcs', label: 'Bons de travail' },
+  { href: 'admin/inventaire', label: 'Bons de travail' },
   { href: 'admin/pieces', label: 'Pièces' },
   { href: 'admin/services', label: 'Services' },
   { href: 'admin/forfaits', label: 'Forfaits' },
