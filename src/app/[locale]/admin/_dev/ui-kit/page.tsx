@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Search, Settings, Wrench } from 'lucide-react';
+import { ChevronDown, Plus, Search, Settings, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,32 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const VELO_STATUSES = [
   'RV', 'REÇU', 'ÉVAL.', 'EN ATTENTE', 'APPROUVÉ', 'ON BENCH',
@@ -196,6 +222,71 @@ export default function UIKitPage() {
             <Plus className="size-8 text-[var(--jaune)]" />
             <span className="text-xs text-white/60">Plus</span>
           </div>
+        </div>
+      </section>
+
+      {/* ──────────── DropdownMenu ──────────── */}
+      <section className="space-y-4">
+        <h2 className="text-white text-xl font-black uppercase tracking-wider">DropdownMenu</h2>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary">
+              Statut vélo <ChevronDown className="ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>RV</DropdownMenuItem>
+            <DropdownMenuItem>ÉVAL.</DropdownMenuItem>
+            <DropdownMenuItem>ON BENCH</DropdownMenuItem>
+            <DropdownMenuItem>FACTURÉ</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </section>
+
+      {/* ──────────── Select ──────────── */}
+      <section className="space-y-4">
+        <h2 className="text-white text-xl font-black uppercase tracking-wider">Select</h2>
+        <div className="bg-white/85 rounded-2xl p-6 max-w-xs space-y-2">
+          <Label htmlFor="mecano">mécano éval</Label>
+          <Select>
+            <SelectTrigger id="mecano">
+              <SelectValue placeholder="Sélectionner…" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="yako">yako</SelectItem>
+              <SelectItem value="jc">jc</SelectItem>
+              <SelectItem value="marie">marie</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </section>
+
+      {/* ──────────── Popover + Tooltip ──────────── */}
+      <section className="space-y-4">
+        <h2 className="text-white text-xl font-black uppercase tracking-wider">Popover & Tooltip</h2>
+        <div className="flex flex-wrap gap-3 items-center">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="secondary">Ouvrir popover</Button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <h3 className="font-bold mb-2 text-black">Avance versée</h3>
+              <p className="text-sm text-black/70">
+                Pattern PieceCmdEditor V1 — popup statut + note libre.
+              </p>
+            </PopoverContent>
+          </Popover>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost">Hover-moi (tooltip)</Button>
+              </TooltipTrigger>
+              <TooltipContent>Tooltip texte court</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </section>
 
