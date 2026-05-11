@@ -29,7 +29,7 @@ const navItems = [
   { href: 'admin/legacy-v1', label: 'Données v1 brutes' },
   { href: 'admin/settings', label: 'Paramètres' },
   { href: 'admin/maintenance', label: 'Maintenance' },
-  { href: 'admin/dev/ui-kit', label: 'UI Kit (dev)' },
+  { href: 'admin/settings/ui-kit', label: 'UI Kit (dev)' },
 ];
 
 /**
