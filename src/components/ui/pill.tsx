@@ -1,99 +1,63 @@
 import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
-export type VeloStatus =
-  | 'RV'
-  | 'REÇU'
-  | 'ÉVAL.'
-  | 'EN ATTENTE'
-  | 'APPROUVÉ'
-  | 'ON BENCH'
-  | 'CTRL QLTÉ'
-  | 'FINI'
-  | 'FACTURER'
-  | 'FACTURÉ'
-  | 'LIVRÉ'
-  | 'REFUSÉ';
+/**
+ * Badge statut V1. Variants alignés sur les tokens `--st-*` et `--cmd-*`.
+ * Aucun style en dur : tout passe par CSS variables → un Workshop.theme
+ * peut surcharger sans rebuild.
+ */
+const pillVariants = cva(
+  'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap',
+  {
+    variants: {
+      variant: {
+        // Statuts vélo
+        rv:        'bg-[var(--st-rv-bg)]        text-[var(--st-rv-fg)]',
+        recu:      'bg-[var(--st-recu-bg)]      text-[var(--st-recu-fg)]',
+        eval:      'bg-[var(--st-eval-bg)]      text-[var(--st-eval-fg)]',
+        attente:   'bg-[var(--st-attente-bg)]   text-[var(--st-attente-fg)]',
+        approuve:  'bg-[var(--st-approuve-bg)]  text-[var(--st-approuve-fg)]',
+        'on-bench': 'bg-[var(--st-on-bench-bg)]  text-[var(--st-on-bench-fg)]',
+        'ctrl-qlte': 'bg-[var(--st-ctrl-qlte-bg)] text-[var(--st-ctrl-qlte-fg)]',
+        fini:      'bg-[var(--st-fini-bg)]      text-[var(--st-fini-fg)]',
+        facturer:  'bg-[var(--st-facturer-bg)]  text-[var(--st-facturer-fg)]',
+        facture:   'bg-[var(--st-facture-bg)]   text-[var(--st-facture-fg)]',
+        livre:     'bg-[var(--st-livre-bg)]     text-[var(--st-livre-fg)]',
+        // Cmd pièces
+        'cmd-listee':    'bg-[var(--cmd-listee-bg)]    text-[var(--cmd-listee-fg)] border border-[var(--gris-bord)]',
+        'cmd-estimee':   'bg-[var(--cmd-estimee-bg)]   text-[var(--cmd-estimee-fg)]',
+        'cmd-a-cmder':   'bg-[var(--cmd-a-cmder-bg)]   text-[var(--cmd-a-cmder-fg)]',
+        'cmd-en-cmde':   'bg-[var(--cmd-en-cmde-bg)]   text-[var(--cmd-en-cmde-fg)]',
+        'cmd-recu-part': 'bg-[var(--cmd-recu-part-bg)] text-[var(--cmd-recu-part-fg)]',
+        'cmd-recue':     'bg-[var(--cmd-recue-bg)]     text-[var(--cmd-recue-fg)]',
+        // Étapes mécanos
+        'etape-eval': 'bg-[var(--etape-eval-bg)] text-[var(--etape-eval-fg)]',
+        'etape-meca': 'bg-[var(--etape-meca-bg)] text-[var(--etape-meca-fg)]',
+        'etape-ctrl': 'bg-[var(--etape-ctrl-bg)] text-[var(--etape-ctrl-fg)]',
+        // Génériques
+        neutral: 'bg-[var(--gris-bord)] text-[var(--dark)]',
+        staff:   'bg-[#eeeeee] text-[#666]',
+      },
+      size: {
+        sm: 'text-[10px] px-2 py-0.5',
+        md: 'text-xs px-2.5 py-0.5',
+        lg: 'text-sm px-3 py-1',
+      },
+    },
+    defaultVariants: {
+      variant: 'neutral',
+      size: 'md',
+    },
+  },
+);
 
-export type CmdStatus = '...' | '—' | '√' | '$' | '#' | '@';
+export interface PillProps
+  extends React.HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof pillVariants> {}
 
-export type EtapeMeca = 'eval' | 'meca' | 'ctrl';
-
-const veloStatusStyle: Record<VeloStatus, { bg: string; fg: string }> = {
-  'RV':         { bg: 'var(--st-rv-bg)',         fg: 'var(--st-rv-fg)' },
-  'REÇU':       { bg: 'var(--st-recu-bg)',       fg: 'var(--st-recu-fg)' },
-  'ÉVAL.':      { bg: 'var(--st-eval-bg)',       fg: 'var(--st-eval-fg)' },
-  'EN ATTENTE': { bg: 'var(--st-attente-bg)',    fg: 'var(--st-attente-fg)' },
-  'APPROUVÉ':   { bg: 'var(--st-approuve-bg)',   fg: 'var(--st-approuve-fg)' },
-  'ON BENCH':   { bg: 'var(--st-on-bench-bg)',   fg: 'var(--st-on-bench-fg)' },
-  'CTRL QLTÉ':  { bg: 'var(--st-ctrl-qlte-bg)',  fg: 'var(--st-ctrl-qlte-fg)' },
-  'FINI':       { bg: 'var(--st-fini-bg)',       fg: 'var(--st-fini-fg)' },
-  'FACTURER':   { bg: 'var(--st-facturer-bg)',   fg: 'var(--st-facturer-fg)' },
-  'FACTURÉ':    { bg: 'var(--st-facture-bg)',    fg: 'var(--st-facture-fg)' },
-  'LIVRÉ':      { bg: 'var(--st-livre-bg)',      fg: 'var(--st-livre-fg)' },
-  'REFUSÉ':     { bg: '#ffffff',                 fg: '#666666' },
-};
-
-const cmdStatusStyle: Record<CmdStatus, { bg: string; fg: string }> = {
-  '...': { bg: 'var(--cmd-listee-bg)',    fg: 'var(--cmd-listee-fg)' },
-  '—':   { bg: 'var(--cmd-estimee-bg)',   fg: 'var(--cmd-estimee-fg)' },
-  '√':   { bg: 'var(--cmd-a-cmder-bg)',   fg: 'var(--cmd-a-cmder-fg)' },
-  '$':   { bg: 'var(--cmd-en-cmde-bg)',   fg: 'var(--cmd-en-cmde-fg)' },
-  '#':   { bg: 'var(--cmd-recu-part-bg)', fg: 'var(--cmd-recu-part-fg)' },
-  '@':   { bg: 'var(--cmd-recue-bg)',     fg: 'var(--cmd-recue-fg)' },
-};
-
-const etapeStyle: Record<EtapeMeca, { bg: string; fg: string }> = {
-  eval: { bg: 'var(--etape-eval-bg)', fg: 'var(--etape-eval-fg)' },
-  meca: { bg: 'var(--etape-meca-bg)', fg: 'var(--etape-meca-fg)' },
-  ctrl: { bg: 'var(--etape-ctrl-bg)', fg: 'var(--etape-ctrl-fg)' },
-};
-
-type PillProps = React.HTMLAttributes<HTMLSpanElement> & {
-  size?: 'sm' | 'md' | 'lg';
-} & (
-    | { veloStatus: VeloStatus; cmdStatus?: never; etape?: never; bg?: never; fg?: never }
-    | { cmdStatus: CmdStatus; veloStatus?: never; etape?: never; bg?: never; fg?: never }
-    | { etape: EtapeMeca; veloStatus?: never; cmdStatus?: never; bg?: never; fg?: never }
-    | { bg: string; fg: string; veloStatus?: never; cmdStatus?: never; etape?: never }
-  );
-
-export function Pill({
-  className,
-  size = 'md',
-  children,
-  veloStatus,
-  cmdStatus,
-  etape,
-  bg,
-  fg,
-  ...props
-}: PillProps) {
-  const style = veloStatus
-    ? veloStatusStyle[veloStatus]
-    : cmdStatus
-      ? cmdStatusStyle[cmdStatus]
-      : etape
-        ? etapeStyle[etape]
-        : { bg: bg!, fg: fg! };
-
-  const sizeClass = {
-    sm: 'h-5 px-2 text-[10px]',
-    md: 'h-6 px-2.5 text-[11px]',
-    lg: 'h-8 px-3.5 text-xs',
-  }[size];
-
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center rounded-full font-bold uppercase tracking-wider whitespace-nowrap',
-        sizeClass,
-        className,
-      )}
-      style={{ backgroundColor: style.bg, color: style.fg }}
-      {...props}
-    >
-      {children ?? veloStatus ?? cmdStatus ?? etape}
-    </span>
-  );
+export function Pill({ className, variant, size, ...props }: PillProps) {
+  return <span className={cn(pillVariants({ variant, size }), className)} {...props} />;
 }
+
+export { pillVariants };
