@@ -1,278 +1,206 @@
+/* ----------------------------------------------------------------
+ * Flex V2 — feuille de style globale.
+ * Adaptation V2 du globals.css V1 (référence, pas copie textuelle).
+ *   - Tokens via CSS variables avec préfixes (--st-*, --cmd-*, etc.).
+ *   - Composants en <Component variant="..."> (CVA), classes utilitaires
+ *     conservées seulement pour les patterns transversaux (typo, listes
+ *     alternées, override gris bleuté Tailwind, anti-zoom iOS).
+ *   - Multi-tenant ready : Workshop.theme JSON peut surcharger toutes
+ *     les CSS variables sans rebuild (cf. lib/theme/types.ts).
+ * ---------------------------------------------------------------- */
+
 @import "tailwindcss";
 
-/* ============================================================================
-   Tokens V1 — palette signature, statuts métier, typographie
-   Source : docs/v2-handoff/v1-ui-bundle.md (V1 v1.0.19)
-   ========================================================================= */
-
-@theme {
-  /* Palette signature (utilisable comme classes Tailwind : bg-jaune, etc.) */
-  --color-jaune: #fff056;
-  --color-jaune-h: #e6d84e;
-  --color-rouge: #d92020;
-  --color-rouge-h: #b81818;
-  --color-gris-bg: #757575;
-}
-
+/* --- Tokens partagés (palette par défaut atelier yako-cyclo) ------- */
 :root {
-  /* ── Palette signature ──────────────────────────────────────────────── */
-  --jaune: #fff056;
-  --jaune-h: #e6d84e;
-  --rouge: #d92020;
-  --rouge-h: #b81818;
-  --gris-bg: #757575;
+  /* Palette signature */
+  --jaune:        #fff056;
+  --jaune-h:      #e6d84e;  /* hover */
+  --rouge:        #d92020;
+  --rouge-h:      #b81818;
+  --gris-bg:      #757575;  /* PageHeader */
+  --gris-bord:    #e0e0e0;
+  --gris-fond:    #fafafa;
+  --dark:         #1a1a1a;
 
-  /* ── Statuts vélo (bg / fg) ─────────────────────────────────────────── */
-  --st-rv-bg: #fff056;          --st-rv-fg: #000000;
-  --st-recu-bg: #fff056;        --st-recu-fg: #000000;
-  --st-eval-bg: #88fa4e;        --st-eval-fg: #000000;
-  --st-attente-bg: #fb923c;     --st-attente-fg: #000000;
-  --st-approuve-bg: #62e335;    --st-approuve-fg: #000000;
-  --st-on-bench-bg: #5cd62b;    --st-on-bench-fg: #000000;
-  --st-ctrl-qlte-bg: #2e7d32;   --st-ctrl-qlte-fg: #ffffff;
-  --st-fini-bg: #fce4ec;        --st-fini-fg: #c62828;
-  --st-facturer-bg: #e53935;    --st-facturer-fg: #ffffff;
-  --st-facture-bg: #ffcdd2;     --st-facture-fg: #b71c1c;
-  --st-livre-bg: #e0e0e0;       --st-livre-fg: #333333;
+  /* Statuts vélo — bg / fg */
+  --st-rv-bg:         #fff056;  --st-rv-fg:         #000000;
+  --st-recu-bg:       #fff056;  --st-recu-fg:       #000000;
+  --st-eval-bg:       #88fa4e;  --st-eval-fg:       #000000;
+  --st-attente-bg:    #fb923c;  --st-attente-fg:    #000000;
+  --st-approuve-bg:   #62e335;  --st-approuve-fg:   #000000;
+  --st-on-bench-bg:   #5cd62b;  --st-on-bench-fg:   #000000;
+  --st-ctrl-qlte-bg:  #2e7d32;  --st-ctrl-qlte-fg:  #ffffff;
+  --st-fini-bg:       #fce4ec;  --st-fini-fg:       #c62828;
+  --st-facturer-bg:   #e53935;  --st-facturer-fg:   #ffffff;
+  --st-facture-bg:    #ffcdd2;  --st-facture-fg:    #b71c1c;
+  --st-livre-bg:      #e0e0e0;  --st-livre-fg:      #333333;
 
-  /* ── Statuts pièces / cmd (bg / fg) ─────────────────────────────────── */
-  --cmd-listee-bg: #ffffff;     --cmd-listee-fg: #000000;
-  --cmd-estimee-bg: #ffcfc9;    --cmd-estimee-fg: #b10202;
-  --cmd-a-cmder-bg: #d4edbc;    --cmd-a-cmder-fg: #11734b;
-  --cmd-en-cmde-bg: #ffff00;    --cmd-en-cmde-fg: #473821;
+  /* Statuts pièces (cmd) — bg / fg */
+  --cmd-listee-bg:    #ffffff;  --cmd-listee-fg:    #000000;
+  --cmd-estimee-bg:   #ffcfc9;  --cmd-estimee-fg:   #b10202;
+  --cmd-a-cmder-bg:   #d4edbc;  --cmd-a-cmder-fg:   #11734b;
+  --cmd-en-cmde-bg:   #ffff00;  --cmd-en-cmde-fg:   #473821;
   --cmd-recu-part-bg: #ffe0b2;  --cmd-recu-part-fg: #e65100;
-  --cmd-recue-bg: #00ff00;      --cmd-recue-fg: #000000;
+  --cmd-recue-bg:     #00ff00;  --cmd-recue-fg:     #000000;
 
-  /* ── Étapes mécaniciens ─────────────────────────────────────────────── */
-  --etape-eval-bg: #d9ead3;     --etape-eval-fg: #38761d;
-  --etape-meca-bg: #b6d7a8;     --etape-meca-fg: #38761d;
-  --etape-ctrl-bg: #93c47d;     --etape-ctrl-fg: #274e13;
+  /* Étapes mécaniciens */
+  --etape-eval-bg:    #d9ead3;  --etape-eval-fg:    #38761d;
+  --etape-meca-bg:    #b6d7a8;  --etape-meca-fg:    #38761d;
+  --etape-ctrl-bg:    #93c47d;  --etape-ctrl-fg:    #274e13;
 
-  /* ── Hiérarchie typographique ───────────────────────────────────────── */
-  --h1-size: 3.0rem;    --h1-weight: 400;  /* Helvetica Thin */
-  --h2-size: 1.8rem;    --h2-weight: 900;
-  --h3-size: 1.3rem;    --h3-weight: 600;
-  --h4-size: 0.9rem;    --h4-weight: 900;  /* uppercase tracking 0.1em */
-  --h5-size: 0.65rem;   --h5-weight: 600;
-  --h6-size: 0.5rem;    --h6-weight: 600;
-  --th-size: 11px;      --th-weight: 600;  /* lowercase */
+  /* Alpha / overlays V1 */
+  --overlay-dark-20:    rgba(0,0,0,0.20);
+  --overlay-light-50:   rgba(255,255,255,0.50);
+  --overlay-light-70:   rgba(255,255,255,0.70);
+  --overlay-light-85:   rgba(255,255,255,0.85);
+  --overlay-light-35:   rgba(255,255,255,0.35);
+  --text-secondary-35:  rgba(0,0,0,0.35);
+  --text-secondary-50:  rgba(0,0,0,0.50);
+  --text-secondary-60:  rgba(0,0,0,0.60);
+  --text-secondary-70:  rgba(0,0,0,0.70);
+  --text-secondary-80:  rgba(0,0,0,0.80);
 
-  /* ── shadcn/ui base (override agressif V1) ─────────────────────────── */
-  --background: 0 0% 96%;
-  --foreground: 0 0% 10%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 10%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 10%;
-  --primary: 56 100% 67%;          /* #fff056 jaune signature */
-  --primary-foreground: 0 0% 0%;
-  --secondary: 0 0% 90%;
-  --secondary-foreground: 0 0% 20%;
-  --muted: 0 0% 95%;
-  --muted-foreground: 0 0% 40%;
-  --accent: 56 100% 67%;
-  --accent-foreground: 0 0% 0%;
-  --destructive: 0 74% 49%;        /* #d92020 rouge danger */
-  --destructive-foreground: 0 0% 100%;
-  --border: 0 0% 85%;
-  --input: 0 0% 85%;
-  --ring: 56 100% 67%;
-  --radius: 0.75rem;
+  /* Hiérarchie typo */
+  --h1-size: 3.0rem;   --h1-weight: 400;
+  --h2-size: 1.8rem;   --h2-weight: 900;
+  --h3-size: 1.3rem;   --h3-weight: 600;
+  --h4-size: 0.9rem;   --h4-weight: 900;
+  --h5-size: 0.65rem;  --h5-weight: 600;
+  --h6-size: 0.5rem;   --h6-weight: 600;
+  --th-size: 11px;     --th-weight: 600;
+
+  /* Layout */
+  --sidebar-w-collapsed: 60px;
+  --sidebar-w-expanded:  200px;
+  --header-h:            72px;
+
+  /* Forms (V1 input-system) */
+  --input-radius:    12px;
+  --input-border:    rgba(0,0,0,0.2);
+  --input-focus-ring: rgba(255, 240, 86, 0.4);
+  --btn-radius:      30px;     /* boutons pill V1 */
+  --btn-h-md:        38px;
+  --btn-h-sm:        32px;
+  --btn-h-lg:        44px;
+  --addbtn-size:     40px;     /* AddButton rond V1 */
 }
 
-/* ============================================================================
-   Reset + filet de sécurité anti-débordement
-   ========================================================================= */
+/* --- Tailwind v4 theme exposure ----------------------------------- */
+@theme {
+  --color-jaune:    #fff056;
+  --color-jaune-h:  #e6d84e;
+  --color-rouge:    #d92020;
+  --color-rouge-h:  #b81818;
+  --color-dark:     #1a1a1a;
+  --color-gris-bg:  #757575;
+  --color-gris-bord: #e0e0e0;
+  --color-gris-fond: #fafafa;
+
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --font-thin: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* --- Reset minimal V1 + Helvetica Neue partout -------------------- */
+* {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+}
 
 html, body {
-  overflow-x: clip;    /* préféré à hidden — pas de stacking context */
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  color: var(--dark);
+  background: var(--gris-fond);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /*
+   * V1 pattern : aucun enfant ne déborde le viewport.
+   * - overflow-x: clip empêche le scroll horizontal sans créer de
+   *   stacking context (les sticky positions restent intactes).
+   * - max-width: 100vw force tous les enfants à rester dans le viewport.
+   */
+  overflow-x: clip;
   max-width: 100vw;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  background-color: var(--gris-bg);
-  color: rgba(0, 0, 0, 0.85);
 }
 
-/* Anti-zoom iOS : tous inputs > 16px sur mobile */
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; }
+
+/* Hiérarchie typo V1 — h2/h3/h4 ont !important car Tailwind base reset */
+h1 { font-size: var(--h1-size); font-weight: var(--h1-weight); margin: 0; }
+h2 { font-size: var(--h2-size) !important; font-weight: var(--h2-weight) !important; margin: 0; }
+h3 { font-size: var(--h3-size) !important; font-weight: var(--h3-weight) !important; text-transform: none !important; margin: 0; }
+h4 { font-size: var(--h4-size) !important; font-weight: var(--h4-weight) !important; text-transform: uppercase !important; letter-spacing: 0.1em !important; margin: 0; }
+h5 { font-size: var(--h5-size) !important; font-weight: var(--h5-weight) !important; margin: 0; }
+h6 { font-size: var(--h6-size) !important; font-weight: var(--h6-weight) !important; font-style: italic !important; margin: 0; }
+
+/* iOS Safari zoom auto si font-size < 16px sur input/textarea/select.
+   On force 16px global pour bloquer ce comportement, puis on ramène
+   à 14px sur desktop pour les inputs « system » via @media. */
 input, textarea, select {
   font-size: 16px;
 }
 
-@media (min-width: 768px) {
-  input, textarea, select {
-    font-size: 14px;
-  }
+/* Focus accessibilité */
+:focus-visible {
+  outline: 2px solid var(--jaune);
+  outline-offset: 2px;
 }
 
-/* ============================================================================
-   Override Tailwind gris bleuté — gray-* devient noir semi-transparent pur
-   (Tailwind v3+ gray-400 a une teinte bleutée OKLCH non désirée)
-   ========================================================================= */
-
+/* --- Override gris bleuté Tailwind (v4 OKLCH) → noirs purs alpha --
+   Tailwind v3/v4 gris ont une teinte bleutée en OKLCH ; V1 préfère
+   des noirs semi-transparents. On garde les classes Tailwind comme
+   API mais on remappe les valeurs. */
 .text-gray-300 { color: rgba(0, 0, 0, 0.35) !important; }
-.text-gray-400 { color: rgba(0, 0, 0, 0.5)  !important; }
-.text-gray-500 { color: rgba(0, 0, 0, 0.6)  !important; }
-.text-gray-600 { color: rgba(0, 0, 0, 0.7)  !important; }
-.text-gray-700 { color: rgba(0, 0, 0, 0.8)  !important; }
+.text-gray-400 { color: rgba(0, 0, 0, 0.50) !important; }
+.text-gray-500 { color: rgba(0, 0, 0, 0.60) !important; }
+.text-gray-600 { color: rgba(0, 0, 0, 0.70) !important; }
+.text-gray-700 { color: rgba(0, 0, 0, 0.80) !important; }
 
-/* ============================================================================
-   Classes globales V1 (boutons, inputs, listes)
-   À utiliser quand le composant shadcn n'a pas de variant adapté
-   ========================================================================= */
+/* --- Blocs réutilisables hors @layer pour surpasser utilities ----- */
 
-@layer components {
-  /* ── Boutons (38px height, 30px radius, uppercase tracking 0.1em) ──── */
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 38px;
-    padding: 0 20px;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    background-color: var(--jaune);
-    color: #000;
-    border: none;
-    cursor: pointer;
-    transition: background-color 150ms;
-  }
-  .btn-primary:hover:not(:disabled) { background-color: var(--jaune-h); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 38px;
-    padding: 0 20px;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    background-color: transparent;
-    color: rgba(0, 0, 0, 0.8);
-    border: 2px solid rgba(0, 0, 0, 0.5);
-    cursor: pointer;
-    transition: background-color 150ms;
-  }
-  .btn-secondary:hover:not(:disabled) { background-color: rgba(0, 0, 0, 0.05); }
-  .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .btn-danger {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 38px;
-    padding: 0 20px;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    background-color: var(--rouge);
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    transition: background-color 150ms;
-  }
-  .btn-danger:hover:not(:disabled) { background-color: var(--rouge-h); }
-  .btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* ── Bouton (+) rond standalone ─────────────────────────────────────── */
-  .btn-plus-round {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: var(--jaune);
-    color: rgba(0, 0, 0, 0.5);
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
-    transition: background-color 150ms, box-shadow 150ms;
-  }
-  .btn-plus-round:hover {
-    background-color: var(--jaune-h);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-  }
-
-  /* ── Inputs / labels système ────────────────────────────────────────── */
-  .input-system {
-    width: 100%;
-    border: 1.5px solid rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    padding: 8px 14px;
-    background-color: #fff;
-    color: #000;
-    outline: none;
-    transition: border-color 150ms, box-shadow 150ms;
-  }
-  .input-system:focus {
-    border-color: var(--jaune);
-    box-shadow: 0 0 0 3px rgba(255, 240, 86, 0.4);
-  }
-
-  .label-system {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: lowercase;
-    color: rgba(0, 0, 0, 0.5);
-    margin-bottom: 4px;
-  }
-
-  /* ── Custom checkbox V1 (20×20, bordure noir 50%) ───────────────────── */
-  .custom-checkbox {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(0, 0, 0, 0.5);
-    border-radius: 4px;
-    background-color: transparent;
-    cursor: pointer;
-    position: relative;
-    flex-shrink: 0;
-  }
-  .custom-checkbox:checked::after {
-    content: '';
-    position: absolute;
-    left: 4px;
-    top: 0;
-    width: 6px;
-    height: 12px;
-    border: solid rgba(0, 0, 0, 0.7);
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-  }
-
-  /* ── Listes / tableaux unifiés (alternance blanc translucide) ───────── */
-  .list-header,
-  .list-footer {
-    background-color: rgba(255, 255, 255, 0.5);
-    color: rgba(0, 0, 0, 0.5);
-    font-size: 14px;
-    font-weight: 700;
-    font-style: italic;
-  }
-  .list-row-even      { background-color: rgba(255, 255, 255, 0.7); }
-  .list-row-odd       { background-color: rgba(255, 255, 255, 0.85); }
-  .list-row-highlight { background-color: var(--cmd-a-cmder-bg); }
-  .list-subcategory {
-    background-color: rgba(255, 255, 255, 0.35);
-    color: var(--jaune);
-    font-size: 14pt;
-    font-weight: 400;
-    font-style: italic;
-  }
-
-  /* ── Capsule sombre (ToolbarBlock, conteneurs sombres) ──────────────── */
-  .capsule-dark {
-    background-color: rgba(0, 0, 0, 0.20);
-    border-radius: 50px;
-  }
+/* Entête de bloc (titre catégorie, titre BDC) — pas uppercase */
+.entete {
+  font-size: var(--h3-size) !important;
+  font-weight: var(--h3-weight) !important;
+  text-transform: none !important;
+  padding: 0.5rem 1rem !important;
 }
+
+/* Légendes de colonnes thead — 11px lowercase weight 600 */
+.legende,
+.legende tr,
+.legende th,
+thead,
+thead tr,
+thead th,
+th {
+  font-size: var(--th-size) !important;
+  font-weight: var(--th-weight) !important;
+  text-transform: lowercase !important;
+  letter-spacing: normal !important;
+}
+
+/* --- Listes / tables — système de couleurs unifié V1 --------------
+   Utilisé dans BDC, catalogue, réception, commandes, etc. */
+.list-header,
+.list-footer {
+  background-color: rgba(255,255,255,0.5);
+  color: rgba(0,0,0,0.5);
+  font-size: 14px;
+  font-weight: 700;
+  font-style: italic;
+}
+.list-row-even      { background-color: rgba(255,255,255,0.7); }
+.list-row-odd       { background-color: rgba(255,255,255,0.85); }
+.list-row-highlight { background-color: #d4edbc; }
+.list-subcategory {
+  background-color: rgba(255,255,255,0.35);
+  color: var(--jaune);
+  font-size: 14pt;
+  font-weight: 400;
+}
+

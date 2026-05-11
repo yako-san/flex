@@ -20,6 +20,8 @@ describe('middleware PUBLIC_ROUTES', () => {
     '/fr-CA/sign-in/factor-one',
     '/en-CA/sign-up',
     '/en-CA/sign-up/verify-email-address',
+    '/fr-CA/dev/ui-kit',
+    '/en-CA/dev/ui-kit',
     '/api/health',
   ])('considère %s comme public', (path) => {
     expect(isPublic(req(path))).toBe(true);
