@@ -101,15 +101,33 @@ dans l'UI Vercel).
 
 ## Conventions git
 
-- Branche de travail courante : `claude/resume-flex-v2-0DctE`
-- Branches synchronisées : `main` et `claude/bootstrap-flex-app-v2-0Gwel`
-  (défaut GitHub)
-- 3 branches alignées sur HEAD à chaque push (les 3 sont fast-forwardées
-  ensemble pour que peu importe celle que Vercel suit, c'est à jour)
-- Commits : confiance, push, mais demander avant les opérations
-  destructives
+- **`main` = seule branche pérenne** (décision yako-san 2026-05-11). Toutes
+  les modifs passent par PR vers `main`. Les branches `claude/*` sont des
+  branches de travail jetables, à supprimer une fois leur PR mergée.
+- `main` est **protégée** côté GitHub : push direct refusé (HTTP 403),
+  PR obligatoire. Ne pas tenter `git push origin HEAD:main` — ça échoue.
+- Branche de travail courante : `claude/resume-flex-v2-0DctE` (à supprimer
+  après merge de la PR #6 — Phase 0 UI).
+- Branches encore vivantes pendant la transition :
+  `claude/bootstrap-flex-app-v2-0Gwel` (défaut GitHub historique, à
+  basculer sur `main` quand yako-san s'en occupe dans GitHub Settings).
+- Vercel : suit `main` (le plus solide).
+- Commits : confiance, push direct sur la branche de travail, mais
+  demander avant les opérations destructives (force-push, reset, delete
+  branch, drop table).
 - Format commit : `feat|fix|docs|refactor(scope): description courte`,
-  body en français
+  body en français.
+
+## Dev local
+
+- **Port V2 : `3001`** (V1 occupe 3000 sur la machine de yako-san).
+  Commande : `cd ~/flex && pnpm dev` (Next.js détecte 3000 pris et
+  bascule auto sur 3001).
+- yako-san **n'a jamais lancé V2 en local avant le 2026-05-11** — il
+  teste tout via Vercel. Si tu lui demandes de tester localement, le
+  préciser explicitement et donner les commandes complètes.
+- `NEXT_PUBLIC_APP_URL` dans `.env.example` est un **placeholder mort**
+  (jamais lu par le code). Changer le port n'a aucun impact runtime.
 
 ## Communication v1 ↔ v2
 
