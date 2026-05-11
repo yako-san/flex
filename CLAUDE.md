@@ -65,6 +65,21 @@ la session de bootstrap, corrigée depuis). C'est :
 - Server Actions avec useActionState
 - Soft-delete (deletedAt) sur entités principales
 
+### Stack UI (installée Sprint 4 Phase 0, 2026-05-11)
+
+- Tailwind CSS v4 (CSS-first, `@import "tailwindcss"`) + @tailwindcss/postcss
+- shadcn/ui (New York, CSS variables) — composants dans `src/components/ui/`
+- Radix UI primitives (via shadcn) — Dialog, Dropdown, Select, Popover, Tooltip
+- Lucide React (icônes) — pas Heroicons (V1 utilise Heroicons, mapping
+  dans v1-ui-bundle.md section 7)
+- Tokens V1 dans `src/app/globals.css` (jaune `#fff056`, palette statuts
+  vélo/pièces, étapes mécanos, typo `--h1-size` à `--th-size`)
+- Pas de @headlessui/react (V1 l'utilise pour Modal, V2 prend shadcn Dialog)
+
+**Avant de raisonner sur la stack** : toujours vérifier contre
+`package.json` (l'info CLAUDE.md peut être obsolète si une dep a été
+ajoutée/retirée sans MAJ du doc).
+
 ## Base de données — IMPORTANT
 
 L'utilisateur a 2 projets Neon :
@@ -86,7 +101,7 @@ dans l'UI Vercel).
 
 ## Conventions git
 
-- Branche de travail courante : `claude/resume-from-handoff-HginU`
+- Branche de travail courante : `claude/resume-flex-v2-0DctE`
 - Branches synchronisées : `main` et `claude/bootstrap-flex-app-v2-0Gwel`
   (défaut GitHub)
 - 3 branches alignées sur HEAD à chaque push (les 3 sont fast-forwardées
