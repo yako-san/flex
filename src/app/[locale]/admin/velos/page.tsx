@@ -1,12 +1,30 @@
 import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
-import { Prisma, type VeloStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
+import { Pill } from '@/components/ui/pill';
 import { SearchBar } from '../_components/search-bar';
-import { veloStatusColors, veloStatusLabel } from '@/lib/velo/status-labels';
+import { VELO_STATUS_LABELS } from '@/lib/velo/status-labels';
+import type { VeloStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
+
+const STATUS_TO_PILL: Record<VeloStatus, 'rv' | 'recu' | 'eval' | 'attente' | 'approuve' | 'on-bench' | 'ctrl-qlte' | 'fini' | 'facturer' | 'facture' | 'livre'> = {
+  RV: 'rv',
+  RECU: 'recu',
+  EVAL: 'eval',
+  EN_ATTENTE: 'attente',
+  APPROUVE: 'approuve',
+  ON_BENCH: 'on-bench',
+  CTRL_QLTE: 'ctrl-qlte',
+  FINI: 'fini',
+  FACTURER: 'facturer',
+  FACTURE: 'facture',
+  LIVRE: 'livre',
+};
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -19,7 +37,7 @@ export default async function VelosPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
 
   const workshop = await getActiveWorkshop();
-  if (!workshop) return <p>Aucun workshop actif.</p>;
+  if (!workshop) return <p className="p-6 text-[var(--text-secondary-60)]">Aucun workshop actif.</p>;
 
   const trimmed = q?.trim() ?? '';
   const numeroAsInt = trimmed && /^\d+$/.test(trimmed) ? Number(trimmed) : undefined;
@@ -56,123 +74,85 @@ export default async function VelosPage({ params, searchParams }: Props) {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem', flexWrap: 'wrap' }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Vélos</h1>
-          <p style={{ color: '#666', margin: 0 }}>{velos.length} vélo{velos.length === 1 ? '' : 's'}{trimmed ? ` (filtré: « ${trimmed} »)` : ''}</p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <SearchBar placeholder="N°, modèle, marque, client, série…" />
-          <a href="/api/admin/export/velos" style={csvBtn}>↓ CSV</a>
-          <Link
-            href={`/${locale}/admin/velos/new`}
-            style={{
-              padding: '0.6rem 1.2rem',
-              background: '#1a1a1a',
-              color: 'white',
-              textDecoration: 'none',
-              borderRadius: 4,
-              fontSize: '0.95rem',
-            }}
-          >
-            + Nouveau vélo
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="catalogue"
+        title="Vélos"
+        subline={`${velos.length} vélo${velos.length === 1 ? '' : 's'}${trimmed ? ` filtré sur « ${trimmed} »` : ''}`}
+        actions={
+          <>
+            <SearchBar placeholder="N°, modèle, marque, client, série…" />
+            <a
+              href="/api/admin/export/velos"
+              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
+            >
+              ↓ CSV
+            </a>
+            <Link
+              href={`/${locale}/admin/velos/new`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
+              aria-label="Nouveau vélo"
+              title="Nouveau vélo"
+            >
+              <Plus size={20} />
+            </Link>
+          </>
+        }
+      />
 
-      <table style={tableStyle}>
-        <thead>
-          <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
-            <th style={thStyle}>#</th>
-            <th style={thStyle}>Client</th>
-            <th style={thStyle}>Marque</th>
-            <th style={thStyle}>Modèle</th>
-            <th style={thStyle}>Couleur</th>
-            <th style={thStyle}>Taille</th>
-            <th style={thStyle}>Status</th>
-            <th style={{ ...thStyle, textAlign: 'right' }}>BDCs</th>
-          </tr>
-        </thead>
-        <tbody>
-          {velos.map((v) => (
-            <tr key={v.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-              <td style={{ ...tdStyle, fontFamily: 'monospace' }}>
-                <Link
-                  href={`/${locale}/admin/velos/${v.id}`}
-                  style={{ color: '#1565c0', textDecoration: 'none' }}
-                >
-                  {String(v.veloNumero).padStart(4, '0')}
-                </Link>
-              </td>
-              <td style={tdStyle}>
-                {v.client ? (
-                  <Link
-                    href={`/${locale}/admin/clients/${v.client.id}`}
-                    style={{ color: '#1565c0', textDecoration: 'none' }}
-                  >
-                    {`${v.client.prenom} ${v.client.nom}`.trim()}
-                  </Link>
-                ) : (
-                  '—'
-                )}
-              </td>
-              <td style={tdStyle}>{v.marque?.nom ?? '—'}</td>
-              <td style={tdStyle}>{v.modele ?? '—'}</td>
-              <td style={tdStyle}>{v.couleur ?? '—'}</td>
-              <td style={tdStyle}>{v.taille ?? '—'}</td>
-              <td style={tdStyle}>
-                <StatusBadge status={v.status} />
-              </td>
-              <td style={{ ...tdStyle, textAlign: 'right' }}>{v._count.bdcs}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="p-6">
+        {velos.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-[var(--gris-bord)] p-8 text-center text-sm text-[var(--text-secondary-60)]">
+            Aucun vélo {trimmed ? `pour « ${trimmed} »` : ''}.
+          </p>
+        ) : (
+          <div className="overflow-hidden rounded-2xl bg-white/85 shadow-sm">
+            <table className="w-full text-sm">
+              <thead className="border-b border-[var(--gris-bord)] bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+                <tr>
+                  <th className="px-3 py-2 text-left">#</th>
+                  <th className="px-3 py-2 text-left">Statut</th>
+                  <th className="px-3 py-2 text-left">Client</th>
+                  <th className="px-3 py-2 text-left">Marque</th>
+                  <th className="px-3 py-2 text-left">Modèle</th>
+                  <th className="px-3 py-2 text-left">Couleur</th>
+                  <th className="px-3 py-2 text-left">Taille</th>
+                  <th className="px-3 py-2 text-right">BDT</th>
+                </tr>
+              </thead>
+              <tbody>
+                {velos.map((v) => (
+                  <tr key={v.id} className="border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
+                    <td className="px-3 py-2 font-mono font-semibold">
+                      <Link href={`/${locale}/admin/velos/${v.id}`} className="hover:underline">
+                        {String(v.veloNumero).padStart(4, '0')}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Pill variant={STATUS_TO_PILL[v.status]} size="sm">
+                        {VELO_STATUS_LABELS[v.status].fr}
+                      </Pill>
+                    </td>
+                    <td className="px-3 py-2">
+                      {v.client ? (
+                        <Link href={`/${locale}/admin/clients/${v.client.id}`} className="hover:underline">
+                          {`${v.client.prenom} ${v.client.nom}`.trim()}
+                        </Link>
+                      ) : (
+                        <span className="text-[var(--text-secondary-60)]">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2">{v.marque?.nom ?? '—'}</td>
+                    <td className="px-3 py-2">{v.modele ?? '—'}</td>
+                    <td className="px-3 py-2">{v.couleur ?? '—'}</td>
+                    <td className="px-3 py-2">{v.taille ?? '—'}</td>
+                    <td className="px-3 py-2 text-right font-mono tabular-nums">{v._count.bdcs}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
-function StatusBadge({ status }: { status: VeloStatus }) {
-  const c = veloStatusColors(status);
-  return (
-    <span
-      style={{
-        background: c.bg,
-        color: c.fg,
-        padding: '0.15rem 0.5rem',
-        borderRadius: 4,
-        fontSize: '0.8rem',
-        fontWeight: 500,
-      }}
-    >
-      {veloStatusLabel(status)}
-    </span>
-  );
-}
-
-const csvBtn: React.CSSProperties = {
-  padding: '0.55rem 0.9rem',
-  border: '1px solid #ccc',
-  color: '#444',
-  textDecoration: 'none',
-  borderRadius: 4,
-  fontSize: '0.9rem',
-  background: 'white',
-};
-const tableStyle: React.CSSProperties = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  fontSize: '0.9rem',
-};
-const thStyle: React.CSSProperties = {
-  textAlign: 'left',
-  padding: '0.5rem 0.6rem',
-  fontWeight: 600,
-  color: '#666',
-  fontSize: '0.8rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-};
-const tdStyle: React.CSSProperties = {
-  padding: '0.5rem 0.6rem',
-};
