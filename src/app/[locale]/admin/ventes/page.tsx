@@ -1,8 +1,11 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { Prisma } from '@prisma/client';
+import { Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
+import { Pill } from '@/components/ui/pill';
 import { SearchBar } from '../_components/search-bar';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +20,7 @@ export default async function VentesPage({ params, searchParams }: Props) {
   const { q } = await searchParams;
   setRequestLocale(locale);
   const workshop = await getActiveWorkshop();
-  if (!workshop) return <p>Aucun workshop actif.</p>;
+  if (!workshop) return <p className="p-6 text-[var(--text-secondary-60)]">Aucun workshop actif.</p>;
 
   const trimmed = q?.trim() ?? '';
   const where: Prisma.VenteDirecteWhereInput = {
@@ -44,84 +47,82 @@ export default async function VentesPage({ params, searchParams }: Props) {
     },
   });
 
+  const total = ventes.reduce((acc, v) => acc + Number(v.totalPieces), 0);
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem', flexWrap: 'wrap' }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Ventes directes (comptoir)</h1>
-          <p style={{ color: '#666', margin: 0 }}>{ventes.length} vente{ventes.length === 1 ? '' : 's'}{trimmed ? ` (filtré: « ${trimmed} »)` : ''}</p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <SearchBar placeholder="Facture, client, notes…" />
-          <a
-            href="/api/admin/export/ventes"
-            style={{ padding: '0.55rem 0.9rem', border: '1px solid #ccc', color: '#444', textDecoration: 'none', borderRadius: 4, fontSize: '0.9rem', background: 'white' }}
-          >
-            ↓ CSV
-          </a>
-          <Link
-            href={`/${locale}/admin/ventes/new`}
-            style={{
-              padding: '0.6rem 1.2rem',
-              background: '#1a1a1a',
-              color: 'white',
-              textDecoration: 'none',
-              borderRadius: 4,
-              fontSize: '0.95rem',
-            }}
-          >
-            + Nouvelle vente
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="comptoir"
+        title="Ventes directes"
+        subline={`${ventes.length} vente${ventes.length === 1 ? '' : 's'} · ${total.toFixed(2)} $${trimmed ? ` filtré sur « ${trimmed} »` : ''}`}
+        actions={
+          <>
+            <SearchBar placeholder="Facture, client, notes…" />
+            <a
+              href="/api/admin/export/ventes"
+              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
+            >
+              ↓ CSV
+            </a>
+            <Link
+              href={`/${locale}/admin/ventes/new`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
+              aria-label="Nouvelle vente"
+              title="Nouvelle vente"
+            >
+              <Plus size={20} />
+            </Link>
+          </>
+        }
+      />
 
-      <table style={tbl}>
-        <thead>
-          <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
-            <th style={th}>Date</th>
-            <th style={th}>Facture</th>
-            <th style={th}>Client</th>
-            <th style={th}>Mode pmt</th>
-            <th style={{ ...th, textAlign: 'right' }}>Items</th>
-            <th style={{ ...th, textAlign: 'right' }}>Total HT</th>
-            <th style={{ ...th, textAlign: 'right' }}></th>
-          </tr>
-        </thead>
-        <tbody>
-          {ventes.map((v) => (
-            <tr key={v.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-              <td style={{ ...td, fontSize: '0.85rem' }}>{v.date.toLocaleDateString('fr-CA')}</td>
-              <td style={{ ...td, fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                {v.factureNumero ? (
-                  <span style={{ color: '#2e7d32', fontWeight: 600 }}>{v.factureNumero}</span>
-                ) : (
-                  <span style={{ color: '#888' }}>brouillon</span>
-                )}
-              </td>
-              <td style={td}>
-                {v.client ? `${v.client.prenom} ${v.client.nom}` : <span style={{ color: '#888' }}>walk-in</span>}
-              </td>
-              <td style={{ ...td, fontSize: '0.85rem' }}>{v.modePaiement ?? '—'}</td>
-              <td style={{ ...td, textAlign: 'right' }}>{v._count.items}</td>
-              <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace' }}>
-                {Number(v.totalPieces).toFixed(2)} $
-              </td>
-              <td style={{ ...td, textAlign: 'right' }}>
+      <div className="p-6">
+        {ventes.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-[var(--gris-bord)] p-8 text-center text-sm text-[var(--text-secondary-60)]">
+            Aucune vente {trimmed ? `pour « ${trimmed} »` : ''}.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {ventes.map((v) => {
+              const facture = !!v.factureNumero;
+              return (
                 <Link
+                  key={v.id}
                   href={`/${locale}/admin/ventes/${v.id}`}
-                  style={{ color: '#1565c0', textDecoration: 'none', fontSize: '0.85rem' }}
+                  className={`flex items-center justify-between gap-3 rounded-2xl px-4 py-3 shadow-sm transition-colors ${
+                    facture ? 'bg-[var(--st-facture-bg)]/40 hover:bg-[var(--st-facture-bg)]/60' : 'bg-white/85 hover:bg-white/95'
+                  }`}
                 >
-                  Détail →
+                  <span className="flex items-baseline gap-3">
+                    <span className="font-mono font-semibold">
+                      {v.factureNumero ?? <span className="text-[var(--text-secondary-60)]">brouillon</span>}
+                    </span>
+                    <span className="text-xs text-[var(--text-secondary-60)]">
+                      {v.date.toLocaleDateString('fr-CA')}
+                    </span>
+                    {facture ? (
+                      <Pill variant="facture" size="sm">facturée</Pill>
+                    ) : (
+                      <Pill variant="facturer" size="sm">à facturer</Pill>
+                    )}
+                  </span>
+                  <span className="flex items-center gap-3">
+                    <span className="text-xs text-[var(--text-secondary-70)]">
+                      {v.client ? `${v.client.prenom} ${v.client.nom}` : 'walk-in'}
+                    </span>
+                    <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-mono">
+                      {v._count.items} items
+                    </span>
+                    <span className="font-mono text-sm font-semibold tabular-nums">
+                      {Number(v.totalPieces).toFixed(2)} $
+                    </span>
+                  </span>
                 </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
-const tbl: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' };
-const th: React.CSSProperties = { textAlign: 'left', padding: '0.5rem 0.6rem', fontWeight: 600, color: '#666', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
-const td: React.CSSProperties = { padding: '0.5rem 0.6rem' };
