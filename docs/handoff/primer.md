@@ -41,23 +41,50 @@ une refonte de page, consulte le PNG correspondant.**
 ⚠ Découverte critique : le **layout BDT detail** est **3 colonnes** (pas 4 zones
 verticales empilées comme initialement décrit). Voir `1b-bon-de-travail-éval.png`.
 
-## État actuel (sessions précédentes)
+## État actuel (mise à jour 2026-05-12 fin de session)
 
-Sprint 4 β+ « port look + structure + flow V1.0.19 vers V2 » est **livré
-intégralement**. Voir `CLAUDE.md` section « État Sprint 4 β+ » pour le récap
-détaillé phase par phase (PR #6 à #19 mergées, +29 tests).
+**26 PRs mergées sur main dans la session 2026-05-12.** Toutes ces livraisons
+sont en prod sur `flex-tan.vercel.app` (Vercel suit `main`).
 
-### Reste à faire (hors scope Sprint 4 β+)
+### Récap session 2026-05-12
+
+| Domaine | PRs |
+|---|---|
+| Sprint 4 β+ (Phases 0/1/2/3.x/4.a-4.f) | #9-#17 |
+| Tests hooks Phase 2 (+29 tests) | #19 |
+| Handoff docs (primer + memory + hindsight + vault Obsidian) | #20 |
+| WorkflowForm en 3 fragments (Remises/Avance/Notes) avec autosave ciblé | #21 |
+| **Sprint 2.8 photos Vercel Blob** (model + lib + UI) | #18, #22 |
+| Sprint 2.7 polish Gmail draft hybride | #18 |
+| Polish responsive (admin layout + tables overflow-x mobile) | #23 |
+| A11y aria-label sur boutons icon-only | #24 |
+| **Sidebar V1 jaune** intégrée au admin layout (icônes Lucide, hover-expand) | #25 |
+| Tests `validatePhotoUpload` (+17 tests) | #26 |
+
+**Tests Vitest** : 590 passants (16 skipped). type-check propre.
+
+### Reste à faire (hors scope Sprint 4 β+ et 2.8)
 
 | Item | Statut |
 |---|---|
-| Sprint 2.8 photos Vercel Blob | PR #18 ouverte — **en attente application SQL** sur Neon `flex-prod` / `main` (cf `prisma/migrations/20260512170000_bdc_photo/migration.sql`) |
-| Sprint 2.7 Gmail draft hybride | Déjà implémenté (toggle dans `EmailButtons`). Polish visuel inclus dans PR #18. |
-| Photos UI (upload + gallery) | Bloqué jusqu'à apply SQL Sprint 2.8 |
-| Vraies pages tuto `/admin/aide` | 11 cards avec blurbs courts — pas de pages détaillées |
-| Polish responsive complet | Audit tablette/iPhone à faire, Lighthouse 90+ |
-| Refonte `WorkflowForm` en fragments | Mega form unique avec autosave global — pourrait être éclaté |
-| i18n des chaînes Sprint 4 | Beaucoup de FR hard-coded, à externaliser si scale autres ateliers EN |
+| Vraies pages tuto `/admin/aide/01-recevoir-velo` etc. | 11 cards avec blurbs courts — pas de pages détaillées. Risque d'invention sans validation user. |
+| Audit Lighthouse / axe-core 90+ | Besoin Chrome + serveur tournant (Vercel preview). À faire manuellement. |
+| Tests Server Actions Sprint 2.8 photos (upload/delete/reorder) | Couverture incomplète. Demande mock Prisma + Vercel Blob. |
+| Refonte sidebar mobile en drawer | Actuellement nav horizontale scrollable < md, pourrait être un drawer hamburger plus ergonomique. |
+| i18n EN-CA des chaînes Sprint 4 | Beaucoup de FR hardcodées (eyebrows, sublines, labels). À externaliser si scale autres ateliers. |
+| Refonte BdtSidecard mobile | Sur mobile actuellement, la carte gauche prend full-width puis les blocs Services/Pièces stack. À tester sur viewport iPhone. |
+| Job purge périodique Vercel Blob | Les photos soft-deleted gardent leur fichier Blob. Besoin d'un cron qui supprime les fichiers `deletedAt > 30 jours`. |
+
+### Branches `claude/*` côté GitHub (à nettoyer)
+
+Plusieurs branches `claude/sprint4-*` et `claude/sprint2.8-*` mergées via PR
+restent listées dans GitHub. Nettoyer via https://github.com/yako-san/flex/branches
+filtre « Merged » → bulk delete.
+
+À PRÉSERVER (historiques préservées en local) :
+- `claude/bootstrap-flex-app-v2-0Gwel`
+- `claude/resume-flex-v2-0DctE`
+- `claude/sprint4-phase3-inventaire`
 
 ## Si pas de tâche explicite : autopilote
 
