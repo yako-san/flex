@@ -87,6 +87,7 @@ model Workshop {
   auditLogs      AuditLog[]
   emailLogs      EmailLog[]
   legacyMappings LegacyIdMapping[]
+  bdcPhotos      BdcPhoto[]
 
   @@index([deletedAt])
   @@map("workshop")
@@ -568,6 +569,7 @@ model Bdc {
   velo     Velo         @relation(fields: [veloId], references: [id], onDelete: Cascade)
   items    BdcItem[]
   factures FactureLog[]
+  photos   BdcPhoto[]
 
   @@unique([workshopId, numero])
   @@index([workshopId, evalStatus])
@@ -575,6 +577,60 @@ model Bdc {
   @@index([workshopId, deletedAt])
   @@index([veloId])
   @@map("bdc")
+}
+
+// Sprint 2.8 — photos attachées à un BDT (avant/après réparation, étiquettes
+// série, dommages, etc.). Hébergées sur Vercel Blob (URLs publiques avec
+// token random dans le path, lisibles dans les PDF/emails sans proxy auth).
+//
+// V1 stockait les photos par vélo dans des dossiers Drive. V2 les attache au
+// BDT (= cycle de service distinct) car une même monture peut avoir plusieurs
+// BDT successifs avec photos différentes par visite. La query `velo.photos`
+// reste possible via `velo.bdcs.flatMap(b => b.photos)`.
+model BdcPhoto {
+  id         String @id // bphoto_<ulid>
+  workshopId String @map("workshop_id") // dénormalisé pour query tenant-scope
+  bdcId      String @map("bdc_id")
+
+  // URL publique Vercel Blob (token random dans le path → unguessable).
+  blobUrl  String @map("blob_url")
+  // Path stable côté Blob pour delete (api.delete(pathname)).
+  blobPath String @map("blob_path")
+
+  // Métadonnées image (renseignées à l'upload).
+  mimeType String  @map("mime_type") // image/jpeg, image/png, image/webp, image/heic
+  sizeBytes Int    @map("size_bytes")
+  width     Int?
+  height    Int?
+
+  // Légende libre + scope (avant/après/dégât/série/autre).
+  caption String?
+  kind    BdcPhotoKind @default(AUTRE)
+
+  // Ordre d'affichage dans la galerie (drag & drop côté UI).
+  position Int @default(0)
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdById String?   @map("created_by_id")
+
+  workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  bdc      Bdc      @relation(fields: [bdcId], references: [id], onDelete: Cascade)
+
+  @@index([workshopId, deletedAt])
+  @@index([bdcId, position])
+  @@map("bdc_photo")
+}
+
+enum BdcPhotoKind {
+  AVANT
+  APRES
+  DEGAT
+  SERIE
+  AUTRE
+
+  @@map("bdc_photo_kind")
 }
 
 enum BdcItemKind {
