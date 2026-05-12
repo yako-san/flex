@@ -27,6 +27,23 @@ plusieurs fois de rester en français. Ne pas dériver vers l'anglais.
 - **Ne JAMAIS toucher la prod pendant les tests** — toujours seed DB de
   dev.
 
+## Référence visuelle V1 (Sprint 4 β+)
+
+**28 captures V1.0.19** versionnées dans
+[`docs/v1-reference/screenshots/`](docs/v1-reference/screenshots/) — source de
+vérité visuelle pour la refonte UI V2.
+
+**Avant de coder une refonte de page Phase 3**, consulte le PNG correspondant
+(voir [README.md](docs/v1-reference/screenshots/README.md) pour l'index). Les
+descriptions textuelles ne suffisent pas : la densité, les couleurs de fond
+selon statut et les patterns d'interaction se voient sur l'image.
+
+⚠️ Découverte importante (2026-05-12) : le **layout BDT detail** est **3 colonnes**
+(carte gauche unifiée colorée selon statut + Services centre + Pièces droite +
+dock bas note+totaux), PAS 4 zones verticales empilées comme initialement décrit
+dans le plan β+. Réfère systématiquement à
+[`15-bdt-detail-onbench-vert-rempli.png`](docs/v1-reference/screenshots/15-bdt-detail-onbench-vert-rempli.png).
+
 ## Contexte produit
 
 flex-app v2 : SaaS multi-tenant de gestion d'atelier de vélo, **migration
