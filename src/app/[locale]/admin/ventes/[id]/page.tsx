@@ -5,6 +5,8 @@ import Decimal from 'decimal.js';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { calcQuebecTaxes } from '@/lib/billing/quebec-taxes';
+import { PageHeader } from '@/components/ui/page-header';
+import { Pill } from '@/components/ui/pill';
 import { AddItemForm } from './add-item-form';
 import { RemoveItemButton } from './remove-item-button';
 import { EmitFactureButton } from './emit-facture-button';
@@ -18,7 +20,7 @@ export default async function VenteDetailPage({ params }: Props) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const workshop = await getActiveWorkshop();
-  if (!workshop) return <p>Aucun workshop actif.</p>;
+  if (!workshop) return <p className="p-6 text-[var(--text-secondary-60)]">Aucun workshop actif.</p>;
 
   const vente = await prisma.venteDirecte.findFirst({
     where: { id, workshopId: workshop.id, deletedAt: null },
@@ -45,122 +47,133 @@ export default async function VenteDetailPage({ params }: Props) {
   const facturee = !!vente.factureNumero;
 
   return (
-    <div style={{ maxWidth: 960 }}>
-      <Link href={`/${locale}/admin/ventes`} style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}>
-        ← Toutes les ventes
-      </Link>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>
+    <div>
+      <PageHeader
+        eyebrow="comptoir · vente directe"
+        title={facturee ? <span className="font-mono">{vente.factureNumero}</span> : 'Vente brouillon'}
+        subline={
+          <span className="flex flex-wrap items-center gap-2">
             {facturee ? (
-              <span style={{ fontFamily: 'monospace' }}>{vente.factureNumero}</span>
+              <Pill variant="facture" size="sm">facturée</Pill>
             ) : (
-              <span>Vente brouillon</span>
+              <Pill variant="facturer" size="sm">à facturer</Pill>
             )}
-          </h1>
-          <p style={{ color: '#666', margin: 0 }}>
-            {vente.client ? `${vente.client.prenom} ${vente.client.nom}` : 'Walk-in'}
-            {' · '}
-            {vente.date.toLocaleDateString('fr-CA')}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          {facturee ? (
-            <span style={{ background: '#e8f5e9', color: '#2e7d32', padding: '0.5rem 1rem', borderRadius: 4, fontWeight: 600 }}>
-              ✓ Facturée {vente.factureDate?.toLocaleDateString('fr-CA')}
-            </span>
-          ) : (
+            <span>{vente.client ? `${vente.client.prenom} ${vente.client.nom}` : 'Walk-in'}</span>
+            <span className="opacity-60">·</span>
+            <span>{vente.date.toLocaleDateString('fr-CA')}</span>
+            {facturee && vente.factureDate ? (
+              <>
+                <span className="opacity-60">·</span>
+                <span>Facturée {vente.factureDate.toLocaleDateString('fr-CA')}</span>
+              </>
+            ) : null}
+          </span>
+        }
+        actions={
+          !facturee ? (
             <>
               <EmitFactureButton venteId={vente.id} disabled={vente.items.length === 0} />
               <DeleteVenteButton venteId={vente.id} />
             </>
-          )}
-        </div>
-      </div>
+          ) : null
+        }
+      />
 
-      {vente.notes ? (
-        <div style={{ background: '#fff8e1', border: '1px solid #ffe082', padding: '0.75rem 1rem', borderRadius: 4, marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-          <strong>Notes :</strong> {vente.notes}
-        </div>
-      ) : null}
+      <div className="mx-auto max-w-[960px] space-y-4 p-6">
+        <Link
+          href={`/${locale}/admin/ventes`}
+          className="inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Toutes les ventes
+        </Link>
 
-      <h2 style={h2}>Items ({vente.items.length})</h2>
-      <table style={tbl}>
-        <thead>
-          <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
-            <th style={th}>#</th>
-            <th style={th}>SKU</th>
-            <th style={th}>Description</th>
-            <th style={{ ...th, textAlign: 'right' }}>Qté</th>
-            <th style={{ ...th, textAlign: 'right' }}>Prix unit.</th>
-            <th style={{ ...th, textAlign: 'center' }}>Tax.</th>
-            <th style={{ ...th, textAlign: 'right' }}>Total</th>
-            <th style={{ ...th, textAlign: 'right' }}></th>
-          </tr>
-        </thead>
-        <tbody>
-          {vente.items.length === 0 ? (
-            <tr>
-              <td colSpan={8} style={{ ...td, textAlign: 'center', color: '#888', padding: '1.5rem' }}>
-                Aucun item. Ajoute une pièce ci-dessous.
-              </td>
-            </tr>
-          ) : (
-            vente.items.map((it) => (
-              <tr key={it.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={td}>{it.position}</td>
-                <td style={{ ...td, fontFamily: 'monospace', fontSize: '0.8rem' }}>{it.skuSnapshot ?? '—'}</td>
-                <td style={td}>{it.nomSnapshot}</td>
-                <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace' }}>{Number(it.qty)}</td>
-                <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace' }}>{Number(it.unitPriceSnapshot).toFixed(2)} $</td>
-                <td style={{ ...td, textAlign: 'center', fontSize: '0.8rem' }}>{it.taxableSnapshot ? '✓' : '—'}</td>
-                <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace', fontWeight: 600 }}>{Number(it.total).toFixed(2)} $</td>
-                <td style={{ ...td, textAlign: 'right' }}>
-                  {!facturee ? <RemoveItemButton itemId={it.id} /> : null}
-                </td>
+        {vente.notes ? (
+          <div className="rounded-2xl border border-[var(--jaune)]/40 bg-[var(--jaune)]/10 px-4 py-2 text-sm">
+            <strong>Notes :</strong> {vente.notes}
+          </div>
+        ) : null}
+
+        <section className="overflow-hidden rounded-2xl bg-white/85 shadow-sm">
+          <header className="flex items-center justify-between bg-[var(--gris-fond)] px-4 py-2">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+              Items
+            </h2>
+            <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-mono">{vente.items.length}</span>
+          </header>
+          <table className="w-full text-xs">
+            <thead className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+              <tr>
+                <th className="px-3 py-1.5 text-left">#</th>
+                <th className="px-3 py-1.5 text-left">SKU</th>
+                <th className="px-3 py-1.5 text-left">Description</th>
+                <th className="px-3 py-1.5 text-right">Qté</th>
+                <th className="px-3 py-1.5 text-right">Prix unit.</th>
+                <th className="px-3 py-1.5 text-center">Tax.</th>
+                <th className="px-3 py-1.5 text-right">Total</th>
+                <th className="px-3 py-1.5" />
               </tr>
-            ))
-          )}
-        </tbody>
-        <tfoot>
-          <tr style={{ borderTop: '2px solid #e0e0e0', background: '#fafafa' }}>
-            <td colSpan={6} style={{ ...td, textAlign: 'right' }}>Sous-total</td>
-            <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace' }}>{tax.subtotal.toFixed(2)} $</td>
-            <td />
-          </tr>
-          <tr style={{ background: '#fafafa' }}>
-            <td colSpan={6} style={{ ...td, textAlign: 'right', fontSize: '0.85rem', color: '#666' }}>TPS (5%)</td>
-            <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace', fontSize: '0.85rem' }}>{tax.tps.toFixed(2)} $</td>
-            <td />
-          </tr>
-          <tr style={{ background: '#fafafa' }}>
-            <td colSpan={6} style={{ ...td, textAlign: 'right', fontSize: '0.85rem', color: '#666' }}>TVQ (9.975%)</td>
-            <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace', fontSize: '0.85rem' }}>{tax.tvq.toFixed(2)} $</td>
-            <td />
-          </tr>
-          <tr style={{ background: '#fafafa', borderTop: '1px solid #e0e0e0' }}>
-            <td colSpan={6} style={{ ...td, textAlign: 'right', fontWeight: 700 }}>Grand total</td>
-            <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace', fontWeight: 700 }}>{tax.total.toFixed(2)} $</td>
-            <td />
-          </tr>
-        </tfoot>
-      </table>
+            </thead>
+            <tbody>
+              {vente.items.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-3 py-6 text-center text-[var(--text-secondary-60)] italic">
+                    Aucun item. Ajoute une pièce ci-dessous.
+                  </td>
+                </tr>
+              ) : (
+                vente.items.map((it) => (
+                  <tr key={it.id} className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
+                    <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{it.position}</td>
+                    <td className="px-3 py-1.5 font-mono text-[10px]">{it.skuSnapshot ?? '—'}</td>
+                    <td className="px-3 py-1.5">{it.nomSnapshot}</td>
+                    <td className="px-3 py-1.5 text-right font-mono tabular-nums">{Number(it.qty)}</td>
+                    <td className="px-3 py-1.5 text-right font-mono tabular-nums">{Number(it.unitPriceSnapshot).toFixed(2)} $</td>
+                    <td className="px-3 py-1.5 text-center">{it.taxableSnapshot ? '✓' : '—'}</td>
+                    <td className="px-3 py-1.5 text-right font-mono font-semibold tabular-nums">{Number(it.total).toFixed(2)} $</td>
+                    <td className="px-3 py-1.5 text-right">
+                      {!facturee ? <RemoveItemButton itemId={it.id} /> : null}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-[var(--gris-bord)] bg-[var(--gris-fond)]">
+                <td colSpan={6} className="px-3 py-1.5 text-right">Sous-total</td>
+                <td className="px-3 py-1.5 text-right font-mono tabular-nums">{tax.subtotal.toFixed(2)} $</td>
+                <td />
+              </tr>
+              <tr className="bg-[var(--gris-fond)]">
+                <td colSpan={6} className="px-3 py-1 text-right text-[var(--text-secondary-60)]">TPS (5 %)</td>
+                <td className="px-3 py-1 text-right font-mono text-[var(--text-secondary-60)] tabular-nums">{tax.tps.toFixed(2)} $</td>
+                <td />
+              </tr>
+              <tr className="bg-[var(--gris-fond)]">
+                <td colSpan={6} className="px-3 py-1 text-right text-[var(--text-secondary-60)]">TVQ (9,975 %)</td>
+                <td className="px-3 py-1 text-right font-mono text-[var(--text-secondary-60)] tabular-nums">{tax.tvq.toFixed(2)} $</td>
+                <td />
+              </tr>
+              <tr className="border-t border-[var(--gris-bord)] bg-[var(--gris-fond)]">
+                <td colSpan={6} className="px-3 py-2 text-right font-bold">Grand total</td>
+                <td className="px-3 py-2 text-right font-mono font-bold tabular-nums">{tax.total.toFixed(2)} $</td>
+                <td />
+              </tr>
+            </tfoot>
+          </table>
+        </section>
 
-      {!facturee ? (
-        <div style={{ marginTop: '2rem' }}>
-          <h2 style={h2}>Ajouter une pièce</h2>
-          <AddItemForm venteId={vente.id} pieces={pieces.map((p) => ({
-            id: p.id,
-            label: `${p.sku ? `[${p.sku}] ` : ''}${p.nomCanonical} — ${Number(p.prixVente).toFixed(2)} $`,
-          }))} />
-        </div>
-      ) : null}
+        {!facturee ? (
+          <section className="rounded-2xl bg-white/85 p-4 shadow-sm">
+            <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+              Ajouter une pièce
+            </h2>
+            <AddItemForm venteId={vente.id} pieces={pieces.map((p) => ({
+              id: p.id,
+              label: `${p.sku ? `[${p.sku}] ` : ''}${p.nomCanonical} — ${Number(p.prixVente).toFixed(2)} $`,
+            }))} />
+          </section>
+        ) : null}
+      </div>
     </div>
   );
 }
-
-const h2: React.CSSProperties = { fontSize: '1.15rem', marginBottom: '0.75rem' };
-const tbl: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' };
-const th: React.CSSProperties = { textAlign: 'left', padding: '0.5rem 0.6rem', fontWeight: 600, color: '#666', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
-const td: React.CSSProperties = { padding: '0.5rem 0.6rem' };

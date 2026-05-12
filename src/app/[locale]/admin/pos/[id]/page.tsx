@@ -3,9 +3,18 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
+import { Pill } from '@/components/ui/pill';
 import { ReceivePoButton } from './receive-button';
 
 export const dynamic = 'force-dynamic';
+
+const STATUS_LABEL: Record<string, { label: string; variant: 'on-bench' | 'attente' | 'facture' | 'approuve' | 'livre' }> = {
+  EN_ATTENTE: { label: 'En attente', variant: 'attente' },
+  PARTIEL:    { label: 'Partiel', variant: 'facture' },
+  RECU:       { label: 'Reçu', variant: 'approuve' },
+  ANNULE:     { label: 'Annulé', variant: 'livre' },
+};
 
 type Props = { params: Promise<{ locale: string; id: string }> };
 
@@ -13,7 +22,7 @@ export default async function PoDetailPage({ params }: Props) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const workshop = await getActiveWorkshop();
-  if (!workshop) return <p>Aucun workshop actif.</p>;
+  if (!workshop) return <p className="p-6 text-[var(--text-secondary-60)]">Aucun workshop actif.</p>;
 
   const po = await prisma.po.findFirst({
     where: { id, workshopId: workshop.id, deletedAt: null },
@@ -27,75 +36,108 @@ export default async function PoDetailPage({ params }: Props) {
   if (!po) notFound();
 
   const total = po.items.reduce((acc, it) => acc + Number(it.qtyCommandee) * Number(it.unitPrice), 0);
+  const totalRecu = po.items.reduce((acc, it) => acc + Number(it.qtyRecue), 0);
+  const totalCmd = po.items.reduce((acc, it) => acc + Number(it.qtyCommandee), 0);
+  const sc = STATUS_LABEL[po.status] ?? { label: po.status, variant: 'livre' as const };
 
   return (
-    <div style={{ maxWidth: 960 }}>
-      <Link href={`/${locale}/admin/pos`} style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}>← Tous les POs</Link>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem', fontFamily: 'monospace' }}>{po.poNumero}</h1>
-          <p style={{ color: '#666', margin: 0 }}>{po.fournisseur}</p>
-        </div>
-        {po.status !== 'RECU' ? (
-          <ReceivePoButton poId={po.id} poNumero={po.poNumero} />
-        ) : (
-          <span style={{ background: '#e8f5e9', color: '#2e7d32', padding: '0.5rem 1rem', borderRadius: 4, fontWeight: 600 }}>
-            ✓ Reçu le {po.dateReception?.toLocaleDateString('fr-CA')}
+    <div>
+      <PageHeader
+        eyebrow={`commandes fournisseurs · ${po.fournisseur}`}
+        title={<span className="font-mono">#{po.poNumero}</span>}
+        subline={
+          <span className="flex flex-wrap items-center gap-2">
+            <Pill variant={sc.variant} size="sm">{sc.label}</Pill>
+            <span className="text-xs opacity-60">·</span>
+            <span>Cmd {po.dateCommande.toLocaleDateString('fr-CA')}</span>
+            {po.dateReception ? (
+              <>
+                <span className="opacity-60">·</span>
+                <span>Reçu {po.dateReception.toLocaleDateString('fr-CA')}</span>
+              </>
+            ) : null}
+            <span className="opacity-60">·</span>
+            <span className="font-mono">{totalRecu}/{totalCmd} unités</span>
           </span>
-        )}
-      </div>
+        }
+        actions={po.status !== 'RECU' ? <ReceivePoButton poId={po.id} poNumero={po.poNumero} /> : null}
+      />
 
-      <h2 style={h2}>Items ({po.items.length})</h2>
-      <table style={tbl}>
-        <thead>
-          <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
-            <th style={th}>#</th>
-            <th style={th}>SKU</th>
-            <th style={th}>Description</th>
-            <th style={th}>Pièce liée</th>
-            <th style={{ ...th, textAlign: 'right' }}>Qté cmd</th>
-            <th style={{ ...th, textAlign: 'right' }}>Qté reçue</th>
-            <th style={{ ...th, textAlign: 'right' }}>Prix achat</th>
-            <th style={{ ...th, textAlign: 'right' }}>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {po.items.map((it) => (
-            <tr key={it.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-              <td style={td}>{it.position}</td>
-              <td style={{ ...td, fontFamily: 'monospace', fontSize: '0.8rem' }}>{it.skuSnapshot ?? '—'}</td>
-              <td style={td}>{it.nomSnapshot}</td>
-              <td style={{ ...td, fontSize: '0.85rem' }}>
-                {it.piece ? (
-                  <Link href={`/${locale}/admin/pieces/${it.piece.id}/edit`} style={{ color: '#1565c0', textDecoration: 'none' }}>
-                    {it.piece.nomCanonical.slice(0, 40)}
-                  </Link>
-                ) : <span style={{ color: '#888' }}>(pas mappée)</span>}
-              </td>
-              <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace' }}>{Number(it.qtyCommandee)}</td>
-              <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace', color: Number(it.qtyRecue) === Number(it.qtyCommandee) ? '#2e7d32' : '#888' }}>
-                {Number(it.qtyRecue)}
-              </td>
-              <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace' }}>{Number(it.unitPrice).toFixed(2)} $</td>
-              <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace', fontWeight: 600 }}>
-                {(Number(it.qtyCommandee) * Number(it.unitPrice)).toFixed(2)} $
-              </td>
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr style={{ borderTop: '2px solid #e0e0e0', background: '#fafafa' }}>
-            <td colSpan={7} style={{ ...td, textAlign: 'right', fontWeight: 700 }}>Total HT</td>
-            <td style={{ ...td, textAlign: 'right', fontWeight: 700, fontFamily: 'monospace' }}>{total.toFixed(2)} $</td>
-          </tr>
-        </tfoot>
-      </table>
+      <div className="mx-auto max-w-[1100px] p-6">
+        <Link
+          href={`/${locale}/admin/pos`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Tous les POs
+        </Link>
+
+        <section className="overflow-hidden rounded-2xl bg-white/85 shadow-sm">
+          <header className="flex items-center justify-between bg-[var(--gris-fond)] px-4 py-2">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+              Items
+            </h2>
+            <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-mono">{po.items.length}</span>
+          </header>
+          <table className="w-full text-xs">
+            <thead className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+              <tr>
+                <th className="px-3 py-1.5 text-left">#</th>
+                <th className="px-3 py-1.5 text-left">SKU</th>
+                <th className="px-3 py-1.5 text-left">Description</th>
+                <th className="px-3 py-1.5 text-left">Pièce liée</th>
+                <th className="px-3 py-1.5 text-right">Cmd</th>
+                <th className="px-3 py-1.5 text-right">Reçu</th>
+                <th className="px-3 py-1.5 text-right">Prix</th>
+                <th className="px-3 py-1.5 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {po.items.map((it) => {
+                const qcm = Number(it.qtyCommandee);
+                const qrc = Number(it.qtyRecue);
+                const complet = qrc >= qcm && qcm > 0;
+                return (
+                  <tr
+                    key={it.id}
+                    className="border-t border-black/5 hover:bg-[var(--gris-fond)]"
+                    style={complet ? { backgroundColor: 'var(--st-approuve-bg)' } : undefined}
+                  >
+                    <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{it.position}</td>
+                    <td className="px-3 py-1.5 font-mono text-[10px]">{it.skuSnapshot ?? '—'}</td>
+                    <td className="px-3 py-1.5">{it.nomSnapshot}</td>
+                    <td className="px-3 py-1.5">
+                      {it.piece ? (
+                        <Link
+                          href={`/${locale}/admin/pieces/${it.piece.id}/edit`}
+                          className="text-[var(--jaune-h)] hover:underline"
+                        >
+                          {it.piece.nomCanonical.slice(0, 40)}
+                        </Link>
+                      ) : (
+                        <span className="text-[var(--text-secondary-60)] italic">(pas mappée)</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-1.5 text-right font-mono tabular-nums">{qcm}</td>
+                    <td className={`px-3 py-1.5 text-right font-mono tabular-nums ${complet ? 'font-semibold' : 'text-[var(--text-secondary-60)]'}`}>
+                      {qrc}
+                    </td>
+                    <td className="px-3 py-1.5 text-right font-mono tabular-nums">{Number(it.unitPrice).toFixed(2)} $</td>
+                    <td className="px-3 py-1.5 text-right font-mono font-semibold tabular-nums">
+                      {(qcm * Number(it.unitPrice)).toFixed(2)} $
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-[var(--gris-bord)] bg-[var(--gris-fond)]">
+                <td colSpan={7} className="px-3 py-2 text-right font-semibold">Total HT</td>
+                <td className="px-3 py-2 text-right font-mono font-bold tabular-nums">{total.toFixed(2)} $</td>
+              </tr>
+            </tfoot>
+          </table>
+        </section>
+      </div>
     </div>
   );
 }
-
-const h2: React.CSSProperties = { fontSize: '1.15rem', marginBottom: '0.75rem' };
-const tbl: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' };
-const th: React.CSSProperties = { textAlign: 'left', padding: '0.5rem 0.6rem', fontWeight: 600, color: '#666', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
-const td: React.CSSProperties = { padding: '0.5rem 0.6rem' };
