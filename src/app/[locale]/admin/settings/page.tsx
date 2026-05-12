@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { LinkWorkshopForm } from './link-workshop-form';
 import { FiscalForm, type FiscalEntity } from './fiscal-form';
 import { LogoForm } from './logo-form';
@@ -71,8 +72,13 @@ async function renderSettings({ params, searchParams }: Props) {
   const fiscal = (workshop?.fiscalEntity as FiscalEntity | null) ?? {};
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Paramètres</h1>
+    <div>
+      <PageHeader
+        eyebrow="configuration de l'atelier"
+        title="Paramètres"
+      />
+
+      <div className="mx-auto max-w-[800px] p-6">
 
       <h2 style={{ fontSize: '1.25rem', marginTop: '2rem', marginBottom: '0.5rem' }}>
         Logo
@@ -272,6 +278,7 @@ async function renderSettings({ params, searchParams }: Props) {
       >
         Ouvrir le UI Kit →
       </Link>
+      </div>
     </div>
   );
 }
