@@ -17,6 +17,8 @@ import { DeleteBdtButton } from './delete-button';
 import { ArchiveBdtButton } from './archive-button';
 import { PdfButtons } from './pdf-buttons';
 import { EmailButtons } from './email-buttons';
+import { BdcPhotoGallery } from './photo-gallery';
+import { BdcPhotoUpload } from './photo-upload';
 import { PieceCmdEditor } from './piece-cmd-editor';
 import { BdtAdvancement } from './bdt-advancement';
 
@@ -36,7 +38,7 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
   const workshop = await getActiveWorkshop();
   if (!workshop) return <p>Aucun workshop actif.</p>;
 
-  const [bdc, services, pieces, forfaits, factureLog, equipeMembers] = await Promise.all([
+  const [bdc, services, pieces, forfaits, factureLog, photos, equipeMembers] = await Promise.all([
     prisma.bdc.findFirst({
       where: { id, workshopId: workshop.id, deletedAt: null },
       include: {
@@ -76,6 +78,11 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
       where: { bdcId: id, workshopId: workshop.id },
       orderBy: { date: 'desc' },
       select: { id: true, factureNumero: true },
+    }),
+    prisma.bdcPhoto.findMany({
+      where: { bdcId: id, workshopId: workshop.id, deletedAt: null },
+      orderBy: { position: 'asc' },
+      select: { id: true, blobUrl: true, caption: true, kind: true, position: true },
     }),
     prisma.equipeMember.findMany({
       where: { workshopId: workshop.id, deletedAt: null, active: true },
@@ -363,6 +370,22 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
           gmailConnected={!!workshop.googleRefreshToken}
           gmailEmail={workshop.googleEmail}
         />
+      </section>
+
+      {/* Section photos BDT (Sprint 2.8) */}
+      <section className="rounded-2xl bg-white/85 p-4 shadow-sm">
+        <header className="mb-3 flex items-center justify-between">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+            Photos
+          </h2>
+          <span className="rounded-full bg-[var(--gris-fond)] px-2 py-0.5 text-[10px] font-mono text-[var(--text-secondary-60)]">
+            {photos.length}
+          </span>
+        </header>
+        <BdcPhotoGallery photos={photos} />
+        <div className="mt-3">
+          <BdcPhotoUpload bdcId={bdc.id} />
+        </div>
       </section>
     </div>
   );
