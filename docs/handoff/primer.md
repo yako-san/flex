@@ -73,7 +73,7 @@ sont en prod sur `flex-tan.vercel.app` (Vercel suit `main`).
 | Refonte sidebar mobile en drawer | Actuellement nav horizontale scrollable < md, pourrait être un drawer hamburger plus ergonomique. |
 | i18n EN-CA des chaînes Sprint 4 | Beaucoup de FR hardcodées (eyebrows, sublines, labels). À externaliser si scale autres ateliers. |
 | Refonte BdtSidecard mobile | Sur mobile actuellement, la carte gauche prend full-width puis les blocs Services/Pièces stack. À tester sur viewport iPhone. |
-| Job purge périodique Vercel Blob | Les photos soft-deleted gardent leur fichier Blob. Besoin d'un cron qui supprime les fichiers `deletedAt > 30 jours`. |
+| ~~Job purge périodique Vercel Blob~~ | ✅ Livré (session 2026-05-12 suite). Cron `/api/cron/purge-photos` (`vercel.json` schedule `0 3 * * *`) appelle `purgeOrphanPhotos` qui supprime Blob + row pour `deletedAt > 30 jours`. Protégé par `CRON_SECRET` (à configurer côté Vercel). 11 tests sur `purge.ts`. |
 
 ### Branches `claude/*` côté GitHub (à nettoyer)
 
