@@ -17,6 +17,7 @@ import { DeleteBdtButton } from './delete-button';
 import { PdfButtons } from './pdf-buttons';
 import { EmailButtons } from './email-buttons';
 import { PieceCmdEditor } from './piece-cmd-editor';
+import { BdtAdvancement } from './bdt-advancement';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -178,6 +179,18 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
             cbBonSortie: bdc.cbBonSortie,
             cbArchiver: bdc.cbArchiver,
           }}
+          advancementSlot={
+            <BdtAdvancement
+              bdcId={bdc.id}
+              initialCheckboxes={{
+                cbEvalEnvoye: bdc.cbEvalEnvoye,
+                cbEval: bdc.cbEval,
+                cbBonSortie: bdc.cbBonSortie,
+                cbArchiver: bdc.cbArchiver,
+              }}
+              initialEvalStatus={bdc.evalStatus}
+            />
+          }
           section={section}
           sectionToggleUrl={{
             client: `${baseUrl}?vue=client`,

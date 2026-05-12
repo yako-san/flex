@@ -550,3 +550,64 @@ export async function deleteBdtAction(bdcId: string): Promise<{ error?: string }
   revalidatePath('/[locale]/admin/bdcs', 'page');
   redirect(`/fr-CA/admin/bdcs`);
 }
+
+// =============================================================================
+// Patches ciblés pour autosave/optimistic UI (BdtSidecard)
+// =============================================================================
+
+const CHECKBOX_KEYS = ['cbEvalEnvoye', 'cbEval', 'cbBonSortie', 'cbArchiver'] as const;
+type CheckboxKey = (typeof CHECKBOX_KEYS)[number];
+
+export async function patchBdtCheckboxAction(
+  bdcId: string,
+  key: CheckboxKey,
+  value: boolean,
+): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+  if (!CHECKBOX_KEYS.includes(key)) return { error: 'Clé checkbox invalide' };
+
+  const bdc = await prisma.bdc.findFirst({
+    where: { id: bdcId, workshopId: workshop.id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!bdc) return { error: 'BDT introuvable' };
+
+  await prisma.bdc.update({
+    where: { id: bdcId },
+    data: { [key]: value },
+  });
+
+  revalidatePath(`/[locale]/admin/inventaire/${bdcId}`, 'page');
+  return {};
+}
+
+const EVAL_STATUS_VALUES = ['INDECIS', 'ATTENTE', 'APPROUVE', 'REDUX', 'REFUSE'] as const;
+type EvalStatusValue = (typeof EVAL_STATUS_VALUES)[number];
+
+export async function patchBdtEvalStatusAction(
+  bdcId: string,
+  newStatus: EvalStatusValue,
+): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+  if (!EVAL_STATUS_VALUES.includes(newStatus)) return { error: 'Statut éval invalide' };
+
+  const bdc = await prisma.bdc.findFirst({
+    where: { id: bdcId, workshopId: workshop.id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!bdc) return { error: 'BDT introuvable' };
+
+  await prisma.bdc.update({
+    where: { id: bdcId },
+    data: { evalStatus: newStatus },
+  });
+
+  revalidatePath(`/[locale]/admin/inventaire/${bdcId}`, 'page');
+  return {};
+}

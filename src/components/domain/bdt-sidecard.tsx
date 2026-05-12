@@ -46,6 +46,8 @@ export type BdtSidecardProps = {
     cbBonSortie: boolean;
     cbArchiver: boolean;
   };
+  /** Slot client pour remplacer les checkboxes statiques par des toggles interactifs (optimistic UI). */
+  advancementSlot?: React.ReactNode;
   /** Section affichée : 'client' (par défaut) ou 'velo'. */
   section?: Section;
   /** URL pour switcher (server-side via searchParams). */
@@ -79,6 +81,7 @@ export function BdtSidecard({
   mecaMecano,
   ctrlMecano,
   workflow,
+  advancementSlot,
   section = 'client',
   sectionToggleUrl,
   noteInterne,
@@ -162,12 +165,16 @@ export function BdtSidecard({
         <Hr fg={fg} />
 
         <SectionLabel fg={fg}>Avancement</SectionLabel>
-        <ul className="mb-3 space-y-1.5 text-xs">
-          <WorkflowItem checked={workflow.cbEvalEnvoye} label="Évaluation envoyée" />
-          <WorkflowItem checked={workflow.cbEval}       label="Éval. validée" />
-          <WorkflowItem checked={workflow.cbBonSortie}  label="Bon de sortie" />
-          <WorkflowItem checked={workflow.cbArchiver}   label="Archiver" />
-        </ul>
+        <div className="mb-3">
+          {advancementSlot ?? (
+            <ul className="space-y-1.5 text-xs">
+              <WorkflowItem checked={workflow.cbEvalEnvoye} label="Évaluation envoyée" />
+              <WorkflowItem checked={workflow.cbEval}       label="Éval. validée" />
+              <WorkflowItem checked={workflow.cbBonSortie}  label="Bon de sortie" />
+              <WorkflowItem checked={workflow.cbArchiver}   label="Archiver" />
+            </ul>
+          )}
+        </div>
 
         {sectionToggleUrl ? (
           <div className="mt-4 flex gap-1">
