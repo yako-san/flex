@@ -1,24 +1,29 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { Prisma } from '@prisma/client';
+import { Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { SearchBar } from '../_components/search-bar';
 
 export const dynamic = 'force-dynamic';
 
+type Onglet = 'catalogue' | 'fournisseurs' | 'commandes' | 'reception';
+
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; onglet?: string }>;
 };
 
 export default async function PiecesPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { q } = await searchParams;
+  const { q, onglet } = await searchParams;
   setRequestLocale(locale);
   const workshop = await getActiveWorkshop();
-  if (!workshop) return <p>Aucun workshop actif.</p>;
+  if (!workshop) return <p className="p-6 text-[var(--text-secondary-60)]">Aucun workshop actif.</p>;
 
+  const view: Onglet = onglet === 'fournisseurs' ? 'fournisseurs' : 'catalogue';
   const trimmed = q?.trim() ?? '';
   const where: Prisma.PieceWhereInput = {
     workshopId: workshop.id,
@@ -39,72 +44,151 @@ export default async function PiecesPage({ params, searchParams }: Props) {
 
   const pieces = await prisma.piece.findMany({
     where,
-    orderBy: [{ categorie: 'asc' }, { nomCanonical: 'asc' }],
+    orderBy:
+      view === 'fournisseurs'
+        ? [{ fournisseur: 'asc' }, { categorie: 'asc' }, { nomCanonical: 'asc' }]
+        : [{ categorie: 'asc' }, { nomCanonical: 'asc' }],
   });
+
+  // Grouper selon la vue
+  const groups = new Map<string, typeof pieces>();
+  const groupKey = (p: (typeof pieces)[number]) =>
+    view === 'fournisseurs' ? p.fournisseur || '(Sans fournisseur)' : p.categorie || '(Sans catégorie)';
+  for (const p of pieces) {
+    const key = groupKey(p);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)?.push(p);
+  }
+  const orderedGroups = Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b, 'fr'));
+
+  const tabs: { value: Onglet; label: string; href: string }[] = [
+    { value: 'catalogue', label: 'Catalogue', href: `/${locale}/admin/pieces?onglet=catalogue` },
+    { value: 'fournisseurs', label: 'Fournisseurs', href: `/${locale}/admin/pieces?onglet=fournisseurs` },
+    { value: 'commandes', label: 'Commandes', href: `/${locale}/admin/pos?status=open` },
+    { value: 'reception', label: 'Réception', href: `/${locale}/admin/pos?status=partial` },
+  ];
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem', flexWrap: 'wrap' }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Pièces (catalogue)</h1>
-          <p style={{ color: '#666', margin: 0 }}>{pieces.length} pièce{pieces.length === 1 ? '' : 's'}{trimmed ? ` (filtré: « ${trimmed} »)` : ''}</p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <SearchBar placeholder="SKU, code-barre, nom, catégorie…" />
-          <a href="/api/admin/export/pieces" style={csvBtn}>↓ CSV</a>
-          <a
-            href={`/api/admin/export/labels${trimmed ? `?categorie=${encodeURIComponent(trimmed)}` : '?withSku=1'}`}
-            target="_blank"
-            rel="noreferrer"
-            style={csvBtn}
-            title="Étiquettes imprimables A4 avec code-barre"
-          >
-            🏷️ Étiquettes
-          </a>
-          <Link href={`/${locale}/admin/pieces/new`} style={btnPrimary}>+ Nouvelle pièce</Link>
-        </div>
-      </div>
-      <div style={{ overflowX: 'auto' }}>
-        <table style={tbl}>
-          <thead>
-            <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
-              <th style={th}>Code</th>
-              <th style={th}>SKU</th>
-              <th style={th}>Nom</th>
-              <th style={th}>Catégorie</th>
-              <th style={th}>Fournisseur</th>
-              <th style={{ ...th, textAlign: 'right' }}>Prix vente</th>
-              <th style={{ ...th, textAlign: 'right' }}>Stock</th>
-              <th style={{ ...th, textAlign: 'right' }}>Réservé</th>
-              <th style={{ ...th, textAlign: 'right' }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {pieces.map((p) => (
-              <tr key={p.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={{ ...td, fontFamily: 'monospace', fontSize: '0.78rem', color: '#888' }}>{p.legacyCode ?? '—'}</td>
-                <td style={{ ...td, fontFamily: 'monospace', fontSize: '0.8rem' }}>{p.sku ?? '—'}</td>
-                <td style={td}>{p.nomCanonical}</td>
-                <td style={{ ...td, fontSize: '0.85rem', color: '#666' }}>{p.categorie ?? '—'}</td>
-                <td style={td}>{p.fournisseur ?? '—'}</td>
-                <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace' }}>{Number(p.prixVente).toFixed(2)} $</td>
-                <td style={{ ...td, textAlign: 'right' }}>{p.stockPhysique}</td>
-                <td style={{ ...td, textAlign: 'right', color: '#888' }}>{p.stockReserve}</td>
-                <td style={{ ...td, textAlign: 'right' }}>
-                  <Link href={`/${locale}/admin/pieces/${p.id}/edit`} style={linkBtn}>Modifier</Link>
-                </td>
-              </tr>
+      <PageHeader
+        eyebrow="catalogue atelier"
+        title="Pièces"
+        subline={`${pieces.length} pièce${pieces.length === 1 ? '' : 's'}${trimmed ? ` filtré sur « ${trimmed} »` : ''}`}
+        actions={
+          <>
+            <SearchBar placeholder="SKU, code-barre, nom, catégorie…" />
+            <a
+              href="/api/admin/export/pieces"
+              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
+            >
+              ↓ CSV
+            </a>
+            <a
+              href={`/api/admin/export/labels${trimmed ? `?categorie=${encodeURIComponent(trimmed)}` : '?withSku=1'}`}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
+              title="Étiquettes imprimables A4 avec code-barre"
+            >
+              🏷️ Étiquettes
+            </a>
+            <Link
+              href={`/${locale}/admin/pieces/new`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
+              aria-label="Nouvelle pièce"
+              title="Nouvelle pièce"
+            >
+              <Plus size={20} />
+            </Link>
+          </>
+        }
+      />
+
+      <div className="p-6">
+        {/* Pills toggle 4 onglets */}
+        <nav className="mb-4 inline-flex gap-1 rounded-full bg-[rgba(0,0,0,0.20)] p-1">
+          {tabs.map((t) => {
+            const active = t.value === view;
+            return (
+              <Link
+                key={t.value}
+                href={t.href as never}
+                className={`inline-flex h-8 items-center rounded-full px-4 text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+                  active
+                    ? 'bg-[var(--jaune)] text-black'
+                    : 'text-white/70 hover:bg-white/10'
+                }`}
+              >
+                {t.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {pieces.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-[var(--gris-bord)] p-8 text-center text-sm text-[var(--text-secondary-60)]">
+            Aucune pièce {trimmed ? `pour « ${trimmed} »` : ''}.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {orderedGroups.map(([groupName, items]) => (
+              <details key={groupName} open className="overflow-hidden rounded-2xl shadow-sm">
+                <summary
+                  className="flex cursor-pointer items-center justify-between bg-[var(--jaune)] px-4 py-2 text-sm font-semibold text-black"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-xs opacity-60">{view === 'fournisseurs' ? '📦' : '⚙'}</span>
+                    <span>{groupName}</span>
+                    <span className="text-xs opacity-60">{items.length}</span>
+                  </span>
+                </summary>
+                <div className="bg-white/85">
+                  <table className="w-full text-xs">
+                    <thead className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+                      <tr>
+                        <th className="px-3 py-1.5 text-left">Code</th>
+                        <th className="px-3 py-1.5 text-left">SKU</th>
+                        <th className="px-3 py-1.5 text-left">Nom</th>
+                        {view === 'catalogue' ? (
+                          <th className="px-3 py-1.5 text-left">Fournisseur</th>
+                        ) : (
+                          <th className="px-3 py-1.5 text-left">Catégorie</th>
+                        )}
+                        <th className="px-3 py-1.5 text-right">Prix vente</th>
+                        <th className="px-3 py-1.5 text-right">Stock</th>
+                        <th className="px-3 py-1.5 text-right">Réservé</th>
+                        <th className="px-3 py-1.5" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((p) => (
+                        <tr key={p.id} className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
+                          <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{p.legacyCode ?? '—'}</td>
+                          <td className="px-3 py-1.5 font-mono">{p.sku ?? '—'}</td>
+                          <td className="px-3 py-1.5">{p.nomCanonical}</td>
+                          <td className="px-3 py-1.5 text-[var(--text-secondary-70)]">
+                            {view === 'catalogue' ? (p.fournisseur ?? '—') : (p.categorie ?? '—')}
+                          </td>
+                          <td className="px-3 py-1.5 text-right font-mono tabular-nums">{Number(p.prixVente).toFixed(2)} $</td>
+                          <td className={`px-3 py-1.5 text-right font-mono tabular-nums ${p.stockPhysique < 0 ? 'text-[var(--rouge)] font-semibold' : ''}`}>
+                            {p.stockPhysique}
+                          </td>
+                          <td className="px-3 py-1.5 text-right font-mono tabular-nums text-[var(--text-secondary-60)]">{p.stockReserve}</td>
+                          <td className="px-3 py-1.5 text-right">
+                            <Link href={`/${locale}/admin/pieces/${p.id}/edit`} className="text-[11px] text-[var(--jaune-h)] hover:underline">
+                              Modifier
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
             ))}
-          </tbody>
-        </table>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-const btnPrimary: React.CSSProperties = { padding: '0.6rem 1.2rem', background: '#1a1a1a', color: 'white', textDecoration: 'none', borderRadius: 4, fontSize: '0.95rem' };
-const csvBtn: React.CSSProperties = { padding: '0.55rem 0.9rem', border: '1px solid #ccc', color: '#444', textDecoration: 'none', borderRadius: 4, fontSize: '0.9rem', background: 'white' };
-const linkBtn: React.CSSProperties = { color: '#1565c0', textDecoration: 'none', fontSize: '0.85rem' };
-const tbl: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' };
-const th: React.CSSProperties = { textAlign: 'left', padding: '0.5rem 0.6rem', fontWeight: 600, color: '#666', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' };
-const td: React.CSSProperties = { padding: '0.4rem 0.6rem', verticalAlign: 'top' };
