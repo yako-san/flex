@@ -45,7 +45,7 @@ export default async function MarquesPage({ params }: Props) {
             Aucune marque. Ajoute-en une avec le bouton + en haut à droite.
           </p>
         ) : (
-          <div className="overflow-hidden rounded-2xl bg-white/85 shadow-sm">
+          <div className="overflow-x-auto rounded-2xl bg-white/85 shadow-sm">
             <table className="w-full text-sm">
               <thead className="border-b border-[var(--gris-bord)] bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
                 <tr>
