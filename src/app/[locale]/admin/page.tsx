@@ -1,14 +1,19 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import Decimal from 'decimal.js';
+import { Bike, Package, Bell, DollarSign, Calendar, Wrench, Mail, FileText, ShoppingCart } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
+import { Pill } from '@/components/ui/pill';
 
 export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+const MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
 export default async function AdminDashboardPage({ params }: Props) {
   const { locale } = await params;
@@ -19,8 +24,8 @@ export default async function AdminDashboardPage({ params }: Props) {
   if (!workshop) {
     return (
       <div>
-        <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Tableau de bord</h1>
-        <p style={{ color: '#666' }}>
+        <PageHeader eyebrow="atelier" title="Tableau de bord" />
+        <p className="p-6 text-sm text-[var(--text-secondary-60)]">
           Aucun workshop importé. Va dans <strong>Import v1</strong> pour charger le dump.
         </p>
       </div>
@@ -31,64 +36,36 @@ export default async function AdminDashboardPage({ params }: Props) {
   const now = new Date();
   const start30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const eyebrow = `${MOIS_FR[now.getMonth()]} ${now.getFullYear()}`;
 
   const [
-    clientCount,
-    veloCount,
-    bdcCount,
     bdcActifCount,
-    pieceCount,
-    serviceCount,
-    forfaitCount,
-    venteCount,
-    poCount,
-    equipeCount,
     bdcByEvalStatus,
-    revenue30,
     revenueMonth,
     factureCount30,
-    bdcCreated30,
-    posPending,
     stockLow,
     topPieces30,
+    recentFactures,
+    recentVentes,
+    bdtTermines,
+    bdtSuivi,
   ] = await Promise.all([
-    prisma.client.count({ where: { workshopId: wid, deletedAt: null } }),
-    prisma.velo.count({ where: { workshopId: wid, deletedAt: null } }),
-    prisma.bdc.count({ where: { workshopId: wid, deletedAt: null } }),
     prisma.bdc.count({ where: { workshopId: wid, deletedAt: null, archiveStatus: 'ACTIF' } }),
-    prisma.piece.count({ where: { workshopId: wid, deletedAt: null } }),
-    prisma.service.count({ where: { workshopId: wid, deletedAt: null } }),
-    prisma.forfait.count({ where: { workshopId: wid, deletedAt: null } }),
-    prisma.venteDirecte.count({ where: { workshopId: wid, deletedAt: null } }),
-    prisma.po.count({ where: { workshopId: wid, deletedAt: null } }),
-    prisma.equipeMember.count({ where: { workshopId: wid } }),
     prisma.bdc.groupBy({
       by: ['evalStatus'],
       where: { workshopId: wid, deletedAt: null, archiveStatus: 'ACTIF' },
       _count: { _all: true },
     }),
     prisma.factureLog.aggregate({
-      where: { workshopId: wid, date: { gte: start30 } },
-      _sum: { grandTotal: true },
-    }),
-    prisma.factureLog.aggregate({
       where: { workshopId: wid, date: { gte: startMonth } },
       _sum: { grandTotal: true },
     }),
     prisma.factureLog.count({ where: { workshopId: wid, date: { gte: start30 } } }),
-    prisma.bdc.count({ where: { workshopId: wid, deletedAt: null, createdAt: { gte: start30 } } }),
-    prisma.po.count({
-      where: {
-        workshopId: wid,
-        deletedAt: null,
-        status: { in: ['EN_ATTENTE', 'PARTIEL'] },
-      },
-    }),
     prisma.piece.findMany({
       where: { workshopId: wid, deletedAt: null, stockPhysique: { lte: 0 } },
       select: { id: true, sku: true, nomCanonical: true, stockPhysique: true, stockReserve: true },
       orderBy: { stockPhysique: 'asc' },
-      take: 8,
+      take: 10,
     }),
     prisma.venteDirecteItem.groupBy({
       by: ['nomSnapshot'],
@@ -99,136 +76,369 @@ export default async function AdminDashboardPage({ params }: Props) {
       orderBy: { _sum: { total: 'desc' } },
       take: 5,
     }),
+    prisma.factureLog.findMany({
+      where: { workshopId: wid },
+      orderBy: { date: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        factureNumero: true,
+        date: true,
+        grandTotal: true,
+        client: { select: { prenom: true, nom: true } },
+      },
+    }),
+    prisma.venteDirecte.findMany({
+      where: { workshopId: wid, deletedAt: null, factureNumero: { not: null } },
+      orderBy: { factureDate: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        factureNumero: true,
+        factureDate: true,
+        totalPieces: true,
+        client: { select: { prenom: true, nom: true } },
+      },
+    }),
+    prisma.bdc.findMany({
+      where: {
+        workshopId: wid,
+        deletedAt: null,
+        velo: { status: { in: ['CTRL_QLTE', 'FINI', 'FACTURER', 'FACTURE'] } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        numero: true,
+        velo: {
+          select: {
+            status: true,
+            client: { select: { prenom: true, nom: true } },
+            marque: { select: { nom: true } },
+            modele: true,
+          },
+        },
+      },
+    }),
+    prisma.bdc.findMany({
+      where: {
+        workshopId: wid,
+        deletedAt: null,
+        cbBonSortie: true,
+        cbSuiviEnvoye: false,
+        velo: { status: 'LIVRE' },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        numero: true,
+        velo: {
+          select: {
+            client: { select: { prenom: true, nom: true } },
+            marque: { select: { nom: true } },
+            modele: true,
+          },
+        },
+      },
+    }),
   ]);
 
   const evalCounts: Record<string, number> = {};
-  for (const r of bdcByEvalStatus) {
-    evalCounts[r.evalStatus] = r._count._all;
-  }
-  const ca30 = new Decimal(revenue30._sum.grandTotal?.toString() ?? '0').toNumber();
+  for (const r of bdcByEvalStatus) evalCounts[r.evalStatus] = r._count._all;
+
   const caMonth = new Decimal(revenueMonth._sum.grandTotal?.toString() ?? '0').toNumber();
+  const stockNegatif = stockLow.reduce((acc, p) => acc + Math.max(0, -p.stockPhysique), 0);
 
   return (
     <div>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>{workshop.name}</h1>
-      <p style={{ color: '#666', marginBottom: '2rem' }}>
-        {workshop.country} · {workshop.currency} · {workshop.timezone}
-      </p>
+      <PageHeader
+        eyebrow={eyebrow}
+        title="Dashboard"
+        actions={
+          <div className="hidden gap-1 sm:flex">
+            <a
+              href={`https://docs.google.com/spreadsheets`}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-[var(--gris-bord)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
+            >
+              Sheets
+            </a>
+            <a
+              href={`https://drive.google.com`}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-[var(--gris-bord)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
+            >
+              Drive
+            </a>
+            <a
+              href={`https://mail.google.com`}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-[var(--gris-bord)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
+            >
+              Gmail
+            </a>
+            <a
+              href={`https://contacts.google.com`}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-[var(--gris-bord)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
+            >
+              Contacts
+            </a>
+          </div>
+        }
+      />
 
-      <h2 style={h2}>Activité (30 derniers jours)</h2>
-      <div style={cardsGrid}>
-        <Stat label="CA facturé 30j" value={`${ca30.toFixed(2)} $`} accent="#1b5e20" />
-        <Stat label="CA mois courant" value={`${caMonth.toFixed(2)} $`} />
-        <Stat label="Factures émises 30j" value={factureCount30.toLocaleString('fr-CA')} />
-        <Stat label="BDT créés 30j" value={bdcCreated30.toLocaleString('fr-CA')} />
-      </div>
+      <div className="space-y-6 p-6">
+        {/* 4 KPI cards */}
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            icon={<Bike size={18} />}
+            iconBg="var(--st-on-bench-bg)"
+            label="BDT actifs"
+            value={bdcActifCount}
+          >
+            <div className="mt-2 flex flex-wrap gap-1">
+              {(['INDECIS', 'ATTENTE', 'APPROUVE', 'REDUX'] as const).map((s) => {
+                const n = evalCounts[s] ?? 0;
+                if (n === 0) return null;
+                const variant = s === 'APPROUVE' ? 'approuve' : s === 'ATTENTE' ? 'attente' : s === 'REDUX' ? 'eval' : 'neutral';
+                return (
+                  <Pill key={s} variant={variant} size="sm">
+                    {n} {s.toLowerCase()}
+                  </Pill>
+                );
+              })}
+            </div>
+          </KpiCard>
 
-      <h2 style={h2}>BDT actifs par statut éval</h2>
-      <div style={cardsGrid}>
-        {(['INDECIS', 'ATTENTE', 'APPROUVE', 'REDUX', 'REFUSE'] as const).map((s) => (
-          <Stat
-            key={s}
-            label={s}
-            value={(evalCounts[s] ?? 0).toLocaleString('fr-CA')}
+          <KpiCard
+            icon={<Package size={18} />}
+            iconBg="var(--rouge)"
+            iconFg="white"
+            label="Stock épuisé"
+            value={stockLow.length}
+            sub={stockNegatif > 0 ? `${stockNegatif} unités en négatif` : 'pièces à 0 ou moins'}
           />
-        ))}
-        <Stat label="Total actifs" value={bdcActifCount.toLocaleString('fr-CA')} accent="#1565c0" />
-        <Stat label="POs ouverts" value={posPending.toLocaleString('fr-CA')} />
-      </div>
 
-      {stockLow.length > 0 || topPieces30.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
-          {stockLow.length > 0 ? (
-            <div>
-              <h2 style={h2}>⚠️ Stock épuisé / négatif</h2>
-              <div style={panelStyle}>
+          <KpiCard
+            icon={<Bell size={18} />}
+            iconBg="var(--jaune)"
+            label="Suivis"
+            value={factureCount30}
+            sub="factures émises (30j)"
+          />
+
+          <KpiCard
+            icon={<DollarSign size={18} />}
+            iconBg="var(--st-approuve-bg)"
+            label="Revenus du mois"
+            value={`${caMonth.toFixed(2)} $`}
+            sub={`facturé depuis le 1er ${MOIS_FR[now.getMonth()]}`}
+          />
+        </section>
+
+        {/* 3 colonnes */}
+        <div className="grid gap-4 lg:grid-cols-3">
+          {/* Col 1 : BDT - Terminés + BDT - Suivi */}
+          <div className="space-y-4">
+            <DashSection icon={<Wrench size={16} />} title="BDT — Terminés" count={bdtTermines.length}>
+              {bdtTermines.length === 0 ? (
+                <EmptyState>Aucun BDT en CTRL QLTÉ/FINI/FACTURER.</EmptyState>
+              ) : (
+                <ul className="space-y-1.5">
+                  {bdtTermines.map((b) => (
+                    <li key={b.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-xs hover:bg-[var(--gris-fond)]">
+                      <Link href={`/${locale}/admin/inventaire/${b.id}`} className="font-mono font-semibold text-[var(--dark)] hover:underline">
+                        {String(b.numero).padStart(4, '0')}
+                      </Link>
+                      <span className="flex-1 truncate text-[var(--text-secondary-70)]">
+                        {b.velo.client ? `${b.velo.client.prenom} ${b.velo.client.nom}` : 'walk-in'} · {[b.velo.marque?.nom, b.velo.modele].filter(Boolean).join(' ')}
+                      </span>
+                      <Pill variant={b.velo.status === 'FACTURE' ? 'facture' : b.velo.status === 'FACTURER' ? 'facturer' : 'ctrl-qlte'} size="sm">
+                        {b.velo.status.toLowerCase().replace('_', ' ')}
+                      </Pill>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </DashSection>
+
+            <DashSection icon={<Mail size={16} />} title="BDT — Suivi à envoyer" count={bdtSuivi.length}>
+              {bdtSuivi.length === 0 ? (
+                <EmptyState>Aucun BDT livré sans suivi.</EmptyState>
+              ) : (
+                <ul className="space-y-1.5">
+                  {bdtSuivi.map((b) => (
+                    <li key={b.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-xs hover:bg-[var(--gris-fond)]">
+                      <Link href={`/${locale}/admin/inventaire/${b.id}`} className="font-mono font-semibold hover:underline">
+                        {String(b.numero).padStart(4, '0')}
+                      </Link>
+                      <span className="flex-1 truncate text-[var(--text-secondary-70)]">
+                        {b.velo.client ? `${b.velo.client.prenom} ${b.velo.client.nom}` : 'walk-in'} · {[b.velo.marque?.nom, b.velo.modele].filter(Boolean).join(' ')}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </DashSection>
+          </div>
+
+          {/* Col 2 : Pièces à commander */}
+          <DashSection icon={<Package size={16} />} title="Pièces — stock épuisé" count={stockLow.length}>
+            {stockLow.length === 0 ? (
+              <EmptyState>Aucune pièce à 0 ou moins.</EmptyState>
+            ) : (
+              <ul className="space-y-1">
                 {stockLow.map((p) => (
-                  <div key={p.id} style={rowStyle}>
-                    <Link href={`/${locale}/admin/pieces/${p.id}/edit`} style={{ color: '#1565c0', textDecoration: 'none', fontSize: '0.9rem' }}>
-                      {p.sku ? <code style={{ color: '#888' }}>{p.sku} </code> : null}
+                  <li key={p.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-xs hover:bg-[var(--gris-fond)]">
+                    <Link href={`/${locale}/admin/pieces/${p.id}/edit`} className="flex-1 truncate hover:underline">
+                      {p.sku ? <code className="mr-1 text-[var(--text-secondary-60)]">{p.sku}</code> : null}
                       {p.nomCanonical}
                     </Link>
-                    <span style={{ fontFamily: 'monospace', fontSize: '0.85rem', color: p.stockPhysique < 0 ? '#c62828' : '#666' }}>
-                      {p.stockPhysique} {p.stockReserve > 0 ? `(${p.stockReserve} rsv)` : ''}
+                    <span className={`font-mono font-semibold tabular-nums ${p.stockPhysique < 0 ? 'text-[var(--rouge)]' : 'text-[var(--text-secondary-60)]'}`}>
+                      {p.stockPhysique}
                     </span>
-                  </div>
+                  </li>
                 ))}
-              </div>
-            </div>
-          ) : null}
+              </ul>
+            )}
+          </DashSection>
 
-          {topPieces30.length > 0 ? (
-            <div>
-              <h2 style={h2}>Top pièces vendues 30j</h2>
-              <div style={panelStyle}>
-                {topPieces30.map((p, i) => (
-                  <div key={`${p.nomSnapshot}-${i}`} style={rowStyle}>
-                    <span style={{ fontSize: '0.9rem' }}>{p.nomSnapshot}</span>
-                    <span style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                      {Number(p._sum.qty ?? 0)} × · {Number(p._sum.total ?? 0).toFixed(2)} $
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
+          {/* Col 3 : Dernières factures + Dernières ventes */}
+          <div className="space-y-4">
+            <DashSection icon={<FileText size={16} />} title="Dernières factures" count={recentFactures.length}>
+              {recentFactures.length === 0 ? (
+                <EmptyState>Aucune facture.</EmptyState>
+              ) : (
+                <ul className="space-y-1.5">
+                  {recentFactures.map((f) => (
+                    <li key={f.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-xs hover:bg-[var(--gris-fond)]">
+                      <span className="font-mono font-semibold">{f.factureNumero ?? '—'}</span>
+                      <span className="flex-1 truncate text-[var(--text-secondary-70)]">
+                        {f.client ? `${f.client.prenom} ${f.client.nom}`.trim() : '—'}
+                      </span>
+                      <span className="font-mono tabular-nums">{Number(f.grandTotal).toFixed(2)} $</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </DashSection>
+
+            <DashSection icon={<ShoppingCart size={16} />} title="Dernières ventes" count={recentVentes.length}>
+              {recentVentes.length === 0 ? (
+                <EmptyState>Aucune vente.</EmptyState>
+              ) : (
+                <ul className="space-y-1.5">
+                  {recentVentes.map((v) => (
+                    <li key={v.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-xs hover:bg-[var(--gris-fond)]">
+                      <span className="font-mono font-semibold">{v.factureNumero ?? '—'}</span>
+                      <span className="flex-1 truncate text-[var(--text-secondary-70)]">
+                        {v.client ? `${v.client.prenom} ${v.client.nom}`.trim() : 'walk-in'}
+                      </span>
+                      <span className="font-mono tabular-nums">{Number(v.totalPieces).toFixed(2)} $</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </DashSection>
+          </div>
         </div>
-      ) : null}
 
-      <h2 style={{ ...h2, marginTop: '2rem' }}>Catalogue & données</h2>
-      <div style={cardsGrid}>
-        <Stat label="Clients" value={clientCount.toLocaleString('fr-CA')} />
-        <Stat label="Vélos" value={veloCount.toLocaleString('fr-CA')} />
-        <Stat label="BDT (total)" value={bdcCount.toLocaleString('fr-CA')} sub={`${bdcActifCount} actifs`} />
-        <Stat label="Pièces" value={pieceCount.toLocaleString('fr-CA')} />
-        <Stat label="Services" value={serviceCount.toLocaleString('fr-CA')} />
-        <Stat label="Forfaits" value={forfaitCount.toLocaleString('fr-CA')} />
-        <Stat label="Ventes directes" value={venteCount.toLocaleString('fr-CA')} />
-        <Stat label="POs" value={poCount.toLocaleString('fr-CA')} />
-        <Stat label="Équipe" value={equipeCount.toLocaleString('fr-CA')} />
+        {/* Top pièces vendues (en bas si data) */}
+        {topPieces30.length > 0 ? (
+          <DashSection icon={<Package size={16} />} title="Top pièces vendues (30j)" count={topPieces30.length}>
+            <ul className="space-y-1">
+              {topPieces30.map((p, i) => (
+                <li key={`${p.nomSnapshot}-${i}`} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-xs hover:bg-[var(--gris-fond)]">
+                  <span className="flex-1 truncate">{p.nomSnapshot}</span>
+                  <span className="font-mono tabular-nums">
+                    {Number(p._sum.qty ?? 0)} × · {Number(p._sum.total ?? 0).toFixed(2)} $
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </DashSection>
+        ) : null}
       </div>
     </div>
   );
 }
 
-function Stat({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent?: string }) {
+function KpiCard({
+  icon,
+  iconBg,
+  iconFg = 'black',
+  label,
+  value,
+  sub,
+  children,
+}: {
+  icon: React.ReactNode;
+  iconBg: string;
+  iconFg?: string;
+  label: string;
+  value: string | number;
+  sub?: string;
+  children?: React.ReactNode;
+}) {
   return (
-    <div
-      style={{
-        background: 'white',
-        border: '1px solid #e0e0e0',
-        borderRadius: 6,
-        padding: '1rem',
-      }}
-    >
-      <div style={{ color: '#666', fontSize: '0.85rem' }}>{label}</div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 600, marginTop: '0.25rem', color: accent ?? '#1a1a1a', fontVariantNumeric: 'tabular-nums' }}>
-        {value}
+    <div className="rounded-2xl bg-white/85 p-4 shadow-sm">
+      <div className="mb-2 flex items-center gap-2">
+        <span
+          aria-hidden
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full"
+          style={{ backgroundColor: iconBg, color: iconFg }}
+        >
+          {icon}
+        </span>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+          {label}
+        </span>
       </div>
-      {sub ? (
-        <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.25rem' }}>{sub}</div>
-      ) : null}
+      <div className="font-mono text-2xl font-bold tabular-nums">{value}</div>
+      {sub ? <div className="mt-1 text-[11px] text-[var(--text-secondary-60)]">{sub}</div> : null}
+      {children}
     </div>
   );
 }
 
-const h2: React.CSSProperties = { fontSize: '1.1rem', marginTop: '1.5rem', marginBottom: '0.75rem' };
-const cardsGrid: React.CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-  gap: '1rem',
-};
-const panelStyle: React.CSSProperties = {
-  background: 'white',
-  border: '1px solid #e0e0e0',
-  borderRadius: 6,
-  padding: '0.5rem 0.75rem',
-};
-const rowStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: '0.4rem 0',
-  borderBottom: '1px solid #f5f5f5',
-  gap: '1rem',
-};
+function DashSection({
+  icon,
+  title,
+  count,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  count: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl bg-white/85 shadow-sm">
+      <header className="flex items-center justify-between px-4 py-2 border-b border-[var(--gris-bord)]">
+        <div className="flex items-center gap-2">
+          <span className="text-[var(--jaune-h)]" aria-hidden>{icon}</span>
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+            {title}
+          </h2>
+        </div>
+        <span className="rounded-full bg-[var(--gris-fond)] px-2 py-0.5 text-[10px] font-mono text-[var(--text-secondary-60)]">
+          {count}
+        </span>
+      </header>
+      <div className="max-h-[280px] overflow-y-auto p-2">{children}</div>
+    </section>
+  );
+}
+
+function EmptyState({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-3 py-4 text-center text-[11px] italic text-[var(--text-secondary-60)]">{children}</p>
+  );
+}

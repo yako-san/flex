@@ -3,6 +3,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { ConfirmDialogHost } from '../../components/ui/confirm-dialog';
+import { Toaster } from '../../components/ui/sonner';
 import { routing } from '../../i18n/routing';
 import '../globals.css';
 
@@ -30,7 +32,11 @@ export default async function LocaleLayout({ children, params }: Props) {
   const content = (
     <html lang={locale}>
       <body>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider messages={messages}>
+          {children}
+          <ConfirmDialogHost />
+          <Toaster />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

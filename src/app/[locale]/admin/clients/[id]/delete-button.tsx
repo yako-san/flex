@@ -1,6 +1,10 @@
 'use client';
 
 import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { Trash2 } from 'lucide-react';
+import { customConfirm } from '@/components/ui/confirm-dialog';
+import { toast } from '@/lib/utils/toast';
 import { deleteClientAction } from '../actions';
 
 type Props = {
@@ -11,39 +15,41 @@ type Props = {
 
 export function DeleteClientButton({ clientId, clientName, hasVelos }: Props) {
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleClick = async () => {
+    if (hasVelos) {
+      toast(`Impossible de supprimer ${clientName} : des vélos sont associés.`, 'error');
+      return;
+    }
+    const ok = await customConfirm({
+      title: `Supprimer ${clientName} ?`,
+      message: 'Action réversible (soft delete) — restaurable via Maintenance.',
+      confirmLabel: 'Supprimer',
+      variant: 'danger',
+    });
+    if (!ok) return;
+    startTransition(async () => {
+      const result = await deleteClientAction(clientId);
+      if (result?.error) {
+        toast(result.error, 'error');
+      } else {
+        toast(`${clientName} supprimé`, 'success');
+        router.refresh();
+      }
+    });
+  };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (hasVelos) {
-          alert(`Impossible de supprimer ${clientName} : des vélos sont associés.`);
-          return;
-        }
-        if (!confirm(`Supprimer ${clientName} ? (action réversible — soft delete)`)) return;
-        startTransition(async () => {
-          const result = await deleteClientAction(clientId);
-          if (result?.error) alert(result.error);
-        });
-      }}
-      style={{ display: 'inline' }}
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={pending || hasVelos}
+      title={hasVelos ? 'Le client a des vélos associés' : 'Soft delete'}
+      className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-[var(--rouge)] px-3 text-xs font-semibold uppercase tracking-wider text-[var(--rouge)] transition-colors hover:bg-[var(--rouge)]/10 disabled:cursor-not-allowed disabled:border-[var(--gris-bord)] disabled:text-[var(--text-secondary-50)] disabled:hover:bg-transparent"
     >
-      <button
-        type="submit"
-        disabled={pending || hasVelos}
-        title={hasVelos ? 'Le client a des vélos associés' : 'Soft delete'}
-        style={{
-          padding: '0.4rem 0.9rem',
-          background: 'transparent',
-          color: hasVelos ? '#aaa' : '#c62828',
-          border: `1px solid ${hasVelos ? '#ddd' : '#c62828'}`,
-          borderRadius: 4,
-          cursor: pending || hasVelos ? 'not-allowed' : 'pointer',
-          fontSize: '0.9rem',
-        }}
-      >
-        {pending ? 'Suppression…' : 'Supprimer'}
-      </button>
-    </form>
+      <Trash2 size={14} />
+      {pending ? 'Suppression…' : 'Supprimer'}
+    </button>
   );
 }

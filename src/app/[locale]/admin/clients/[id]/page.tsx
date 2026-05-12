@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { DeleteClientButton } from './delete-button';
 import { FactureStatutControls } from '../../factures/facture-statut-controls';
 
@@ -69,45 +70,55 @@ export default async function ClientDetailPage({ params }: Props) {
   const dernierAchat = factures[0]?.date ?? null;
 
   return (
-    <div style={{ maxWidth: 960 }}>
-      <Link
-        href={`/${locale}/admin/clients`}
-        style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
-      >
-        ← Tous les clients
-      </Link>
+    <div>
+      <PageHeader
+        eyebrow="atelier · client"
+        title={`${client.prenom} ${client.nom}`}
+        subline={
+          <span className="flex flex-wrap items-center gap-2">
+            <span>{client.velos.length} vélo{client.velos.length > 1 ? 's' : ''}</span>
+            <span className="opacity-60">·</span>
+            <span>{totalBdcs} BDT</span>
+            <span className="opacity-60">·</span>
+            <span>{factures.length} facture{factures.length > 1 ? 's' : ''}</span>
+            {totalDepenseVie > 0 ? (
+              <>
+                <span className="opacity-60">·</span>
+                <span className="font-mono tabular-nums">{totalDepenseVie.toFixed(2)} $ à vie</span>
+              </>
+            ) : null}
+            {dernierAchat ? (
+              <>
+                <span className="opacity-60">·</span>
+                <span>dernier {dernierAchat.toLocaleDateString('fr-CA')}</span>
+              </>
+            ) : null}
+          </span>
+        }
+        actions={
+          <>
+            <Link
+              href={`/${locale}/admin/clients/${client.id}/edit`}
+              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-70)] hover:bg-[var(--gris-fond)]"
+            >
+              Modifier
+            </Link>
+            <DeleteClientButton
+              clientId={client.id}
+              clientName={`${client.prenom} ${client.nom}`}
+              hasVelos={client.velos.length > 0}
+            />
+          </>
+        }
+      />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>{client.prenom} {client.nom}</h1>
-          <p style={{ color: '#666', margin: 0 }}>
-            {client.velos.length} vélo{client.velos.length > 1 ? 's' : ''} · {totalBdcs} BDT · {factures.length} facture{factures.length > 1 ? 's' : ''}
-            {totalDepenseVie > 0 ? ` · ${totalDepenseVie.toFixed(2)} $ à vie` : ''}
-            {dernierAchat ? ` · dernier ${dernierAchat.toLocaleDateString('fr-CA')}` : ''}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link
-            href={`/${locale}/admin/clients/${client.id}/edit`}
-            style={{
-              padding: '0.4rem 0.9rem',
-              background: 'transparent',
-              color: '#1565c0',
-              border: '1px solid #1565c0',
-              borderRadius: 4,
-              textDecoration: 'none',
-              fontSize: '0.9rem',
-            }}
-          >
-            Modifier
-          </Link>
-          <DeleteClientButton
-            clientId={client.id}
-            clientName={`${client.prenom} ${client.nom}`}
-            hasVelos={client.velos.length > 0}
-          />
-        </div>
-      </div>
+      <div className="mx-auto max-w-[960px] p-6">
+        <Link
+          href={`/${locale}/admin/clients`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Tous les clients
+        </Link>
 
       <h2 style={h2Style}>Coordonnées</h2>
       <Row label="Téléphone">{client.telephone ? `${client.indicatif ?? ''} ${client.telephone}` : '—'}</Row>
@@ -242,6 +253,7 @@ export default async function ClientDetailPage({ params }: Props) {
           </details>
         </>
       ) : null}
+      </div>
     </div>
   );
 }

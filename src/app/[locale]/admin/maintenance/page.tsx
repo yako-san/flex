@@ -1,6 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { DeleteBdcForm } from './delete-bdc-form';
 import { RecomputeStockButton } from './recompute-stock-button';
 
@@ -43,8 +44,13 @@ export default async function MaintenancePage({ params }: Props) {
   ]);
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Maintenance & opérations destructives</h1>
+    <div>
+      <PageHeader
+        eyebrow="opérations destructives"
+        title="Maintenance"
+        subline={`Workshop : ${workshop.name}`}
+      />
+      <div className="mx-auto max-w-[800px] p-6">
       <p style={{ color: '#666', marginTop: 0, marginBottom: '1.5rem' }}>
         ⚠️ Ces opérations affectent les données du workshop {workshop.name}. Pas de
         bouton « annuler » — vérifie deux fois avant de cliquer.
@@ -97,6 +103,7 @@ export default async function MaintenancePage({ params }: Props) {
         passer par la BD directement avec un comptable.
       </p>
       <DeleteBdcForm />
+      </div>
     </div>
   );
 }

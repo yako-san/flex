@@ -3,8 +3,17 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
+import { Pill } from '@/components/ui/pill';
 import { DeleteVeloButton } from './delete-button';
-import { bdcEvalStatusLabel, veloStatusLabel } from '@/lib/velo/status-labels';
+import { bdcEvalStatusLabel, VELO_STATUS_LABELS } from '@/lib/velo/status-labels';
+import type { VeloStatus } from '@prisma/client';
+
+const STATUS_TO_PILL: Record<VeloStatus, 'rv' | 'recu' | 'eval' | 'attente' | 'approuve' | 'on-bench' | 'ctrl-qlte' | 'fini' | 'facturer' | 'facture' | 'livre'> = {
+  RV: 'rv', RECU: 'recu', EVAL: 'eval', EN_ATTENTE: 'attente', APPROUVE: 'approuve',
+  ON_BENCH: 'on-bench', CTRL_QLTE: 'ctrl-qlte', FINI: 'fini', FACTURER: 'facturer',
+  FACTURE: 'facture', LIVRE: 'livre',
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -58,52 +67,65 @@ export default async function VeloDetailPage({ params }: Props) {
     velo.bdcs[0]?.factures[0]?.date ?? velo.bdcs[0]?.createdAt ?? null;
 
   return (
-    <div style={{ maxWidth: 960 }}>
-      <Link
-        href={`/${locale}/admin/velos`}
-        style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
-      >
-        ← Tous les vélos
-      </Link>
+    <div>
+      <PageHeader
+        eyebrow="catalogue · vélo"
+        title={
+          <span>
+            Vélo{' '}
+            <span className="font-mono font-bold">
+              {String(velo.veloNumero).padStart(4, '0')}
+            </span>
+          </span>
+        }
+        subline={
+          <span className="flex flex-wrap items-center gap-2">
+            <Pill variant={STATUS_TO_PILL[velo.status]} size="sm">
+              {VELO_STATUS_LABELS[velo.status].fr}
+            </Pill>
+            <span>
+              {[velo.marque?.nom, velo.modele, velo.couleur, velo.taille].filter(Boolean).join(', ') || '—'}
+            </span>
+            <span className="opacity-60">·</span>
+            <span>{velo.bdcs.length} BDT</span>
+            {totalFactureVie > 0 ? (
+              <>
+                <span className="opacity-60">·</span>
+                <span>{totalFactureVie.toFixed(2)} $ facturé à vie</span>
+              </>
+            ) : null}
+            {derniereIntervention ? (
+              <>
+                <span className="opacity-60">·</span>
+                <span>dernière {derniereIntervention.toLocaleDateString('fr-CA')}</span>
+              </>
+            ) : null}
+          </span>
+        }
+        actions={
+          <>
+            <Link
+              href={`/${locale}/admin/velos/${velo.id}/edit`}
+              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-70)] hover:bg-[var(--gris-fond)]"
+            >
+              Modifier
+            </Link>
+            <DeleteVeloButton
+              veloId={velo.id}
+              veloLabel={`Vélo ${String(velo.veloNumero).padStart(4, '0')}`}
+              hasBdcs={velo.bdcs.length > 0}
+            />
+          </>
+        }
+      />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>
-            Vélo <span style={{ fontFamily: 'monospace' }}>{String(velo.veloNumero).padStart(4, '0')}</span>
-          </h1>
-          <p style={{ color: '#666', margin: 0 }}>
-            {[velo.marque?.nom, velo.modele, velo.couleur, velo.taille].filter(Boolean).join(', ') || '—'}
-          </p>
-          <p style={{ color: '#666', margin: '0.25rem 0 0 0', fontSize: '0.9rem' }}>
-            {velo.bdcs.length} BDT
-            {totalFactureVie > 0 ? ` · ${totalFactureVie.toFixed(2)} $ facturé à vie` : ''}
-            {derniereIntervention
-              ? ` · dernière intervention ${derniereIntervention.toLocaleDateString('fr-CA')}`
-              : ''}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link
-            href={`/${locale}/admin/velos/${velo.id}/edit`}
-            style={{
-              padding: '0.4rem 0.9rem',
-              background: 'transparent',
-              color: '#1565c0',
-              border: '1px solid #1565c0',
-              borderRadius: 4,
-              textDecoration: 'none',
-              fontSize: '0.9rem',
-            }}
-          >
-            Modifier
-          </Link>
-          <DeleteVeloButton
-            veloId={velo.id}
-            veloLabel={`Vélo ${String(velo.veloNumero).padStart(4, '0')}`}
-            hasBdcs={velo.bdcs.length > 0}
-          />
-        </div>
-      </div>
+      <div className="mx-auto max-w-[960px] p-6">
+        <Link
+          href={`/${locale}/admin/velos`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Tous les vélos
+        </Link>
 
       <h2 style={h2Style}>Caractéristiques</h2>
       <Row label="Client">
@@ -118,7 +140,7 @@ export default async function VeloDetailPage({ params }: Props) {
       <Row label="Couleur">{velo.couleur ?? '—'}</Row>
       <Row label="Taille">{velo.taille ?? '—'}</Row>
       <Row label="N° série">{velo.numeroSerie ?? '—'}</Row>
-      <Row label="Status">{veloStatusLabel(velo.status)}</Row>
+      <Row label="Status">{VELO_STATUS_LABELS[velo.status].fr}</Row>
 
       <h2 style={{ ...h2Style, marginTop: '2rem' }}>Mécaniciens assignés</h2>
       <Row label="Évaluation">{velo.evalMecano?.surnom ?? '—'}</Row>
@@ -221,6 +243,7 @@ export default async function VeloDetailPage({ params }: Props) {
           </details>
         </>
       ) : null}
+      </div>
     </div>
   );
 }

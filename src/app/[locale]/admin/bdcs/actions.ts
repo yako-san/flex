@@ -550,3 +550,115 @@ export async function deleteBdtAction(bdcId: string): Promise<{ error?: string }
   revalidatePath('/[locale]/admin/bdcs', 'page');
   redirect(`/fr-CA/admin/bdcs`);
 }
+
+// =============================================================================
+// Patches ciblés pour autosave/optimistic UI (BdtSidecard)
+// =============================================================================
+
+const CHECKBOX_KEYS = ['cbEvalEnvoye', 'cbEval', 'cbBonSortie', 'cbArchiver'] as const;
+type CheckboxKey = (typeof CHECKBOX_KEYS)[number];
+
+export async function patchBdtCheckboxAction(
+  bdcId: string,
+  key: CheckboxKey,
+  value: boolean,
+): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+  if (!CHECKBOX_KEYS.includes(key)) return { error: 'Clé checkbox invalide' };
+
+  const bdc = await prisma.bdc.findFirst({
+    where: { id: bdcId, workshopId: workshop.id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!bdc) return { error: 'BDT introuvable' };
+
+  await prisma.bdc.update({
+    where: { id: bdcId },
+    data: { [key]: value },
+  });
+
+  revalidatePath(`/[locale]/admin/inventaire/${bdcId}`, 'page');
+  return {};
+}
+
+const EVAL_STATUS_VALUES = ['INDECIS', 'ATTENTE', 'APPROUVE', 'REDUX', 'REFUSE'] as const;
+type EvalStatusValue = (typeof EVAL_STATUS_VALUES)[number];
+
+// Archivage avec choix de paiement (V1.0.19 ArchiveChoiceDialog).
+const ARCHIVE_CHOICES = ['COMPTANT', 'INTERAC', 'CARTES', 'REFUSE'] as const;
+type ArchiveChoice = (typeof ARCHIVE_CHOICES)[number];
+
+export async function archiveBdtWithChoiceAction(
+  bdcId: string,
+  choice: ArchiveChoice,
+): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+  if (!ARCHIVE_CHOICES.includes(choice)) return { error: 'Choix invalide' };
+
+  const bdc = await prisma.bdc.findFirst({
+    where: { id: bdcId, workshopId: workshop.id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!bdc) return { error: 'BDT introuvable' };
+
+  if (choice === 'REFUSE') {
+    await prisma.bdc.update({
+      where: { id: bdcId },
+      data: { archiveStatus: 'ARCHIVE_REFUSE', cbArchiver: true },
+    });
+  } else {
+    const modePaiement = choice === 'CARTES' ? 'CARTE' : choice;
+    await prisma.$transaction(async (tx) => {
+      await tx.bdc.update({
+        where: { id: bdcId },
+        data: { archiveStatus: 'ARCHIVE_FACTURE', cbArchiver: true },
+      });
+      const lastFacture = await tx.factureLog.findFirst({
+        where: { bdcId, workshopId: workshop.id },
+        orderBy: { date: 'desc' },
+        select: { id: true },
+      });
+      if (lastFacture) {
+        await tx.factureLog.update({
+          where: { id: lastFacture.id },
+          data: { statut: 'PAYE', modePaiement },
+        });
+      }
+    });
+  }
+
+  revalidatePath(`/[locale]/admin/inventaire/${bdcId}`, 'page');
+  revalidatePath('/[locale]/admin/bdcs', 'page');
+  return {};
+}
+
+export async function patchBdtEvalStatusAction(
+  bdcId: string,
+  newStatus: EvalStatusValue,
+): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+  if (!EVAL_STATUS_VALUES.includes(newStatus)) return { error: 'Statut éval invalide' };
+
+  const bdc = await prisma.bdc.findFirst({
+    where: { id: bdcId, workshopId: workshop.id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!bdc) return { error: 'BDT introuvable' };
+
+  await prisma.bdc.update({
+    where: { id: bdcId },
+    data: { evalStatus: newStatus },
+  });
+
+  revalidatePath(`/[locale]/admin/inventaire/${bdcId}`, 'page');
+  return {};
+}
