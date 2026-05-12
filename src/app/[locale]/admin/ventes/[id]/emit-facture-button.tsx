@@ -2,6 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Receipt } from 'lucide-react';
+import { customConfirm } from '@/components/ui/confirm-dialog';
+import { toast } from '@/lib/utils/toast';
 import { emitVenteFactureAction } from '../actions';
 
 type Mode = 'COMPTANT' | 'INTERAC' | 'CARTE' | 'AUTRE';
@@ -11,19 +14,33 @@ export function EmitFactureButton({ venteId, disabled }: { venteId: string; disa
   const [mode, setMode] = useState<Mode>('COMPTANT');
   const router = useRouter();
 
+  const handleClick = async () => {
+    const ok = await customConfirm({
+      title: `Émettre la facture ?`,
+      message: `Paiement ${mode.toLowerCase()}. Le stock physique des pièces sera décrémenté. Action irréversible.`,
+      confirmLabel: 'Émettre',
+      variant: 'default',
+    });
+    if (!ok) return;
+    start(async () => {
+      const r = await emitVenteFactureAction(venteId, mode);
+      if (r.error) {
+        toast(r.error, 'error');
+      } else {
+        toast('Facture émise', 'success');
+        router.refresh();
+      }
+    });
+  };
+
   return (
-    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+    <div className="flex items-center gap-1">
       <select
         value={mode}
         onChange={(e) => setMode(e.target.value as Mode)}
         disabled={pending || disabled}
-        style={{
-          padding: '0.5rem 0.6rem',
-          fontSize: '0.9rem',
-          border: '1px solid #ccc',
-          borderRadius: 4,
-          background: 'white',
-        }}
+        className="input-system"
+        style={{ width: 'auto', padding: '0.4rem 0.6rem' }}
       >
         <option value="COMPTANT">Comptant</option>
         <option value="INTERAC">Interac</option>
@@ -33,26 +50,11 @@ export function EmitFactureButton({ venteId, disabled }: { venteId: string; disa
       <button
         type="button"
         disabled={pending || disabled}
-        onClick={() => {
-          if (!confirm(`Émettre la facture (paiement ${mode}) ? Action irréversible : stock sera décrémenté.`)) return;
-          start(async () => {
-            const r = await emitVenteFactureAction(venteId, mode);
-            if (r.error) alert(r.error);
-            else router.refresh();
-          });
-        }}
-        style={{
-          padding: '0.55rem 1.1rem',
-          background: pending || disabled ? '#999' : '#2e7d32',
-          color: 'white',
-          border: 0,
-          borderRadius: 4,
-          cursor: pending || disabled ? 'not-allowed' : 'pointer',
-          fontSize: '0.95rem',
-          fontWeight: 600,
-        }}
+        onClick={handleClick}
+        className="inline-flex h-8 items-center gap-1 rounded-full bg-[var(--st-approuve-bg)] px-3 text-xs font-bold uppercase tracking-wider text-black transition-opacity hover:opacity-90 disabled:opacity-50"
       >
-        {pending ? 'Émission…' : '🧾 Émettre facture'}
+        <Receipt size={14} />
+        {pending ? '…' : 'Émettre'}
       </button>
     </div>
   );

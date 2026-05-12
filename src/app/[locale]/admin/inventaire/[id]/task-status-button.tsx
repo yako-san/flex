@@ -1,6 +1,7 @@
 'use client';
 
-import { useTransition } from 'react';
+import { startTransition, useOptimistic, useTransition } from 'react';
+import { toast } from '@/lib/utils/toast';
 import { updateTaskStatusAction } from '../actions';
 
 type Status = 'TODO' | 'DONE' | 'SKIPPED';
@@ -16,9 +17,9 @@ const LABEL: Record<Status, string> = {
   SKIPPED: '−',
 };
 const COLOR: Record<Status, { bg: string; fg: string }> = {
-  TODO: { bg: '#fff9c4', fg: '#f57f17' },
-  DONE: { bg: '#e8f5e9', fg: '#2e7d32' },
-  SKIPPED: { bg: '#eeeeee', fg: '#666' },
+  TODO:    { bg: 'var(--st-rv-bg)',         fg: 'var(--st-rv-fg)' },
+  DONE:    { bg: 'var(--st-approuve-bg)',   fg: 'var(--st-approuve-fg)' },
+  SKIPPED: { bg: 'var(--st-livre-bg)',      fg: 'var(--st-livre-fg)' },
 };
 
 export function TaskStatusButton({
@@ -28,33 +29,29 @@ export function TaskStatusButton({
   taskId: string;
   status: Status;
 }) {
-  const [pending, startTransition] = useTransition();
-  const c = COLOR[initial];
+  const [pending, startSave] = useTransition();
+  const [optimisticStatus, setOptimisticStatus] = useOptimistic<Status>(initial);
+  const c = COLOR[optimisticStatus];
+
+  const handleClick = () => {
+    const next = NEXT[optimisticStatus];
+    startSave(async () => {
+      startTransition(() => setOptimisticStatus(next));
+      const r = await updateTaskStatusAction(taskId, next);
+      if (r?.error) toast(r.error, 'error');
+    });
+  };
+
   return (
     <button
       type="button"
       disabled={pending}
-      onClick={() => {
-        const next = NEXT[initial];
-        startTransition(async () => {
-          const r = await updateTaskStatusAction(taskId, next);
-          if (r?.error) alert(r.error);
-        });
-      }}
-      title={`Statut : ${initial} (clique pour cycler)`}
-      style={{
-        background: c.bg,
-        color: c.fg,
-        border: 0,
-        padding: '0.05rem 0.4rem',
-        borderRadius: 3,
-        fontSize: '0.7rem',
-        fontWeight: 600,
-        minWidth: 24,
-        cursor: pending ? 'wait' : 'pointer',
-      }}
+      onClick={handleClick}
+      title={`Statut : ${optimisticStatus} (clique pour cycler)`}
+      className="inline-flex min-w-[24px] items-center justify-center rounded px-1.5 py-0.5 text-[11px] font-bold transition-opacity hover:opacity-80 disabled:cursor-wait"
+      style={{ backgroundColor: c.bg, color: c.fg }}
     >
-      {LABEL[initial]}
+      {LABEL[optimisticStatus]}
     </button>
   );
 }
