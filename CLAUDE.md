@@ -82,6 +82,71 @@ fond selon statut et les patterns d'interaction se voient sur l'image.
   gris). Voir
   [`1-inventaire.png`](docs/v1-reference/screenshots/1-inventaire.png).
 
+## État Sprint 4 β+ (livré 2026-05-12)
+
+Sprint 4 β+ « port look + structure + flow V1.0.19 vers V2 » est **livré**
+intégralement. 17 PRs mergées sur `main` (PR #6 à #16 de la session
+courante). Récap des phases :
+
+| Phase | Livraison |
+|---|---|
+| **0** | Tailwind v4 + shadcn/ui + tokens V1 + Lucide |
+| **1** | Composants UI base (Sidebar, PageHeader, Pill, PillsToggle, DataTable, etc.) |
+| **2 composants** | BDCHeader, BDCTotaux, FactureStatusPanel, AjoutItemsModal, ArchiveChoiceDialog, BdtSidecard |
+| **2 patterns** | `useDebouncedAutosave`, `toast` (sonner), `useOptimisticPatch` (React 19), `customConfirm` dialog impératif |
+| **3.1** | `/admin/bdcs` liste groupée colorée (Nouveau/En cours/Facturé/Livré) |
+| **3.2** | `/admin/inventaire/[id]` 3 colonnes (carte gauche unifiée colorée + Services + Pièces + dock bas note/totaux) |
+| **3.3** | `/admin/bdcs/new` PageHeader + tokens V1 |
+| **3.4** | `/admin` Dashboard 4 KPI + 3 colonnes (BDT terminés/suivi, stock, factures, ventes) |
+| **3.6** | `/admin/velos` + `[id]` |
+| **3.7** | `/admin/clients` liste groupée alpha + `[id]` |
+| **3.8** | `/admin/pieces` 4 onglets V1 + accordéon par catégorie/fournisseur |
+| **3.9** | `/admin/ventes` cards collapsibles V1 |
+| **3.10** | `/admin/pos` accordéon V1 réception |
+| **3.11** | settings/import/maintenance restyle |
+| **3.11b** | `/admin/settings` hub grid de 9 cartes + `/admin/settings/atelier` sous-route |
+| **3.12** | `/admin/services` unifié Forfaits + À la carte (2 accordéons jaunes) |
+| **3.13** | nouvelle `/admin/aide` 3 colonnes 11 tutoriels V1 |
+| **3.14** | `/admin/equipe` + `/admin/marques` |
+| **3.15** | `/admin/pos/[id]` + `/admin/ventes/[id]` |
+| **3.16** | PageHeader sur 19 pages new/edit + sous-routes |
+| **3.17** | `/admin/forfaits` restylée + nettoyage final styles inline |
+| **4.a** | `customConfirm` + `toast` sur 6 delete/remove buttons |
+| **4.b** | Autosave debounced `WorkflowForm` (plus de bouton Save) |
+| **4.c** | `useOptimistic` + tokens V1 sur `PieceCmdEditor` |
+| **4.d** | `BdtSidecard` AVANCEMENT interactif (4 toggles + pills statut éval inline) |
+| **4.e** | `ArchiveChoiceDialog` v1.0.19 câblé sur bouton Archiver |
+| **4.f** | Cleanup final — derniers `window.confirm/alert` remplacés (6 fichiers) |
+
+### Phase 3.5 — _skip_
+
+Pas de capture menu mobile iOS dans le PDF V1.0.19, et `/admin/menu`
+n'existe pas en V2.
+
+### Audit final
+
+- Aucun `window.confirm` ni `window.alert` dans `src/app/[locale]/admin`.
+- Aucun `<h1 style={{ fontSize: '1.75rem' }}>` ni `background: '#1a1a1a'`
+  inline.
+- Tous les destructifs passent par `customConfirm` (modal stylée V1).
+- Tous les Server Action returns d'erreur passent par `toast`.
+- Tokens V1 partout (`--jaune`, `--rouge`, `--st-*`, `--cmd-*`, etc.).
+- Tests Vitest : 544 passants (16 skipped), type-check propre tout du long.
+
+### Reste à faire (hors scope Sprint 4 β+)
+
+- **Sprint 2.7** : Gmail draft hybride (OAuth en place, restera à activer
+  le mode brouillon par défaut sur les Server Actions email).
+- **Sprint 2.8** : photos Vercel Blob (`BLOB_READ_WRITE_TOKEN` injecté,
+  pas encore de modèle `Photo` Prisma ni d'UI upload sur BDT).
+- **Phase 4 polish responsive** : audit complet mobile (tablette atelier
+  + iPhone), Lighthouse 90+, axe-core accessibilité.
+- **Vraies pages tuto** : `/admin/aide` a 11 cards avec blurbs mais pas
+  encore de pages détaillées (`/admin/aide/01-recevoir-velo`, etc.).
+- **Refonte `WorkflowForm`** : actuellement un méga form unique avec
+  autosave global. Pourrait être éclaté en fragments séparés (remises /
+  avance / notes) pour faire moins de round-trips. À voir si nécessaire.
+
 ## Contexte produit
 
 flex-app v2 : SaaS multi-tenant de gestion d'atelier de vélo, **migration
