@@ -28,6 +28,7 @@ export function RemoveItemButton({ itemId }: { itemId: string }) {
       onClick={handleClick}
       disabled={pending}
       title="Supprimer l'item"
+      aria-label="Supprimer l'item du BDT"
       className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[var(--rouge)] transition-colors hover:bg-[var(--rouge)]/10 disabled:opacity-40"
     >
       <X size={14} />
