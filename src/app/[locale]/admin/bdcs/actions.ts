@@ -662,3 +662,135 @@ export async function patchBdtEvalStatusAction(
   revalidatePath(`/[locale]/admin/inventaire/${bdcId}`, 'page');
   return {};
 }
+
+// =============================================================================
+// Patches fragments WorkflowForm (Sprint 4 polish — refonte en fragments)
+// =============================================================================
+
+const REMISE_TYPES = ['PCT', 'FIXED', ''] as const;
+const AVANCE_MODES = ['COMPTANT', 'INTERAC', 'CARTES', ''] as const;
+
+const remisesSchema = z.object({
+  remiseSvcType: z.enum(REMISE_TYPES),
+  remiseSvcValue: z.coerce.number().nonnegative().nullable(),
+  remisePceType: z.enum(REMISE_TYPES),
+  remisePceValue: z.coerce.number().nonnegative().nullable(),
+});
+
+export async function patchBdcRemisesAction(
+  _prev: BdtFormState | null,
+  formData: FormData,
+): Promise<BdtFormState> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+
+  const bdcId = String(formData.get('bdcId') ?? '');
+  const parsed = remisesSchema.safeParse({
+    remiseSvcType: String(formData.get('remiseSvcType') ?? ''),
+    remiseSvcValue: formData.get('remiseSvcValue') || null,
+    remisePceType: String(formData.get('remisePceType') ?? ''),
+    remisePceValue: formData.get('remisePceValue') || null,
+  });
+  if (!parsed.success) return { error: 'Validation remises échouée' };
+
+  const bdc = await prisma.bdc.findFirst({
+    where: { id: bdcId, workshopId: workshop.id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!bdc) return { error: 'BDT introuvable' };
+
+  await prisma.bdc.update({
+    where: { id: bdcId },
+    data: {
+      remiseSvcType: parsed.data.remiseSvcType === '' ? null : parsed.data.remiseSvcType,
+      remiseSvcValue: parsed.data.remiseSvcValue,
+      remisePceType: parsed.data.remisePceType === '' ? null : parsed.data.remisePceType,
+      remisePceValue: parsed.data.remisePceValue,
+    },
+  });
+
+  revalidatePath(`/[locale]/admin/inventaire/${bdcId}`, 'page');
+  return {};
+}
+
+const avanceSchema = z.object({
+  avanceMontant: z.coerce.number().nonnegative().nullable(),
+  avanceMode: z.enum(AVANCE_MODES),
+  avanceNote: z.string().nullable(),
+});
+
+export async function patchBdcAvanceAction(
+  _prev: BdtFormState | null,
+  formData: FormData,
+): Promise<BdtFormState> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+
+  const bdcId = String(formData.get('bdcId') ?? '');
+  const parsed = avanceSchema.safeParse({
+    avanceMontant: formData.get('avanceMontant') || null,
+    avanceMode: String(formData.get('avanceMode') ?? ''),
+    avanceNote: (formData.get('avanceNote') as string) || null,
+  });
+  if (!parsed.success) return { error: 'Validation avance échouée' };
+
+  const bdc = await prisma.bdc.findFirst({
+    where: { id: bdcId, workshopId: workshop.id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!bdc) return { error: 'BDT introuvable' };
+
+  await prisma.bdc.update({
+    where: { id: bdcId },
+    data: {
+      avanceMontant: parsed.data.avanceMontant,
+      avanceMode: parsed.data.avanceMode === '' ? null : parsed.data.avanceMode,
+      avanceNote: parsed.data.avanceNote,
+    },
+  });
+
+  revalidatePath(`/[locale]/admin/inventaire/${bdcId}`, 'page');
+  return {};
+}
+
+const notesSchema = z.object({
+  noteClientEval: z.string().nullable(),
+  noteClientFacture: z.string().nullable(),
+  notes: z.string().nullable(),
+});
+
+export async function patchBdcNotesAction(
+  _prev: BdtFormState | null,
+  formData: FormData,
+): Promise<BdtFormState> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+
+  const bdcId = String(formData.get('bdcId') ?? '');
+  const parsed = notesSchema.safeParse({
+    noteClientEval: (formData.get('noteClientEval') as string) || null,
+    noteClientFacture: (formData.get('noteClientFacture') as string) || null,
+    notes: (formData.get('notes') as string) || null,
+  });
+  if (!parsed.success) return { error: 'Validation notes échouée' };
+
+  const bdc = await prisma.bdc.findFirst({
+    where: { id: bdcId, workshopId: workshop.id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!bdc) return { error: 'BDT introuvable' };
+
+  await prisma.bdc.update({
+    where: { id: bdcId },
+    data: parsed.data,
+  });
+
+  revalidatePath(`/[locale]/admin/inventaire/${bdcId}`, 'page');
+  return {};
+}

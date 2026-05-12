@@ -12,7 +12,7 @@ import { VELO_STATUS_COLORS } from '@/lib/velo/status-labels';
 import { AddItemForm } from './add-item-form';
 import { RemoveItemButton } from './remove-item-button';
 import { TaskStatusButton } from './task-status-button';
-import { WorkflowForm } from './workflow-form';
+import { AvanceFragment, NotesFragment, RemisesFragment } from './workflow-fragments';
 import { DeleteBdtButton } from './delete-button';
 import { ArchiveBdtButton } from './archive-button';
 import { PdfButtons } from './pdf-buttons';
@@ -330,12 +330,16 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
       </div>
 
       {/* Workflow & remises avancées (collapsible) */}
-      <details className="mt-2 rounded-2xl bg-white/85 p-4 shadow-sm">
-        <summary className="cursor-pointer text-sm font-semibold text-[var(--dark)]">
-          Workflow, remises, avance & notes client
+      {/* Fragments autosave Sprint 4 polish — chaque section a son propre
+          patch ciblé + son indicateur de status. */}
+      <details className="mt-2" open>
+        <summary className="cursor-pointer text-sm font-semibold text-[var(--dark)] py-2">
+          Remises, avance et notes
         </summary>
-        <div className="mt-3">
-          <WorkflowForm bdc={bdc} key={bdc.updatedAt.toISOString()} />
+        <div className="mt-3 space-y-3">
+          <RemisesFragment bdc={bdc} key={`remises-${bdc.updatedAt.toISOString()}`} />
+          <AvanceFragment bdc={bdc} key={`avance-${bdc.updatedAt.toISOString()}`} />
+          <NotesFragment bdc={bdc} key={`notes-${bdc.updatedAt.toISOString()}`} />
         </div>
       </details>
 
