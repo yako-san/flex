@@ -2,6 +2,8 @@
 
 import { useActionState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { customConfirm } from '@/components/ui/confirm-dialog';
+import { toast } from '@/lib/utils/toast';
 import { uploadLogoAction, removeLogoAction, type LogoState } from './logo-actions';
 
 type Props = {
@@ -49,23 +51,24 @@ export function LogoForm({ currentLogoBase64 }: Props) {
           <button
             type="button"
             disabled={removing}
-            onClick={() => {
-              if (!confirm('Supprimer le logo actuel ?')) return;
+            onClick={async () => {
+              const ok = await customConfirm({
+                title: 'Supprimer le logo actuel ?',
+                confirmLabel: 'Supprimer',
+                variant: 'danger',
+              });
+              if (!ok) return;
               startRemove(async () => {
                 const r = await removeLogoAction();
-                if (r.error) alert(r.error);
-                else router.refresh();
+                if (r.error) {
+                  toast(r.error, 'error');
+                } else {
+                  toast('Logo supprimé', 'success');
+                  router.refresh();
+                }
               });
             }}
-            style={{
-              padding: '0.4rem 0.9rem',
-              background: 'transparent',
-              color: '#c62828',
-              border: '1px solid #c62828',
-              borderRadius: 4,
-              cursor: removing ? 'wait' : 'pointer',
-              fontSize: '0.85rem',
-            }}
+            className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-[var(--rouge)] px-3 text-xs font-semibold uppercase tracking-wider text-[var(--rouge)] transition-colors hover:bg-[var(--rouge)]/10 disabled:opacity-50"
           >
             {removing ? 'Suppression…' : 'Supprimer'}
           </button>

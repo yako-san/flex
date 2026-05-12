@@ -2,6 +2,8 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { customConfirm } from '@/components/ui/confirm-dialog';
+import { toast } from '@/lib/utils/toast';
 
 type Props = {
   connected: boolean;
@@ -19,14 +21,24 @@ export function GmailConnectionPanel({
   const [pending, start] = useTransition();
   const router = useRouter();
 
-  function disconnect() {
-    if (!confirm(`Déconnecter Gmail (${email}) ? Le refresh token sera révoqué.`)) return;
+  const disconnect = async () => {
+    const ok = await customConfirm({
+      title: `Déconnecter Gmail (${email}) ?`,
+      message: 'Le refresh token sera révoqué. Tu devras te reconnecter pour utiliser le mode brouillon.',
+      confirmLabel: 'Déconnecter',
+      variant: 'danger',
+    });
+    if (!ok) return;
     start(async () => {
       const r = await fetch('/api/auth/google/disconnect', { method: 'POST' });
-      if (r.ok) router.refresh();
-      else alert(`Échec déconnexion: ${await r.text()}`);
+      if (r.ok) {
+        toast('Gmail déconnecté', 'success');
+        router.refresh();
+      } else {
+        toast(`Échec déconnexion : ${await r.text()}`, 'error');
+      }
     });
-  }
+  };
 
   return (
     <div
