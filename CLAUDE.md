@@ -31,18 +31,56 @@ plusieurs fois de rester en français. Ne pas dériver vers l'anglais.
 
 **28 captures V1.0.19** versionnées dans
 [`docs/v1-reference/screenshots/`](docs/v1-reference/screenshots/) — source de
-vérité visuelle pour la refonte UI V2.
+vérité visuelle pour la refonte UI V2 (Sprint 4 β+ "port look + structure +
+flow").
 
-**Avant de coder une refonte de page Phase 3**, consulte le PNG correspondant
-(voir [README.md](docs/v1-reference/screenshots/README.md) pour l'index). Les
-descriptions textuelles ne suffisent pas : la densité, les couleurs de fond
-selon statut et les patterns d'interaction se voient sur l'image.
+**Provenance** : repo public miroir `yako-san/flex-handoff-public` (alimenté
+par la session V1). Les PNG locaux sont une copie 1:1 fetchée via curl pour
+éviter dépendance réseau pendant le port. Le `README.md` à côté est le README
+officiel du repo public — **ne pas le modifier sans coordination V1** (la
+session V1 le maintient).
 
-⚠️ Découverte importante (2026-05-12) : le **layout BDT detail** est **3 colonnes**
-(carte gauche unifiée colorée selon statut + Services centre + Pièces droite +
-dock bas note+totaux), PAS 4 zones verticales empilées comme initialement décrit
-dans le plan β+. Réfère systématiquement à
-[`15-bdt-detail-onbench-vert-rempli.png`](docs/v1-reference/screenshots/15-bdt-detail-onbench-vert-rempli.png).
+**Avant de coder une refonte de page Phase 3**, consulte le PNG correspondant.
+Les descriptions textuelles ne suffisent pas : la densité, les couleurs de
+fond selon statut et les patterns d'interaction se voient sur l'image.
+
+### Découvertes design à respecter (2026-05-12)
+
+- **Layout BDT detail** = **3 colonnes**, PAS 4 zones verticales empilées
+  comme initialement décrit dans le plan β+. Réfère à
+  [`1a-bon-de-travail-reçu-oui-rv.png`](docs/v1-reference/screenshots/1a-bon-de-travail-reçu-oui-rv.png)
+  (BDT RV vide, fond jaune) et
+  [`1b-bon-de-travail-éval.png`](docs/v1-reference/screenshots/1b-bon-de-travail-éval.png)
+  (BDT en cours rempli, fond vert clair).
+  - **Col gauche** (~280px) : carte unifiée colorée selon statut (id+pill,
+    vélo, client, dates, séquence travail, AVANCEMENT 4 checkboxes, pills
+    CLIENT/VÉLO, NOTE INTERNE textarea).
+  - **Col centre** : bloc Services (table + remise %).
+  - **Col droite** : bloc Pièces (table + remise + Cost).
+  - **Bas (sous centre+droite uniquement)** : NOTE POUR LE CLIENT (+pills
+    ÉVAL/FACTURE) et BDCTotaux pill noir avec lien "avance ?" et reste à payer.
+
+- **Couleur de fond suit le statut** : JAUNE pour RV/REÇU, VERT clair pour
+  ÉVAL./ON BENCH/APPROUVÉ, ORANGE pour EN ATTENTE, ROSE pâle pour FACTURÉ.
+  Pas de gris neutre — la carte gauche et les blocs Services/Pièces sont
+  toujours colorés selon l'état du BDT.
+
+- **Dropdowns clients/marques sont customs** (fond noir, texte blanc, header
+  coloré "✓ Sélection →"). Pas de `<select>` natif. Voir
+  [`1a-bdt-menu-clients.png`](docs/v1-reference/screenshots/1a-bdt-menu-clients.png)
+  et [`1a-bdt-menu-marques.png`](docs/v1-reference/screenshots/1a-bdt-menu-marques.png).
+
+- **Page Pièces a 4 onglets** : catalogue / fournisseurs / commandes /
+  réception (pills toggle en haut), pas une page unique. Voir captures
+  préfixées `4a-` à `4d-`.
+
+- **Page Ventes** = cards collapsibles par n° vente (pas une table plate).
+  Voir [`2-ventes.png`](docs/v1-reference/screenshots/2-ventes.png).
+
+- **Page Inventaire** = liste groupée par sections statut avec **lignes
+  pleines colorées** (NOUVEAU jaune / EN COURS vert / FACTURÉ rose / STAFF
+  gris). Voir
+  [`1-inventaire.png`](docs/v1-reference/screenshots/1-inventaire.png).
 
 ## Contexte produit
 
