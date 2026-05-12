@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { EquipeForm } from '../../equipe-form';
 
 export const dynamic = 'force-dynamic';
@@ -21,10 +22,15 @@ export default async function EditEquipePage({ params }: Props) {
   if (!m) notFound();
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <Link href={`/${locale}/admin/equipe`} style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}>← Toute l&apos;équipe</Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>Modifier {m.prenom} {m.nom}</h1>
-      <EquipeForm initial={m} />
+    <div>
+      <PageHeader
+        eyebrow="paramètres · modifier membre"
+        title={`Modifier ${m.prenom} ${m.nom}`}
+      />
+      <div className="mx-auto max-w-[720px] p-6">
+        <Link href={`/${locale}/admin/equipe`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Toute l&apos;équipe</Link>
+        <EquipeForm initial={m} />
+      </div>
     </div>
   );
 }

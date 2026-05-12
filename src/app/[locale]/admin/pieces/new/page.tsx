@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
+import { PageHeader } from '@/components/ui/page-header';
 import { PieceForm } from '../piece-form';
 
 export const dynamic = 'force-dynamic';
@@ -10,10 +11,15 @@ export default async function NewPiecePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   return (
-    <div style={{ maxWidth: 900 }}>
-      <Link href={`/${locale}/admin/pieces`} style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}>← Toutes les pièces</Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>Nouvelle pièce</h1>
-      <PieceForm />
+    <div>
+      <PageHeader
+        eyebrow="catalogue · nouvelle pièce"
+        title="Nouvelle pièce"
+      />
+      <div className="mx-auto max-w-[900px] p-6">
+        <Link href={`/${locale}/admin/pieces`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Toutes les pièces</Link>
+        <PieceForm />
+      </div>
     </div>
   );
 }

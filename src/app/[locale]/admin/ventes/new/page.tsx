@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { VenteForm } from './vente-form';
 
 export const dynamic = 'force-dynamic';
@@ -21,18 +22,21 @@ export default async function NewVentePage({ params }: Props) {
   });
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <Link
-        href={`/${locale}/admin/ventes`}
-        style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
-      >
-        ← Toutes les ventes
-      </Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Nouvelle vente comptoir</h1>
-      <p style={{ color: '#666', marginTop: 0, marginBottom: '1.5rem' }}>
-        Crée la vente vide, puis ajoute des pièces au prix catalogue. Émets la facture quand prêt.
-      </p>
-      <VenteForm clients={clients} />
+    <div>
+      <PageHeader
+        eyebrow="comptoir · nouvelle vente"
+        title="Nouvelle vente comptoir"
+        subline="Crée la vente vide, puis ajoute des pièces au prix catalogue. Émets la facture quand prêt."
+      />
+      <div className="mx-auto max-w-[720px] p-6">
+        <Link
+          href={`/${locale}/admin/ventes`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Toutes les ventes
+        </Link>
+        <VenteForm clients={clients} />
+      </div>
     </div>
   );
 }

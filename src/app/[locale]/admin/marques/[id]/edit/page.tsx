@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { MarqueForm } from '../../marque-form';
 import { DeleteMarqueButton } from './delete-button';
 
@@ -23,21 +24,24 @@ export default async function EditMarquePage({ params }: Props) {
   if (!m) notFound();
 
   return (
-    <div style={{ maxWidth: 600 }}>
-      <Link href={`/${locale}/admin/marques`} style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}>← Toutes les marques</Link>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.75rem', margin: 0 }}>Modifier la marque</h1>
-        <DeleteMarqueButton marqueId={m.id} marqueName={m.nom} hasVelos={m._count.velos > 0} />
-      </div>
-      <MarqueForm
-        initial={{
-          id: m.id,
-          nom: m.nom,
-          taillesDisponibles: Array.isArray(m.taillesDisponibles)
-            ? (m.taillesDisponibles as string[])
-            : [],
-        }}
+    <div>
+      <PageHeader
+        eyebrow="paramètres · modifier marque"
+        title={`Modifier ${m.nom}`}
+        actions={<DeleteMarqueButton marqueId={m.id} marqueName={m.nom} hasVelos={m._count.velos > 0} />}
       />
+      <div className="mx-auto max-w-[720px] p-6">
+        <Link href={`/${locale}/admin/marques`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Toutes les marques</Link>
+        <MarqueForm
+          initial={{
+            id: m.id,
+            nom: m.nom,
+            taillesDisponibles: Array.isArray(m.taillesDisponibles)
+              ? (m.taillesDisponibles as string[])
+              : [],
+          }}
+        />
+      </div>
     </div>
   );
 }

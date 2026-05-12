@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { JsonTree } from '../_components/json-tree';
 
 export const dynamic = 'force-dynamic';
@@ -40,11 +41,16 @@ export default async function LegacyV1Page({ params }: Props) {
   if (!dump) {
     return (
       <div>
-        <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Données v1 brutes</h1>
-        <p style={{ color: '#666' }}>
-          Aucun dump v1 stocké. Importe d&apos;abord le dump via{' '}
-          <Link href={`/${locale}/admin/import`}>Import v1</Link>.
-        </p>
+        <PageHeader eyebrow="audit · dump v1" title="Données v1 brutes" />
+        <div className="p-6">
+          <p className="text-sm text-[var(--text-secondary-60)]">
+            Aucun dump v1 stocké. Importe d&apos;abord le dump via{' '}
+            <Link href={`/${locale}/admin/import`} className="text-[var(--jaune-h)] hover:underline">
+              Import v1
+            </Link>
+            .
+          </p>
+        </div>
       </div>
     );
   }
@@ -53,15 +59,13 @@ export default async function LegacyV1Page({ params }: Props) {
   const otherKeys = allKeys.filter((k) => !PRIORITY_KEYS.includes(k));
 
   return (
-    <div style={{ maxWidth: 1100 }}>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Données v1 brutes (legacyV1Extras)</h1>
-      <p style={{ color: '#666', marginTop: 0, marginBottom: '1.5rem' }}>
-        Dump v1 complet stocké en JSONB sur Workshop. La majorité des entités
-        (clients, vélos, BDT, ventes, factures) est déjà mappée vers les tables
-        v2. Cette page sert à <strong>retrouver les paramètres et textes v1</strong>{' '}
-        qui n&apos;ont pas encore été récupérés (templates messages, heures, etc.).
-      </p>
-
+    <div>
+      <PageHeader
+        eyebrow="audit · legacyV1Extras"
+        title="Données v1 brutes"
+        subline="Dump v1 complet stocké en JSONB sur Workshop. Sert à retrouver les paramètres et textes v1 non encore portés."
+      />
+      <div className="mx-auto max-w-[1100px] p-6">
       <div style={statsBox}>
         <Stat label="Clés top-level" value={allKeys.length} />
         <Stat label="App version v1" value={String(dump['appVersion'] ?? '?')} />
@@ -97,6 +101,7 @@ export default async function LegacyV1Page({ params }: Props) {
       {otherKeys.map((k) => (
         <Section key={k} keyName={k} value={dump[k]} doc={KEY_DOCS[k]} />
       ))}
+      </div>
     </div>
   );
 }

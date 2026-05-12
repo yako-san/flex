@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { ForfaitForm } from '../../forfait-form';
 
 export const dynamic = 'force-dynamic';
@@ -22,10 +23,15 @@ export default async function EditForfaitPage({ params }: Props) {
   if (!f) notFound();
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      <Link href={`/${locale}/admin/forfaits`} style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}>← Tous les forfaits</Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>Modifier {f.labelCanonical}</h1>
-      <ForfaitForm initial={f} initialTasks={f.taskTemplates.map((t) => ({ labelCanonical: t.labelCanonical }))} />
+    <div>
+      <PageHeader
+        eyebrow="catalogue · modifier forfait"
+        title={`Modifier ${f.labelCanonical}`}
+      />
+      <div className="mx-auto max-w-[800px] p-6">
+        <Link href={`/${locale}/admin/forfaits`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Tous les forfaits</Link>
+        <ForfaitForm initial={f} initialTasks={f.taskTemplates.map((t) => ({ labelCanonical: t.labelCanonical }))} />
+      </div>
     </div>
   );
 }
