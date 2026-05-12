@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { startTransition, useOptimistic, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { toast } from '@/lib/utils/toast';
 import { updatePieceItemCmdAction } from '../actions';
 
 type CmdStatus =
@@ -12,14 +14,14 @@ type CmdStatus =
   | 'RECU_PARTIEL'
   | 'RECUE';
 
-const CMD_STATUS_OPTIONS: { value: CmdStatus | ''; label: string; sigle: string; color: string }[] = [
-  { value: '',             label: '— non défini',  sigle: '·',  color: '#999' },
-  { value: 'LISTEE',       label: 'Listée',        sigle: '...', color: '#999' },
-  { value: 'ESTIMEE',      label: 'Estimée',       sigle: '—',  color: '#666' },
-  { value: 'A_COMMANDER',  label: 'À commander',   sigle: '√',  color: '#1565c0' },
-  { value: 'EN_COMMANDE',  label: 'En commande',   sigle: '$',  color: '#ef6c00' },
-  { value: 'RECU_PARTIEL', label: 'Réception part.', sigle: '#', color: '#e53935' },
-  { value: 'RECUE',        label: 'Reçue',         sigle: '@',  color: '#2e7d32' },
+const CMD_STATUS_OPTIONS: { value: CmdStatus | ''; label: string; sigle: string; bg: string; fg: string }[] = [
+  { value: '',             label: '— non défini',    sigle: '·',   bg: 'var(--gris-bord)',       fg: 'var(--text-secondary-70)' },
+  { value: 'LISTEE',       label: 'Listée',          sigle: '...', bg: 'var(--cmd-listee-bg)',   fg: 'var(--cmd-listee-fg)' },
+  { value: 'ESTIMEE',      label: 'Estimée',         sigle: '—',   bg: 'var(--cmd-estimee-bg)',  fg: 'var(--cmd-estimee-fg)' },
+  { value: 'A_COMMANDER',  label: 'À commander',     sigle: '√',   bg: 'var(--cmd-a-cmder-bg)',  fg: 'var(--cmd-a-cmder-fg)' },
+  { value: 'EN_COMMANDE',  label: 'En commande',     sigle: '$',   bg: 'var(--cmd-en-cmde-bg)',  fg: 'var(--cmd-en-cmde-fg)' },
+  { value: 'RECU_PARTIEL', label: 'Réception part.', sigle: '#',   bg: 'var(--cmd-recu-part-bg)', fg: 'var(--cmd-recu-part-fg)' },
+  { value: 'RECUE',        label: 'Reçue',           sigle: '@',   bg: 'var(--cmd-recue-bg)',    fg: 'var(--cmd-recue-fg)' },
 ];
 
 type Props = {
@@ -29,123 +31,87 @@ type Props = {
 };
 
 export function PieceCmdEditor({ itemId, cmdStatus, cmdNote }: Props) {
-  const [pending, start] = useTransition();
   const router = useRouter();
+  const [pending, startSaveTransition] = useTransition();
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState<CmdStatus | ''>(cmdStatus ?? '');
+
+  // État optimistic : statut affiché immédiatement, sans attendre le serveur.
+  const [optimisticStatus, setOptimisticStatus] = useOptimistic<CmdStatus | ''>(cmdStatus ?? '');
   const [note, setNote] = useState(cmdNote ?? '');
 
-  const current = CMD_STATUS_OPTIONS.find((o) => o.value === status) ?? CMD_STATUS_OPTIONS[0];
+  const current = CMD_STATUS_OPTIONS.find((o) => o.value === optimisticStatus) ?? CMD_STATUS_OPTIONS[0]!;
 
-  function save() {
+  const save = (newStatus: CmdStatus | '', newNote: string) => {
     const fd = new FormData();
-    fd.set('cmdStatus', status);
-    fd.set('cmdNote', note);
-    start(async () => {
+    fd.set('cmdStatus', newStatus);
+    fd.set('cmdNote', newNote);
+    startSaveTransition(async () => {
+      // Optimistic update inside transition
+      startTransition(() => setOptimisticStatus(newStatus));
       const r = await updatePieceItemCmdAction(itemId, fd);
       if (r.error) {
-        alert(r.error);
+        toast(r.error, 'error');
       } else {
         setOpen(false);
         router.refresh();
       }
     });
-  }
+  };
 
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        title={current?.label ?? ''}
-        style={{
-          background: current?.color,
-          color: 'white',
-          border: 0,
-          borderRadius: 12,
-          padding: '0.1rem 0.5rem',
-          fontSize: '0.78rem',
-          fontWeight: 600,
-          cursor: 'pointer',
-          fontFamily: 'monospace',
-          minWidth: 28,
-        }}
-      >
-        {current?.sigle}
-      </button>
-      {cmdNote ? (
-        <span title={cmdNote} style={{ color: '#888', fontSize: '0.75rem', cursor: 'help' }}>📝</span>
-      ) : null}
-      {open ? (
-        <div
-          style={{
-            position: 'absolute',
-            zIndex: 10,
-            background: 'white',
-            border: '1px solid #ccc',
-            borderRadius: 6,
-            padding: '0.75rem',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            marginTop: 28,
-            width: 320,
-          }}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          title={current.label}
+          className="inline-flex h-5 min-w-[28px] items-center justify-center rounded-full px-2 font-mono text-[11px] font-bold transition-opacity hover:opacity-80"
+          style={{ backgroundColor: current.bg, color: current.fg }}
         >
-          <label style={lblStyle}>Statut commande</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as CmdStatus | '')}
-            style={selectStyle}
-          >
-            {CMD_STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.sigle}  {o.label}
-              </option>
-            ))}
-          </select>
-          <label style={{ ...lblStyle, marginTop: '0.5rem' }}>Note fournisseur (optionnel)</label>
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="ex. cmd #12345 chez Babac"
-            rows={2}
-            style={{ ...selectStyle, fontFamily: 'inherit', resize: 'vertical' }}
-          />
-          <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              disabled={pending}
-              style={{ padding: '0.35rem 0.75rem', background: 'transparent', border: '1px solid #ccc', borderRadius: 4, cursor: 'pointer', fontSize: '0.85rem' }}
-            >
-              Annuler
-            </button>
-            <button
-              type="button"
-              onClick={save}
-              disabled={pending}
-              style={{ padding: '0.35rem 0.9rem', background: pending ? '#999' : '#1a1a1a', color: 'white', border: 0, borderRadius: 4, cursor: pending ? 'wait' : 'pointer', fontSize: '0.85rem' }}
-            >
-              {pending ? '…' : 'Enregistrer'}
-            </button>
-          </div>
+          {current.sigle}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-3" align="start">
+        <label className="label-system">Statut commande</label>
+        <div className="mb-3 flex flex-wrap gap-1">
+          {CMD_STATUS_OPTIONS.map((o) => {
+            const active = o.value === optimisticStatus;
+            return (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => save(o.value, note)}
+                disabled={pending}
+                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-opacity disabled:opacity-50"
+                style={{
+                  backgroundColor: active ? o.bg : 'var(--gris-fond)',
+                  color: active ? o.fg : 'var(--text-secondary-70)',
+                  border: active ? '2px solid currentColor' : '2px solid transparent',
+                }}
+                title={o.label}
+              >
+                <span className="font-mono">{o.sigle}</span>
+                <span>{o.label}</span>
+              </button>
+            );
+          })}
         </div>
-      ) : null}
-    </div>
+
+        <label className="label-system">Note fournisseur</label>
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          onBlur={() => {
+            if (note !== (cmdNote ?? '')) save(optimisticStatus, note);
+          }}
+          placeholder="ex. cmd #12345 chez Babac"
+          rows={2}
+          className="input-system font-sans"
+          style={{ resize: 'vertical' }}
+        />
+        <p className="mt-1 text-[10px] text-[var(--text-secondary-60)]">
+          Auto-enregistré à la sélection du statut ou à la perte de focus.
+        </p>
+      </PopoverContent>
+    </Popover>
   );
 }
-
-const lblStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '0.78rem',
-  fontWeight: 500,
-  color: '#444',
-  marginBottom: '0.2rem',
-};
-const selectStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '0.4rem 0.5rem',
-  fontSize: '0.85rem',
-  border: '1px solid #ccc',
-  borderRadius: 4,
-  background: 'white',
-};
