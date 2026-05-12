@@ -14,6 +14,7 @@ import { RemoveItemButton } from './remove-item-button';
 import { TaskStatusButton } from './task-status-button';
 import { WorkflowForm } from './workflow-form';
 import { DeleteBdtButton } from './delete-button';
+import { ArchiveBdtButton } from './archive-button';
 import { PdfButtons } from './pdf-buttons';
 import { EmailButtons } from './email-buttons';
 import { PieceCmdEditor } from './piece-cmd-editor';
@@ -144,7 +145,8 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
         ) : (
           <span className="ml-3 text-2xl text-[var(--text-secondary-60)]">Sélection → …</span>
         )}
-        <span className="ml-3 align-middle">
+        <span className="ml-3 inline-flex gap-2 align-middle">
+          <ArchiveBdtButton bdcId={bdc.id} resteAPayer={Math.max(0, grandTotal - (avanceMontant ?? 0))} />
           <DeleteBdtButton bdcId={bdc.id} />
         </span>
       </h1>
