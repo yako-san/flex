@@ -1,7 +1,9 @@
 'use client';
 
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { createBdtAction, type BdtFormState } from '../actions';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   velos: { id: string; label: string }[];
@@ -9,20 +11,19 @@ type Props = {
 };
 
 export function NewBdtForm({ velos, defaultVeloId }: Props) {
-  const [state, formAction, pending] = useActionState<BdtFormState | null, FormData>(
+  const [state, formAction] = useActionState<BdtFormState | null, FormData>(
     createBdtAction,
     null,
   );
 
   return (
-    <form action={formAction}>
-      <div style={rowStyle}>
-        <label style={labelStyle}>Vélo *</label>
+    <form action={formAction} className="space-y-4">
+      <Field label="Vélo *" hint="Le BDT sera rattaché à ce vélo. Pour créer un nouveau vélo, passer par Vélos → Nouveau.">
         <select
           name="veloId"
           defaultValue={defaultVeloId ?? ''}
           required
-          style={inputStyle}
+          className="input-system"
         >
           <option value="">— sélectionner un vélo —</option>
           {velos.map((v) => (
@@ -31,22 +32,20 @@ export function NewBdtForm({ velos, defaultVeloId }: Props) {
             </option>
           ))}
         </select>
-      </div>
+      </Field>
 
-      <div style={twoColStyle}>
-        <div>
-          <label style={labelStyle}>Statut éval initial</label>
-          <select name="evalStatus" defaultValue="INDECIS" style={inputStyle}>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Statut éval initial">
+          <select name="evalStatus" defaultValue="INDECIS" className="input-system">
             <option value="INDECIS">Indécis (par défaut)</option>
             <option value="ATTENTE">En attente</option>
             <option value="APPROUVE">Approuvé</option>
             <option value="REDUX">Redux (partiel)</option>
             <option value="REFUSE">Refusé</option>
           </select>
-        </div>
-        <div>
-          <label style={labelStyle}>Statut archive</label>
-          <select name="archiveStatus" defaultValue="ACTIF" style={inputStyle}>
+        </Field>
+        <Field label="Statut archive">
+          <select name="archiveStatus" defaultValue="ACTIF" className="input-system">
             <option value="ACTIF">Actif</option>
             <option value="ARCHIVE_FACTURE">Archivé (facturé)</option>
             <option value="ARCHIVE_A_FACTURER">Archivé (à facturer)</option>
@@ -54,68 +53,56 @@ export function NewBdtForm({ velos, defaultVeloId }: Props) {
             <option value="ARCHIVE_CTRL_QLTE">Archivé (CTRL qualité)</option>
             <option value="ARCHIVE_EVAL">Archivé (éval seule)</option>
           </select>
-        </div>
+        </Field>
       </div>
 
-      <div style={rowStyle}>
-        <label style={labelStyle}>Notes initiales</label>
+      <Field label="Notes initiales">
         <textarea
           name="notes"
           rows={4}
-          style={{ ...inputStyle, fontFamily: 'inherit', resize: 'vertical' }}
+          className="input-system font-sans"
+          style={{ resize: 'vertical' }}
         />
-      </div>
+      </Field>
 
       {state?.error ? (
-        <div
-          style={{
-            background: '#ffebee',
-            border: '1px solid #f44336',
-            color: '#c62828',
-            padding: '0.75rem',
-            borderRadius: 4,
-            marginBottom: '1rem',
-          }}
-        >
+        <div className="rounded-xl border border-[var(--rouge)]/30 bg-[var(--rouge)]/10 p-3 text-sm text-[var(--rouge-h)]">
           {state.error}
         </div>
       ) : null}
 
-      <button type="submit" disabled={pending} style={btnStyle(pending)}>
-        {pending ? 'Création…' : 'Créer le BDT'}
-      </button>
+      <div className="flex justify-end">
+        <SubmitButton />
+      </div>
     </form>
   );
 }
 
-const rowStyle: React.CSSProperties = { marginBottom: '1rem' };
-const twoColStyle: React.CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '1fr 1fr',
-  gap: '1rem',
-  marginBottom: '1rem',
-};
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '0.85rem',
-  fontWeight: 500,
-  color: '#444',
-  marginBottom: '0.3rem',
-};
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '0.5rem 0.6rem',
-  fontSize: '0.95rem',
-  border: '1px solid #ccc',
-  borderRadius: 4,
-  background: 'white',
-};
-const btnStyle = (pending: boolean): React.CSSProperties => ({
-  padding: '0.7rem 1.5rem',
-  fontSize: '0.95rem',
-  background: pending ? '#999' : '#1a1a1a',
-  color: 'white',
-  border: 0,
-  borderRadius: 4,
-  cursor: pending ? 'wait' : 'pointer',
-});
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" variant="primary" disabled={pending}>
+      {pending ? 'Création…' : 'Créer le bon de travail'}
+    </Button>
+  );
+}
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="label-system">{label}</label>
+      {children}
+      {hint ? (
+        <p className="mt-1 text-[11px] text-[var(--text-secondary-60)]">{hint}</p>
+      ) : null}
+    </div>
+  );
+}

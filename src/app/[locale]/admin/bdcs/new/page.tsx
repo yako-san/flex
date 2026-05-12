@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { NewBdtForm } from './new-bdt-form';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,7 @@ export default async function NewBdtPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
 
   const workshop = await getActiveWorkshop();
-  if (!workshop) return <p>Aucun workshop actif.</p>;
+  if (!workshop) return <p className="p-6 text-[var(--text-secondary-60)]">Aucun workshop actif.</p>;
 
   const velos = await prisma.velo.findMany({
     where: { workshopId: workshop.id, deletedAt: null },
@@ -36,15 +37,37 @@ export default async function NewBdtPage({ params, searchParams }: Props) {
   }));
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <Link
-        href={`/${locale}/admin/bdcs`}
-        style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
-      >
-        ← Tous les BDT
-      </Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>Nouveau bon de travail</h1>
-      <NewBdtForm velos={veloOptions} defaultVeloId={sp.veloId ?? null} />
+    <div>
+      <PageHeader
+        eyebrow="vélos en atelier"
+        title="Nouveau bon de travail"
+        subline="Crée un BDT rattaché à un vélo existant."
+      />
+
+      <div className="mx-auto max-w-[720px] p-6">
+        <Link
+          href={`/${locale}/admin/bdcs`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] no-underline hover:text-[var(--dark)]"
+        >
+          ← Inventaire
+        </Link>
+
+        {veloOptions.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[var(--gris-bord)] p-6 text-center">
+            <p className="mb-3 text-sm text-[var(--text-secondary-70)]">
+              Aucun vélo dans l&apos;atelier — un BDT ne peut être créé sans vélo.
+            </p>
+            <Link
+              href={`/${locale}/admin/velos/new`}
+              className="inline-flex h-9 items-center rounded-full bg-[var(--jaune)] px-4 text-xs font-bold uppercase tracking-wider text-black hover:bg-[var(--jaune-h)]"
+            >
+              + Créer un vélo
+            </Link>
+          </div>
+        ) : (
+          <NewBdtForm velos={veloOptions} defaultVeloId={sp.veloId ?? null} />
+        )}
+      </div>
     </div>
   );
 }
