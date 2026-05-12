@@ -155,7 +155,7 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                   <h2 className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-secondary-60)]">
                     {sec.label} <span className="ml-2 font-normal opacity-60">({items.length})</span>
                   </h2>
-                  <div className="overflow-hidden rounded-2xl shadow-sm">
+                  <div className="overflow-x-auto rounded-2xl shadow-sm">
                     <table className="w-full border-separate border-spacing-y-0 text-sm">
                       <thead className="bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
                         <tr>

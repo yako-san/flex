@@ -132,7 +132,7 @@ export default async function PiecesPage({ params, searchParams }: Props) {
         ) : (
           <div className="space-y-4">
             {orderedGroups.map(([groupName, items]) => (
-              <details key={groupName} open className="overflow-hidden rounded-2xl shadow-sm">
+              <details key={groupName} open className="overflow-x-auto rounded-2xl shadow-sm">
                 <summary
                   className="flex cursor-pointer items-center justify-between bg-[var(--jaune)] px-4 py-2 text-sm font-semibold text-black"
                 >

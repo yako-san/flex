@@ -71,7 +71,7 @@ export default async function PoDetailPage({ params }: Props) {
           ← Tous les POs
         </Link>
 
-        <section className="overflow-hidden rounded-2xl bg-white/85 shadow-sm">
+        <section className="overflow-x-auto rounded-2xl bg-white/85 shadow-sm">
           <header className="flex items-center justify-between bg-[var(--gris-fond)] px-4 py-2">
             <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
               Items

@@ -88,33 +88,24 @@ export default async function AdminLayout({ children, params }: Props) {
   const { workshop, dbOk } = await safeWorkshop();
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '240px 1fr',
-        minHeight: '100vh',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-      }}
-    >
+    <div className="grid min-h-screen lg:grid-cols-[240px_1fr]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <aside
-        style={{
-          background: '#f5f5f5',
-          borderRight: '1px solid #e0e0e0',
-          padding: '1.5rem 1rem',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
+        className="flex flex-col border-b border-r-0 border-[var(--gris-bord)] bg-[var(--gris-fond)] p-4 lg:border-b-0 lg:border-r lg:p-6"
+        aria-label="Navigation principale"
       >
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.5rem' }}>Flex</div>
+        <div className="mb-4 lg:mb-6">
+          <div className="mb-2 text-base font-bold">Flex</div>
           <OrganizationSwitcher
             hidePersonal
             createOrganizationMode="modal"
             appearance={{
-              elements: { rootBox: { width: '100%' }, organizationSwitcherTrigger: { width: '100%', justifyContent: 'flex-start' } },
+              elements: {
+                rootBox: { width: '100%' },
+                organizationSwitcherTrigger: { width: '100%', justifyContent: 'flex-start' },
+              },
             }}
           />
-          <div style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem' }}>
+          <div className="mt-1 text-xs text-[var(--text-secondary-60)]">
             {workshop
               ? `Workshop : ${workshop.name}`
               : dbOk
@@ -123,54 +114,33 @@ export default async function AdminLayout({ children, params }: Props) {
           </div>
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
+        <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-1 lg:flex-col" aria-label="Sections admin">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={`/${locale}/${item.href}`}
-              style={{
-                padding: '0.5rem 0.75rem',
-                borderRadius: 4,
-                textDecoration: 'none',
-                color: '#1a1a1a',
-                fontSize: '0.95rem',
-              }}
+              className="whitespace-nowrap rounded px-3 py-1.5 text-sm text-[var(--dark)] no-underline transition-colors hover:bg-[var(--jaune)]/30 focus-visible:bg-[var(--jaune)]/30 lg:py-2"
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div
-          style={{
-            paddingTop: '1rem',
-            borderTop: '1px solid #e0e0e0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-          }}
-        >
+        <div className="mt-3 flex items-center gap-3 border-t border-[var(--gris-bord)] pt-3 lg:mt-0 lg:pt-4">
           <UserButton />
-          <span style={{ fontSize: '0.85rem', color: '#666' }}>Mon compte</span>
+          <span className="text-sm text-[var(--text-secondary-60)]">Mon compte</span>
         </div>
       </aside>
 
-      <main style={{ padding: '2rem 2.5rem', overflow: 'auto' }}>
+      <main className="overflow-auto p-4 sm:p-6 lg:p-8">
         {!dbOk ? (
           <div
             role="alert"
-            style={{
-              background: '#fff3cd',
-              border: '1px solid #ffeaa7',
-              borderRadius: 8,
-              padding: '0.75rem 1rem',
-              marginBottom: '1.5rem',
-              fontSize: '0.9rem',
-            }}
+            className="mb-6 rounded-xl border border-[#ffeaa7] bg-[#fff3cd] px-4 py-2 text-sm"
           >
             ⚠️ Base de données indisponible — certaines pages peuvent être
             incomplètes.{' '}
-            <Link href={`/${locale}/dev/health`} style={{ color: '#1565c0' }}>
+            <Link href={`/${locale}/dev/health`} className="text-[var(--jaune-h)] hover:underline">
               Voir le diagnostic →
             </Link>
           </div>

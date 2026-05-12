@@ -53,7 +53,7 @@ export default async function ForfaitsPage({ params }: Props) {
             Aucun forfait. Crée-en un avec le bouton + en haut à droite.
           </p>
         ) : (
-          <div className="overflow-hidden rounded-2xl bg-white/85 shadow-sm">
+          <div className="overflow-x-auto rounded-2xl bg-white/85 shadow-sm">
             <header className="flex items-center justify-between bg-[var(--jaune)] px-4 py-2 text-sm font-semibold text-black">
               <span className="flex items-center gap-2">
                 <Package size={16} />
