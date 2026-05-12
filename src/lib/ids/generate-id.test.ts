@@ -44,7 +44,7 @@ describe('generateId', () => {
   });
 
   describe('ID_PREFIXES expose la liste des préfixes valides', () => {
-    it('contient les 14 préfixes du domaine', () => {
+    it('expose les préfixes du domaine dans l\'ordre canonique', () => {
       expect(ID_PREFIXES).toEqual([
         'workshop',
         'user',
@@ -70,6 +70,7 @@ describe('generateId', () => {
         'log',
         'map',
         'ftt',
+        'bphoto',
       ]);
     });
   });
