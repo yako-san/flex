@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { Mail, Send, FileEdit, AlertCircle, CheckCircle2 } from 'lucide-react';
 import {
   sendEvalEmailAction,
   sendFactureEmailAction,
@@ -44,14 +45,14 @@ export function EmailButtons({
 
   if (!clientCourriel) {
     return (
-      <p style={{ fontSize: '0.8rem', color: '#888', margin: '0.5rem 0 0' }}>
-        ⓘ Pas de courriel client renseigné — saisis-le sur la fiche client pour
-        activer l&apos;envoi par courriel.
+      <p className="mt-2 flex items-center gap-1 text-xs italic text-[var(--text-secondary-60)]">
+        <AlertCircle size={12} />
+        Pas de courriel client — saisis-le sur la fiche client pour activer l&apos;envoi.
       </p>
     );
   }
 
-  function send(kind: Kind) {
+  const send = (kind: Kind) => {
     setResult(null);
     startTransition(async () => {
       const r =
@@ -68,64 +69,52 @@ export function EmailButtons({
         setMsg('');
       }
     });
-  }
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.75rem' }}>
-      <button
-        type="button"
+    <div className="mt-3 flex flex-col gap-2">
+      <EmailTriggerBtn
+        active={show === 'eval'}
+        done={evalEnvoyee}
         onClick={() => setShow(show === 'eval' ? null : 'eval')}
-        style={{
-          ...btn,
-          color: evalEnvoyee ? '#2e7d32' : '#1565c0',
-          borderColor: evalEnvoyee ? '#2e7d32' : '#1565c0',
-        }}
-      >
-        ✉️ {evalEnvoyee ? 'Renvoyer l\'éval par courriel' : 'Envoyer l\'éval par courriel'}
-      </button>
+        label={evalEnvoyee ? "Renvoyer l'éval par courriel" : "Envoyer l'éval par courriel"}
+      />
       {factureLogId ? (
-        <button
-          type="button"
+        <EmailTriggerBtn
+          active={show === 'facture'}
           onClick={() => setShow(show === 'facture' ? null : 'facture')}
-          style={btn}
-        >
-          ✉️ Envoyer la facture par courriel
-        </button>
+          label="Envoyer la facture par courriel"
+        />
       ) : null}
-      <button
-        type="button"
+      <EmailTriggerBtn
+        active={show === 'suivi'}
+        done={suiviEnvoye}
         onClick={() => setShow(show === 'suivi' ? null : 'suivi')}
-        style={{
-          ...btn,
-          color: suiviEnvoye ? '#2e7d32' : '#1565c0',
-          borderColor: suiviEnvoye ? '#2e7d32' : '#1565c0',
-        }}
-      >
-        ✉️ {suiviEnvoye ? 'Renvoyer le courriel de suivi' : 'Envoyer le courriel de suivi'}
-      </button>
+        label={suiviEnvoye ? 'Renvoyer le courriel de suivi' : 'Envoyer le courriel de suivi'}
+      />
 
       {show ? (
-        <div style={{ background: '#fafafa', border: '1px solid #e0e0e0', borderRadius: 4, padding: '0.75rem' }}>
-          <div style={{ fontSize: '0.78rem', color: '#666', marginBottom: '0.4rem' }}>
-            Destinataire : <code>{clientCourriel}</code>
+        <div className="rounded-2xl border border-[var(--gris-bord)] bg-[var(--gris-fond)] p-3">
+          <div className="mb-2 text-[11px] text-[var(--text-secondary-60)]">
+            Destinataire : <code className="font-mono">{clientCourriel}</code>
           </div>
 
           {gmailConnected ? (
-            <div style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.4rem' }}>
-              <ModeBtn
+            <div className="mb-2 flex gap-1 rounded-full bg-[rgba(0,0,0,0.10)] p-1">
+              <ModePill
                 active={mode === 'draft'}
                 onClick={() => setMode('draft')}
                 title={`Crée un brouillon dans ${gmailEmail ?? 'Gmail'} — tu vérifies + envoies manuellement`}
-              >
-                📝 Brouillon Gmail
-              </ModeBtn>
-              <ModeBtn
+                icon={<FileEdit size={12} />}
+                label="Brouillon Gmail"
+              />
+              <ModePill
                 active={mode === 'send'}
                 onClick={() => setMode('send')}
                 title="Envoi direct via SMTP/Resend (sans relecture)"
-              >
-                🚀 Envoyer maintenant
-              </ModeBtn>
+                icon={<Send size={12} />}
+                label="Envoyer maintenant"
+              />
             </div>
           ) : null}
 
@@ -134,96 +123,94 @@ export function EmailButtons({
             onChange={(e) => setMsg(e.target.value)}
             placeholder="Message personnalisé (optionnel) — ajouté en encart au courriel."
             rows={3}
-            style={{
-              width: '100%',
-              padding: '0.45rem 0.5rem',
-              fontSize: '0.85rem',
-              border: '1px solid #ccc',
-              borderRadius: 4,
-              fontFamily: 'inherit',
-              resize: 'vertical',
-              marginBottom: '0.5rem',
-            }}
+            className="input-system mb-2 font-sans"
+            style={{ resize: 'vertical' }}
           />
           <button
             type="button"
             onClick={() => send(show)}
             disabled={pending}
-            style={{
-              width: '100%',
-              padding: '0.55rem 0.9rem',
-              background: pending ? '#999' : '#1a1a1a',
-              color: 'white',
-              border: 0,
-              borderRadius: 4,
-              cursor: pending ? 'wait' : 'pointer',
-              fontSize: '0.9rem',
-              fontWeight: 600,
-            }}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--jaune)] px-4 py-2 text-xs font-bold uppercase tracking-wider text-black transition-colors hover:bg-[var(--jaune-h)] disabled:opacity-50"
           >
+            {mode === 'draft' ? <FileEdit size={14} /> : <Send size={14} />}
             {pending
               ? mode === 'draft' ? 'Création brouillon…' : 'Envoi…'
-              : mode === 'draft' ? 'Créer le brouillon dans Gmail' : 'Envoyer maintenant'}
+              : mode === 'draft' ? 'Créer le brouillon Gmail' : 'Envoyer maintenant'}
           </button>
         </div>
       ) : null}
 
       {result?.error ? (
-        <div style={{ color: '#c62828', fontSize: '0.8rem', padding: '0.4rem 0.6rem', background: '#ffebee', borderRadius: 4 }}>
+        <div className="flex items-center gap-1 rounded-xl border border-[var(--rouge)]/30 bg-[var(--rouge)]/10 px-3 py-1.5 text-xs text-[var(--rouge)]">
+          <AlertCircle size={12} />
           {result.error}
         </div>
       ) : null}
       {result?.success ? (
-        <div style={{ color: '#2e7d32', fontSize: '0.8rem', padding: '0.4rem 0.6rem', background: '#e8f5e9', borderRadius: 4 }}>
+        <div className="flex items-center gap-1 rounded-xl border border-[var(--st-approuve-bg)] bg-[var(--st-approuve-bg)]/30 px-3 py-1.5 text-xs text-[var(--st-approuve-fg)]">
+          <CheckCircle2 size={12} />
           {result.mode === 'draft'
-            ? '✓ Brouillon créé dans Gmail. Ouvre Gmail pour vérifier et envoyer.'
-            : '✓ Courriel envoyé.'}
+            ? 'Brouillon créé dans Gmail. Ouvre Gmail pour vérifier et envoyer.'
+            : 'Courriel envoyé.'}
         </div>
       ) : null}
     </div>
   );
 }
 
-function ModeBtn({
+function EmailTriggerBtn({
+  active,
+  done,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  done?: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-2 rounded-full border-2 px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider transition-colors ${
+        active
+          ? 'border-[var(--jaune-h)] bg-[var(--jaune)]/20'
+          : done
+            ? 'border-[var(--st-approuve-bg)] text-[var(--st-approuve-fg)] hover:bg-[var(--st-approuve-bg)]/20'
+            : 'border-[var(--gris-bord)] text-[var(--text-secondary-70)] hover:border-[var(--jaune)] hover:bg-[var(--jaune)]/10'
+      }`}
+    >
+      <Mail size={14} />
+      {label}
+    </button>
+  );
+}
+
+function ModePill({
   active,
   onClick,
   title,
-  children,
+  icon,
+  label,
 }: {
   active: boolean;
   onClick: () => void;
   title: string;
-  children: React.ReactNode;
+  icon: React.ReactNode;
+  label: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       title={title}
-      style={{
-        flex: 1,
-        padding: '0.4rem 0.6rem',
-        background: active ? '#1565c0' : 'white',
-        color: active ? 'white' : '#1565c0',
-        border: '1px solid #1565c0',
-        borderRadius: 4,
-        cursor: 'pointer',
-        fontSize: '0.78rem',
-        fontWeight: active ? 600 : 400,
-      }}
+      className={`inline-flex flex-1 items-center justify-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+        active ? 'bg-[var(--jaune)] text-black' : 'text-[var(--text-secondary-70)] hover:bg-white/40'
+      }`}
     >
-      {children}
+      {icon}
+      {label}
     </button>
   );
 }
-
-const btn: React.CSSProperties = {
-  padding: '0.45rem 0.9rem',
-  background: 'white',
-  color: '#1565c0',
-  border: '1px solid #1565c0',
-  borderRadius: 4,
-  cursor: 'pointer',
-  fontSize: '0.85rem',
-  textAlign: 'left',
-};

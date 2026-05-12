@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { FileText, Receipt } from 'lucide-react';
+import { customConfirm } from '@/components/ui/confirm-dialog';
+import { toast } from '@/lib/utils/toast';
 import { emitFactureAction } from './emit-facture-action';
 
 type Props = {
@@ -20,17 +23,17 @@ export function PdfButtons({
       ? { id: existingFactureLogId, numero: existingFactureNumero }
       : null,
   );
-  const [error, setError] = useState<string | null>(null);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+    <div className="flex flex-col gap-2">
       <a
         href={`/api/admin/bdcs/${bdcId}/eval.pdf`}
         target="_blank"
         rel="noopener noreferrer"
-        style={btnLink}
+        className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-70)] no-underline transition-colors hover:border-[var(--jaune)] hover:bg-[var(--jaune)]/10"
       >
-        📄 Évaluation (PDF)
+        <FileText size={14} />
+        Évaluation (PDF)
       </a>
 
       {emitted ? (
@@ -38,64 +41,61 @@ export function PdfButtons({
           href={`/api/admin/factures/${emitted.id}/pdf`}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ ...btnLink, background: '#e8f5e9', borderColor: '#2e7d32', color: '#2e7d32' }}
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--st-approuve-bg)] px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--st-approuve-fg)] no-underline transition-opacity hover:opacity-90"
         >
-          💰 Facture {emitted.numero}
+          <Receipt size={14} />
+          Facture {emitted.numero}
         </a>
       ) : (
         <FactureEmitForm
-          bdcId={bdcId}
           pending={pending}
           onEmit={(mode) => {
-            setError(null);
             startTransition(async () => {
               const r = await emitFactureAction(bdcId, mode);
               if (r.error) {
-                setError(r.error);
+                toast(r.error, 'error');
                 return;
               }
               if (r.factureLogId && r.factureNumero) {
                 setEmitted({ id: r.factureLogId, numero: r.factureNumero });
+                toast(`Facture ${r.factureNumero} émise`, 'success');
               }
             });
           }}
         />
       )}
-
-      {error ? (
-        <div style={{ color: '#c62828', fontSize: '0.85rem' }}>{error}</div>
-      ) : null}
     </div>
   );
 }
 
 function FactureEmitForm({
-  bdcId: _bdcId,
   pending,
   onEmit,
 }: {
-  bdcId: string;
   pending: boolean;
   onEmit: (mode: 'COMPTANT' | 'INTERAC' | 'CARTE' | 'AUTRE' | null) => void;
 }) {
   const [mode, setMode] = useState<'COMPTANT' | 'INTERAC' | 'CARTE' | 'AUTRE' | ''>('');
+
+  const handleClick = async () => {
+    const ok = await customConfirm({
+      title: 'Émettre la facture ?',
+      message: 'Action immutable (numéro séquentiel attribué). Le BDT passe en archiveStatus FACTURE.',
+      confirmLabel: 'Émettre',
+    });
+    if (!ok) return;
+    onEmit(mode === '' ? null : mode);
+  };
+
   return (
-    <div style={{ background: '#fafafa', border: '1px solid #e0e0e0', borderRadius: 4, padding: '0.6rem' }}>
-      <div style={{ fontSize: '0.78rem', color: '#666', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+    <div className="rounded-2xl border border-[var(--gris-bord)] bg-[var(--gris-fond)] p-3">
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
         Émettre la facture
       </div>
       <select
         value={mode}
         onChange={(e) => setMode(e.target.value as 'COMPTANT' | 'INTERAC' | 'CARTE' | 'AUTRE' | '')}
-        style={{
-          width: '100%',
-          padding: '0.4rem 0.5rem',
-          fontSize: '0.85rem',
-          border: '1px solid #ccc',
-          borderRadius: 4,
-          background: 'white',
-          marginBottom: '0.4rem',
-        }}
+        className="input-system mb-2"
       >
         <option value="">— Mode de paiement —</option>
         <option value="COMPTANT">Comptant</option>
@@ -106,36 +106,12 @@ function FactureEmitForm({
       <button
         type="button"
         disabled={pending}
-        onClick={() => {
-          if (!confirm('Émettre la facture ? Action immutable (numéro séquentiel attribué).')) return;
-          onEmit(mode === '' ? null : mode);
-        }}
-        style={{
-          width: '100%',
-          padding: '0.45rem 0.9rem',
-          background: pending ? '#999' : '#2e7d32',
-          color: 'white',
-          border: 0,
-          borderRadius: 4,
-          cursor: pending ? 'wait' : 'pointer',
-          fontSize: '0.85rem',
-          fontWeight: 600,
-        }}
+        onClick={handleClick}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--st-approuve-bg)] px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--st-approuve-fg)] transition-opacity hover:opacity-90 disabled:opacity-50"
       >
-        {pending ? 'Émission…' : '💰 Émettre la facture'}
+        <Receipt size={14} />
+        {pending ? 'Émission…' : 'Émettre la facture'}
       </button>
     </div>
   );
 }
-
-const btnLink: React.CSSProperties = {
-  display: 'block',
-  padding: '0.45rem 0.9rem',
-  border: '1px solid #1565c0',
-  color: '#1565c0',
-  textDecoration: 'none',
-  borderRadius: 4,
-  fontSize: '0.85rem',
-  textAlign: 'center',
-  background: 'white',
-};
