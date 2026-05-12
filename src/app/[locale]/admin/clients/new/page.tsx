@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
+import { PageHeader } from '@/components/ui/page-header';
 import { ClientForm } from '../client-form';
 
 export const dynamic = 'force-dynamic';
@@ -13,15 +14,20 @@ export default async function NewClientPage({ params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <Link
-        href={`/${locale}/admin/clients`}
-        style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
-      >
-        ← Tous les clients
-      </Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>Nouveau client</h1>
-      <ClientForm />
+    <div>
+      <PageHeader
+        eyebrow="atelier · nouveau client"
+        title="Nouveau client"
+      />
+      <div className="mx-auto max-w-[720px] p-6">
+        <Link
+          href={`/${locale}/admin/clients`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Tous les clients
+        </Link>
+        <ClientForm />
+      </div>
     </div>
   );
 }

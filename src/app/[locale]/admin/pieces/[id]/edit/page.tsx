@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { PieceForm } from '../../piece-form';
 import { AdjustStockForm } from './adjust-form';
 
@@ -47,9 +48,13 @@ export default async function EditPiecePage({ params }: Props) {
   if (!p) notFound();
 
   return (
-    <div style={{ maxWidth: 900 }}>
-      <Link href={`/${locale}/admin/pieces`} style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}>← Toutes les pièces</Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>{p.nomCanonical}</h1>
+    <div>
+      <PageHeader
+        eyebrow="catalogue · modifier pièce"
+        title={p.nomCanonical}
+      />
+      <div className="mx-auto max-w-[900px] p-6">
+        <Link href={`/${locale}/admin/pieces`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Toutes les pièces</Link>
       <p style={{ color: '#666', marginBottom: '1.5rem' }}>
         Stock physique : <strong>{p.stockPhysique}</strong> · Réservé sur BDT : <strong>{p.stockReserve}</strong> · Disponible : <strong>{p.stockPhysique - p.stockReserve}</strong>
       </p>
@@ -101,6 +106,7 @@ export default async function EditPiecePage({ params }: Props) {
 
       <h2 style={{ ...h2, marginTop: '2rem' }}>Modifier la pièce</h2>
       <PieceForm initial={p} />
+      </div>
     </div>
   );
 }

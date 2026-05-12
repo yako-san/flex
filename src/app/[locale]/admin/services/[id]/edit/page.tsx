@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { ServiceForm } from '../../service-form';
 
 export const dynamic = 'force-dynamic';
@@ -21,10 +22,15 @@ export default async function EditServicePage({ params }: Props) {
   if (!s) notFound();
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      <Link href={`/${locale}/admin/services`} style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}>← Tous les services</Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>Modifier {s.labelCanonical}</h1>
-      <ServiceForm initial={s} />
+    <div>
+      <PageHeader
+        eyebrow="catalogue à la carte · modifier service"
+        title={`Modifier ${s.labelCanonical}`}
+      />
+      <div className="mx-auto max-w-[800px] p-6">
+        <Link href={`/${locale}/admin/services`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Tous les services</Link>
+        <ServiceForm initial={s} />
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { VeloForm } from '../velo-form';
 
 export const dynamic = 'force-dynamic';
@@ -38,26 +39,31 @@ export default async function NewVeloPage({ params, searchParams }: Props) {
   ]);
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      <Link
-        href={`/${locale}/admin/velos`}
-        style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
-      >
-        ← Tous les vélos
-      </Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>Nouveau vélo</h1>
-      <VeloForm
-        clients={clients}
-        marques={marques.map((m) => ({
-          id: m.id,
-          nom: m.nom,
-          taillesDisponibles: Array.isArray(m.taillesDisponibles)
-            ? (m.taillesDisponibles as string[])
-            : [],
-        }))}
-        equipe={equipe}
-        defaultClientId={sp.clientId ?? null}
+    <div>
+      <PageHeader
+        eyebrow="catalogue · nouveau vélo"
+        title="Nouveau vélo"
       />
+      <div className="mx-auto max-w-[800px] p-6">
+        <Link
+          href={`/${locale}/admin/velos`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Tous les vélos
+        </Link>
+        <VeloForm
+          clients={clients}
+          marques={marques.map((m) => ({
+            id: m.id,
+            nom: m.nom,
+            taillesDisponibles: Array.isArray(m.taillesDisponibles)
+              ? (m.taillesDisponibles as string[])
+              : [],
+          }))}
+          equipe={equipe}
+          defaultClientId={sp.clientId ?? null}
+        />
+      </div>
     </div>
   );
 }

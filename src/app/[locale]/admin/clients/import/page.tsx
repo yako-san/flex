@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
+import { PageHeader } from '@/components/ui/page-header';
 import { ImportClientsPage } from './import-client';
 
 export const dynamic = 'force-dynamic';
@@ -11,20 +12,21 @@ export default async function ImportClientsRoute({ params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <div style={{ maxWidth: 960 }}>
-      <Link
-        href={`/${locale}/admin/clients`}
-        style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
-      >
-        ← Tous les clients
-      </Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Import CSV de clients</h1>
-      <p style={{ color: '#666', marginTop: 0, marginBottom: '1.5rem' }}>
-        Importe une liste de clients depuis un fichier CSV (export Excel,
-        Google Sheets, Numbers, ou autre logiciel). Détection auto des colonnes,
-        ajustement manuel possible, anti-doublons sur (prénom + nom) ou courriel.
-      </p>
-      <ImportClientsPage />
+    <div>
+      <PageHeader
+        eyebrow="atelier · import"
+        title="Import CSV de clients"
+        subline="Détection auto des colonnes, ajustement manuel, anti-doublons sur (prénom + nom) ou courriel."
+      />
+      <div className="mx-auto max-w-[960px] p-6">
+        <Link
+          href={`/${locale}/admin/clients`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Tous les clients
+        </Link>
+        <ImportClientsPage />
+      </div>
     </div>
   );
 }

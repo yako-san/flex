@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { ClientForm } from '../../client-form';
 
 export const dynamic = 'force-dynamic';
@@ -24,17 +25,20 @@ export default async function EditClientPage({ params }: Props) {
   if (!client) notFound();
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <Link
-        href={`/${locale}/admin/clients/${id}`}
-        style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
-      >
-        ← Fiche client
-      </Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>
-        Modifier {client.prenom} {client.nom}
-      </h1>
-      <ClientForm initial={client} />
+    <div>
+      <PageHeader
+        eyebrow="atelier · modifier client"
+        title={`Modifier ${client.prenom} ${client.nom}`}
+      />
+      <div className="mx-auto max-w-[720px] p-6">
+        <Link
+          href={`/${locale}/admin/clients/${id}`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Fiche client
+        </Link>
+        <ClientForm initial={client} />
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { VeloForm } from '../../velo-form';
 
 export const dynamic = 'force-dynamic';
@@ -42,28 +43,31 @@ export default async function EditVeloPage({ params }: Props) {
   if (!velo) notFound();
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      <Link
-        href={`/${locale}/admin/velos/${id}`}
-        style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
-      >
-        ← Fiche vélo
-      </Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>
-        Modifier vélo {String(velo.veloNumero).padStart(4, '0')}
-      </h1>
-      <VeloForm
-        initial={velo}
-        clients={clients}
-        marques={marques.map((m) => ({
-          id: m.id,
-          nom: m.nom,
-          taillesDisponibles: Array.isArray(m.taillesDisponibles)
-            ? (m.taillesDisponibles as string[])
-            : [],
-        }))}
-        equipe={equipe}
+    <div>
+      <PageHeader
+        eyebrow="catalogue · modifier vélo"
+        title={`Modifier vélo ${String(velo.veloNumero).padStart(4, '0')}`}
       />
+      <div className="mx-auto max-w-[800px] p-6">
+        <Link
+          href={`/${locale}/admin/velos/${id}`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Fiche vélo
+        </Link>
+        <VeloForm
+          initial={velo}
+          clients={clients}
+          marques={marques.map((m) => ({
+            id: m.id,
+            nom: m.nom,
+            taillesDisponibles: Array.isArray(m.taillesDisponibles)
+              ? (m.taillesDisponibles as string[])
+              : [],
+          }))}
+          equipe={equipe}
+        />
+      </div>
     </div>
   );
 }

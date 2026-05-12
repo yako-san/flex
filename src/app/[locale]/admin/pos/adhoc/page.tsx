@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { PageHeader } from '@/components/ui/page-header';
 import { AdhocForm } from './adhoc-form';
 
 export const dynamic = 'force-dynamic';
@@ -32,20 +33,21 @@ export default async function NewAdhocPoPage({ params }: Props) {
     .filter((c): c is string => typeof c === 'string' && c.trim() !== '');
 
   return (
-    <div style={{ maxWidth: 920 }}>
-      <Link
-        href={`/${locale}/admin/pos`}
-        style={{ color: '#666', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-block', marginBottom: '1rem' }}
-      >
-        ← Tous les POs
-      </Link>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Réception ADHOC</h1>
-      <p style={{ color: '#666', marginTop: 0, marginBottom: '1.5rem' }}>
-        Crée un PO pré-marqué <strong>RECU</strong> directement à la réception
-        de pièces sans commande préalable (achat impulsif, dépannage, retour
-        chez le fournisseur). Le stock physique est incrémenté immédiatement.
-      </p>
-      <AdhocForm pieces={pieces} categories={categories} />
+    <div>
+      <PageHeader
+        eyebrow="commandes fournisseurs · adhoc"
+        title="Réception ADHOC"
+        subline="PO pré-marqué REÇU pour pièces achetées sans commande préalable. Le stock physique est incrémenté immédiatement."
+      />
+      <div className="mx-auto max-w-[920px] p-6">
+        <Link
+          href={`/${locale}/admin/pos`}
+          className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
+        >
+          ← Tous les POs
+        </Link>
+        <AdhocForm pieces={pieces} categories={categories} />
+      </div>
     </div>
   );
 }
