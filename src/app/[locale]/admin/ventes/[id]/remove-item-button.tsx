@@ -2,34 +2,41 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { X } from 'lucide-react';
+import { customConfirm } from '@/components/ui/confirm-dialog';
+import { toast } from '@/lib/utils/toast';
 import { removeVenteItemAction } from '../actions';
 
 export function RemoveItemButton({ itemId }: { itemId: string }) {
   const [pending, start] = useTransition();
   const router = useRouter();
+
+  const handleClick = async () => {
+    const ok = await customConfirm({
+      title: 'Retirer cet item ?',
+      confirmLabel: 'Retirer',
+      variant: 'danger',
+    });
+    if (!ok) return;
+    start(async () => {
+      const r = await removeVenteItemAction(itemId);
+      if (r.error) {
+        toast(r.error, 'error');
+      } else {
+        router.refresh();
+      }
+    });
+  };
+
   return (
     <button
       type="button"
+      onClick={handleClick}
       disabled={pending}
-      onClick={() => {
-        if (!confirm('Retirer cet item ?')) return;
-        start(async () => {
-          const r = await removeVenteItemAction(itemId);
-          if (r.error) alert(r.error);
-          else router.refresh();
-        });
-      }}
-      style={{
-        padding: '0.3rem 0.6rem',
-        background: 'transparent',
-        color: '#c62828',
-        border: '1px solid #ef9a9a',
-        borderRadius: 4,
-        cursor: pending ? 'wait' : 'pointer',
-        fontSize: '0.8rem',
-      }}
+      title="Retirer l'item"
+      className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[var(--rouge)] transition-colors hover:bg-[var(--rouge)]/10 disabled:opacity-40"
     >
-      {pending ? '…' : '✕'}
+      <X size={14} />
     </button>
   );
 }

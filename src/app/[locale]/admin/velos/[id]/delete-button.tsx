@@ -1,6 +1,10 @@
 'use client';
 
 import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { Trash2 } from 'lucide-react';
+import { customConfirm } from '@/components/ui/confirm-dialog';
+import { toast } from '@/lib/utils/toast';
 import { deleteVeloAction } from '../actions';
 
 type Props = {
@@ -11,39 +15,41 @@ type Props = {
 
 export function DeleteVeloButton({ veloId, veloLabel, hasBdcs }: Props) {
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleClick = async () => {
+    if (hasBdcs) {
+      toast(`Impossible : ${veloLabel} a des BDT associés.`, 'error');
+      return;
+    }
+    const ok = await customConfirm({
+      title: `Supprimer ${veloLabel} ?`,
+      message: 'Action réversible (soft delete) — restaurable via Maintenance.',
+      confirmLabel: 'Supprimer',
+      variant: 'danger',
+    });
+    if (!ok) return;
+    startTransition(async () => {
+      const result = await deleteVeloAction(veloId);
+      if (result?.error) {
+        toast(result.error, 'error');
+      } else {
+        toast(`${veloLabel} supprimé`, 'success');
+        router.refresh();
+      }
+    });
+  };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (hasBdcs) {
-          alert(`Impossible : ${veloLabel} a des BDT associés.`);
-          return;
-        }
-        if (!confirm(`Supprimer ${veloLabel} ? (soft delete réversible)`)) return;
-        startTransition(async () => {
-          const result = await deleteVeloAction(veloId);
-          if (result?.error) alert(result.error);
-        });
-      }}
-      style={{ display: 'inline' }}
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={pending || hasBdcs}
+      title={hasBdcs ? 'Le vélo a des BDT associés' : 'Soft delete'}
+      className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-[var(--rouge)] px-3 text-xs font-semibold uppercase tracking-wider text-[var(--rouge)] transition-colors hover:bg-[var(--rouge)]/10 disabled:cursor-not-allowed disabled:border-[var(--gris-bord)] disabled:text-[var(--text-secondary-50)] disabled:hover:bg-transparent"
     >
-      <button
-        type="submit"
-        disabled={pending || hasBdcs}
-        title={hasBdcs ? 'Le vélo a des BDT associés' : 'Soft delete'}
-        style={{
-          padding: '0.4rem 0.9rem',
-          background: 'transparent',
-          color: hasBdcs ? '#aaa' : '#c62828',
-          border: `1px solid ${hasBdcs ? '#ddd' : '#c62828'}`,
-          borderRadius: 4,
-          cursor: pending || hasBdcs ? 'not-allowed' : 'pointer',
-          fontSize: '0.9rem',
-        }}
-      >
-        {pending ? 'Suppression…' : 'Supprimer'}
-      </button>
-    </form>
+      <Trash2 size={14} />
+      {pending ? 'Suppression…' : 'Supprimer'}
+    </button>
   );
 }

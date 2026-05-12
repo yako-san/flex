@@ -1,31 +1,43 @@
 'use client';
 
 import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { Trash2 } from 'lucide-react';
+import { customConfirm } from '@/components/ui/confirm-dialog';
+import { toast } from '@/lib/utils/toast';
 import { deleteVenteAction } from '../actions';
 
 export function DeleteVenteButton({ venteId }: { venteId: string }) {
   const [pending, start] = useTransition();
+  const router = useRouter();
+
+  const handleClick = async () => {
+    const ok = await customConfirm({
+      title: 'Supprimer cette vente brouillon ?',
+      message: 'Les items seront perdus. Action irréversible si la vente n\'a pas encore été facturée.',
+      confirmLabel: 'Supprimer',
+      variant: 'danger',
+    });
+    if (!ok) return;
+    start(async () => {
+      const r = await deleteVenteAction(venteId);
+      if (r?.error) {
+        toast(r.error, 'error');
+      } else {
+        toast('Vente supprimée', 'success');
+        router.refresh();
+      }
+    });
+  };
+
   return (
     <button
       type="button"
+      onClick={handleClick}
       disabled={pending}
-      onClick={() => {
-        if (!confirm('Supprimer cette vente brouillon ? (les items seront perdus)')) return;
-        start(async () => {
-          const r = await deleteVenteAction(venteId);
-          if (r?.error) alert(r.error);
-        });
-      }}
-      style={{
-        padding: '0.55rem 0.9rem',
-        background: 'transparent',
-        color: '#c62828',
-        border: '1px solid #ef9a9a',
-        borderRadius: 4,
-        cursor: pending ? 'wait' : 'pointer',
-        fontSize: '0.9rem',
-      }}
+      className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-[var(--rouge)] px-3 text-xs font-semibold uppercase tracking-wider text-[var(--rouge)] transition-colors hover:bg-[var(--rouge)]/10 disabled:opacity-50"
     >
+      <Trash2 size={14} />
       {pending ? '…' : 'Supprimer'}
     </button>
   );
