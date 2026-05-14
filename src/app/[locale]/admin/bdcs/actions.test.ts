@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Tests des Server Actions BDT — focus sur les actions « patch » (sans redirect
-// ni mutation stock). Voir TODO en bas pour les actions plus complexes encore
-// non couvertes (createBdtAction, addBdtItemAction, archiveBdtWithChoiceAction).
+// Tests des Server Actions BDT.
+// Sections :
+//   1. Actions « patch » simples (sans transaction ni redirect)
+//   2. Actions complexes — guards uniquement (auth, workshop, validation Zod).
+//      Les paths heureux passent par prisma.$transaction + recordStockMovement
+//      qui méritent des tests d'intégration plutôt que des mocks granulaires.
 
 vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn(),
@@ -13,6 +16,8 @@ vi.mock('@/lib/db', () => ({
     bdc: { findFirst: vi.fn(), update: vi.fn() },
     bdcItem: { findFirst: vi.fn(), update: vi.fn() },
     bdcItemTask: { findFirst: vi.fn(), update: vi.fn() },
+    velo: { findFirst: vi.fn() },
+    $transaction: vi.fn(),
   },
 }));
 
@@ -24,16 +29,30 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
+vi.mock('next/navigation', () => ({
+  redirect: vi.fn((url: string) => {
+    throw new Error(`NEXT_REDIRECT:${url}`);
+  }),
+}));
+
+vi.mock('@/lib/stock', () => ({ recordStockMovement: vi.fn() }));
+
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import {
+  addBdtItemAction,
+  archiveBdtWithChoiceAction,
+  createBdtAction,
+  deleteBdtAction,
   patchBdcAvanceAction,
   patchBdcNotesAction,
   patchBdcRemisesAction,
   patchBdtCheckboxAction,
   patchBdtEvalStatusAction,
+  removeBdtItemAction,
+  updateBdtWorkflowAction,
   updatePieceItemCmdAction,
   updateTaskStatusAction,
 } from './actions';
@@ -45,6 +64,14 @@ const mockRevalidate = vi.mocked(revalidatePath);
 const WORKSHOP = { id: 'workshop_TEST' } as unknown as Awaited<
   ReturnType<typeof getActiveWorkshop>
 >;
+
+// Helper FormData partagé par les describe de la Section 2 (les Section 1
+// describes ont leur propre `fd` local pour préserver leur API existante).
+function fd(values: Record<string, string>): FormData {
+  const f = new FormData();
+  for (const [k, v] of Object.entries(values)) f.set(k, v);
+  return f;
+}
 
 beforeEach(() => {
   mockAuth.mockResolvedValue({ userId: 'user_TEST' } as never);
@@ -506,10 +533,214 @@ describe('patchBdcNotesAction', () => {
   });
 });
 
-// TODO (hors scope cette session — nécessite mocks plus complexes) :
-// - createBdtAction       : redirect + counter + transaction
-// - addBdtItemAction      : multi-branch SERVICE/PIECE/FORFAIT + recordStockMovement
-// - removeBdtItemAction   : transaction + RELEASE stock
-// - updateBdtWorkflowAction : ~30 champs, gros schéma Zod
-// - archiveBdtWithChoiceAction : transaction + factureLog
-// - deleteBdtAction       : redirect
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 2 — Actions complexes (transactions, redirect, stock movements)
+// Couverture guards uniquement. Path heureux → tests d'intégration séparés.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('createBdtAction', () => {
+  const VALID = { veloId: 'velo_x', evalStatus: 'INDECIS', archiveStatus: 'ACTIF' };
+
+  it('refuse si non auth', async () => {
+    mockAuth.mockResolvedValueOnce({ userId: null } as never);
+    expect(await createBdtAction(null, fd(VALID))).toEqual({ error: 'Non authentifié' });
+  });
+
+  it('refuse si workshop manquant', async () => {
+    mockGetWorkshop.mockResolvedValueOnce(null);
+    expect(await createBdtAction(null, fd(VALID))).toEqual({
+      error: 'Aucun workshop actif',
+    });
+  });
+
+  it('refuse si veloId vide', async () => {
+    const r = await createBdtAction(null, fd({ ...VALID, veloId: '' }));
+    expect(r).toEqual({ error: 'Validation échouée' });
+  });
+
+  it('refuse si evalStatus invalide', async () => {
+    const r = await createBdtAction(null, fd({ ...VALID, evalStatus: 'BIDON' }));
+    expect(r).toEqual({ error: 'Validation échouée' });
+  });
+
+  it('refuse si archiveStatus invalide', async () => {
+    const r = await createBdtAction(null, fd({ ...VALID, archiveStatus: 'BIDON' }));
+    expect(r).toEqual({ error: 'Validation échouée' });
+  });
+
+  it('refuse si vélo introuvable dans le workshop', async () => {
+    vi.mocked(prisma.velo.findFirst).mockResolvedValueOnce(null);
+    const r = await createBdtAction(null, fd(VALID));
+    expect(r).toEqual({ error: 'Vélo introuvable' });
+  });
+});
+
+describe('addBdtItemAction', () => {
+  const VALID = { bdcId: 'bdc_x', kind: 'SERVICE', refId: 'svc_x', qty: '1' };
+
+  it('refuse si non auth', async () => {
+    mockAuth.mockResolvedValueOnce({ userId: null } as never);
+    expect(await addBdtItemAction(null, fd(VALID))).toEqual({ error: 'Non authentifié' });
+  });
+
+  it('refuse si workshop manquant', async () => {
+    mockGetWorkshop.mockResolvedValueOnce(null);
+    expect(await addBdtItemAction(null, fd(VALID))).toEqual({
+      error: 'Aucun workshop actif',
+    });
+  });
+
+  it('refuse si kind invalide', async () => {
+    const r = await addBdtItemAction(null, fd({ ...VALID, kind: 'BIDON' }));
+    expect(r.error).toBe('Validation échouée');
+    expect(r.fieldErrors?.kind).toBeDefined();
+  });
+
+  it('refuse si refId vide', async () => {
+    const r = await addBdtItemAction(null, fd({ ...VALID, refId: '' }));
+    expect(r.error).toBe('Validation échouée');
+    expect(r.fieldErrors?.refId).toBeDefined();
+  });
+
+  it('refuse si qty négatif', async () => {
+    const r = await addBdtItemAction(null, fd({ ...VALID, qty: '-1' }));
+    expect(r.error).toBe('Validation échouée');
+    expect(r.fieldErrors?.qty).toBeDefined();
+  });
+
+  it('accepte les 3 kinds canoniques (validation Zod)', async () => {
+    // La validation passe, après ça transaction non mockée throw.
+    for (const kind of ['SERVICE', 'PIECE', 'FORFAIT']) {
+      const r = await addBdtItemAction(null, fd({ ...VALID, kind }))
+        .catch(() => ({ thrown: true }));
+      expect((r as { fieldErrors?: unknown }).fieldErrors).toBeUndefined();
+    }
+  });
+});
+
+describe('removeBdtItemAction', () => {
+  it('refuse si non auth', async () => {
+    mockAuth.mockResolvedValueOnce({ userId: null } as never);
+    expect(await removeBdtItemAction('item_x')).toEqual({ error: 'Non authentifié' });
+  });
+
+  it('refuse si workshop manquant', async () => {
+    mockGetWorkshop.mockResolvedValueOnce(null);
+    expect(await removeBdtItemAction('item_x')).toEqual({ error: 'Aucun workshop actif' });
+  });
+
+  it("propage l'erreur du transaction (item introuvable, etc.)", async () => {
+    vi.mocked(prisma.$transaction).mockRejectedValueOnce(new Error('Item introuvable'));
+    const r = await removeBdtItemAction('item_orphan');
+    expect(r).toEqual({ error: 'Item introuvable' });
+  });
+
+  it("renvoie 'Suppression échouée' pour erreur non-Error", async () => {
+    vi.mocked(prisma.$transaction).mockRejectedValueOnce('crash');
+    const r = await removeBdtItemAction('item_x');
+    expect(r).toEqual({ error: 'Suppression échouée' });
+  });
+});
+
+describe('updateBdtWorkflowAction', () => {
+  const VALID = {
+    bdcId: 'bdc_x',
+    evalStatus: 'APPROUVE',
+    archiveStatus: 'ACTIF',
+  };
+
+  it('refuse si non auth', async () => {
+    mockAuth.mockResolvedValueOnce({ userId: null } as never);
+    expect(await updateBdtWorkflowAction(null, fd(VALID))).toEqual({
+      error: 'Non authentifié',
+    });
+  });
+
+  it('refuse si workshop manquant', async () => {
+    mockGetWorkshop.mockResolvedValueOnce(null);
+    expect(await updateBdtWorkflowAction(null, fd(VALID))).toEqual({
+      error: 'Aucun workshop actif',
+    });
+  });
+
+  it('refuse si evalStatus invalide', async () => {
+    const r = await updateBdtWorkflowAction(null, fd({ ...VALID, evalStatus: 'BIDON' }));
+    expect(r).toEqual({ error: 'Validation échouée' });
+  });
+
+  it('refuse si BDT introuvable', async () => {
+    vi.mocked(prisma.bdc.findFirst).mockResolvedValueOnce(null);
+    const r = await updateBdtWorkflowAction(null, fd(VALID));
+    expect(r).toEqual({ error: 'BDT introuvable' });
+  });
+});
+
+describe('archiveBdtWithChoiceAction', () => {
+  it('refuse si non auth', async () => {
+    mockAuth.mockResolvedValueOnce({ userId: null } as never);
+    expect(await archiveBdtWithChoiceAction('bdc_x', 'COMPTANT')).toEqual({
+      error: 'Non authentifié',
+    });
+  });
+
+  it('refuse si workshop manquant', async () => {
+    mockGetWorkshop.mockResolvedValueOnce(null);
+    expect(await archiveBdtWithChoiceAction('bdc_x', 'COMPTANT')).toEqual({
+      error: 'Aucun workshop actif',
+    });
+  });
+
+  it('refuse si choix invalide', async () => {
+    expect(await archiveBdtWithChoiceAction('bdc_x', 'BIDON' as never)).toEqual({
+      error: 'Choix invalide',
+    });
+  });
+
+  it('refuse si BDT introuvable', async () => {
+    vi.mocked(prisma.bdc.findFirst).mockResolvedValueOnce(null);
+    expect(await archiveBdtWithChoiceAction('bdc_orphan', 'COMPTANT')).toEqual({
+      error: 'BDT introuvable',
+    });
+  });
+
+  it("choix REFUSE : archiveStatus = ARCHIVE_REFUSE (pas de paiement)", async () => {
+    vi.mocked(prisma.bdc.findFirst).mockResolvedValueOnce({ id: 'bdc_x' } as never);
+    vi.mocked(prisma.bdc.update).mockResolvedValueOnce({} as never);
+
+    const r = await archiveBdtWithChoiceAction('bdc_x', 'REFUSE');
+
+    expect(r).toEqual({});
+    expect(vi.mocked(prisma.bdc.update).mock.calls[0]![0]).toEqual({
+      where: { id: 'bdc_x' },
+      data: { archiveStatus: 'ARCHIVE_REFUSE', cbArchiver: true },
+    });
+  });
+});
+
+describe('deleteBdtAction', () => {
+  it('refuse si non auth', async () => {
+    mockAuth.mockResolvedValueOnce({ userId: null } as never);
+    expect(await deleteBdtAction('bdc_x')).toEqual({ error: 'Non authentifié' });
+  });
+
+  it('refuse si workshop manquant', async () => {
+    mockGetWorkshop.mockResolvedValueOnce(null);
+    expect(await deleteBdtAction('bdc_x')).toEqual({ error: 'Aucun workshop actif' });
+  });
+
+  it('refuse si BDT introuvable', async () => {
+    vi.mocked(prisma.bdc.findFirst).mockResolvedValueOnce(null);
+    expect(await deleteBdtAction('bdc_orphan')).toEqual({ error: 'BDT introuvable' });
+  });
+
+  it('soft-delete + redirect si BDT trouvé', async () => {
+    vi.mocked(prisma.bdc.findFirst).mockResolvedValueOnce({ id: 'bdc_x' } as never);
+    vi.mocked(prisma.bdc.update).mockResolvedValueOnce({} as never);
+
+    await expect(deleteBdtAction('bdc_x')).rejects.toThrow('NEXT_REDIRECT');
+
+    expect(
+      vi.mocked(prisma.bdc.update).mock.calls[0]![0].data.deletedAt,
+    ).toBeInstanceOf(Date);
+  });
+});
