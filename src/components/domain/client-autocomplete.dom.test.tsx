@@ -1,3 +1,5 @@
+// 18 tests : combobox ARIA, debounce 200ms, navigation clavier, suggestions
+// avec téléphone/courriel, createSlot. Voir PR #57.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import {
