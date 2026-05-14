@@ -1,3 +1,4 @@
+// 4 tests surface : re-export Sonner avec config V1 (position, expand, theme).
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
 import { Toaster } from './sonner';
