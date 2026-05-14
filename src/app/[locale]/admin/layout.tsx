@@ -1,29 +1,9 @@
 import { auth } from '@clerk/nextjs/server';
-import { OrganizationSwitcher, UserButton } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
-import {
-  LayoutDashboard,
-  Users,
-  Bike,
-  Wrench,
-  Package,
-  Layers,
-  Boxes,
-  Tag,
-  UserCog,
-  Truck,
-  ShoppingCart,
-  Upload,
-  Database,
-  Settings,
-  Hammer,
-  HelpCircle,
-  Sparkles,
-} from 'lucide-react';
-import { Sidebar, type SidebarItem } from '@/components/ui/sidebar';
+import { AdminMobileTopBar, AdminSidebar, AdminWorkshopBar } from './_admin-nav';
 import { getActiveWorkshop } from '@/lib/workshop';
 
 export const dynamic = 'force-dynamic';
@@ -32,28 +12,6 @@ type Props = {
   children: ReactNode;
   params: Promise<{ locale: string }>;
 };
-
-function buildNavItems(locale: string): SidebarItem[] {
-  return [
-    { href: `/${locale}/admin`,                matchPrefix: `/${locale}/admin`,             icon: LayoutDashboard, label: 'Tableau de bord' },
-    { href: `/${locale}/admin/bdcs`,           matchPrefix: `/${locale}/admin/inventaire`,  icon: Wrench,          label: 'Inventaire' },
-    { href: `/${locale}/admin/clients`,        matchPrefix: `/${locale}/admin/clients`,     icon: Users,           label: 'Clients' },
-    { href: `/${locale}/admin/velos`,          matchPrefix: `/${locale}/admin/velos`,       icon: Bike,            label: 'Vélos' },
-    { href: `/${locale}/admin/pieces`,         matchPrefix: `/${locale}/admin/pieces`,      icon: Package,         label: 'Pièces' },
-    { href: `/${locale}/admin/services`,       matchPrefix: `/${locale}/admin/services`,    icon: Layers,          label: 'Services' },
-    { href: `/${locale}/admin/forfaits`,       matchPrefix: `/${locale}/admin/forfaits`,    icon: Boxes,           label: 'Forfaits' },
-    { href: `/${locale}/admin/marques`,        matchPrefix: `/${locale}/admin/marques`,     icon: Tag,             label: 'Marques' },
-    { href: `/${locale}/admin/equipe`,         matchPrefix: `/${locale}/admin/equipe`,      icon: UserCog,         label: 'Équipe' },
-    { href: `/${locale}/admin/pos`,            matchPrefix: `/${locale}/admin/pos`,         icon: Truck,           label: 'Commandes' },
-    { href: `/${locale}/admin/ventes`,         matchPrefix: `/${locale}/admin/ventes`,      icon: ShoppingCart,    label: 'Ventes' },
-    { href: `/${locale}/admin/aide`,           matchPrefix: `/${locale}/admin/aide`,        icon: HelpCircle,      label: 'Aide' },
-    { href: `/${locale}/admin/settings`,       matchPrefix: `/${locale}/admin/settings`,    icon: Settings,        label: 'Paramètres' },
-    { href: `/${locale}/admin/import`,         matchPrefix: `/${locale}/admin/import`,      icon: Upload,          label: 'Import v1' },
-    { href: `/${locale}/admin/legacy-v1`,      matchPrefix: `/${locale}/admin/legacy-v1`,   icon: Database,        label: 'Dump v1' },
-    { href: `/${locale}/admin/maintenance`,    matchPrefix: `/${locale}/admin/maintenance`, icon: Hammer,          label: 'Maintenance' },
-    { href: `/${locale}/admin/settings/ui-kit`,matchPrefix: `/${locale}/admin/settings/ui-kit`, icon: Sparkles,    label: 'UI Kit' },
-  ];
-}
 
 async function safeAuth(): Promise<{ userId: string | null; clerkOk: boolean }> {
   if (!process.env['CLERK_SECRET_KEY']) {
@@ -99,72 +57,17 @@ export default async function AdminLayout({ children, params }: Props) {
   if (!userId) redirect(`/${locale}/sign-in`);
 
   const { workshop, dbOk } = await safeWorkshop();
-  const navItems = buildNavItems(locale);
 
   return (
     <div className="min-h-screen">
       {/* Sidebar fixe latérale jaune V1 (desktop ≥ md). Hover-expand. */}
-      <Sidebar
-        items={navItems}
-        header={
-          <div className="flex flex-col items-center gap-1 py-2">
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black text-[var(--jaune)] font-bold">
-              F
-            </div>
-          </div>
-        }
-        footer={
-          <div className="flex items-center justify-center pb-2">
-            <UserButton appearance={{ elements: { rootBox: { display: 'flex', justifyContent: 'center' } } }} />
-          </div>
-        }
-      />
+      <AdminSidebar locale={locale} />
 
-      {/* Header mobile (visible < md) */}
-      <header
-        className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-[var(--gris-bord)] bg-[var(--jaune)] px-3 py-2 md:hidden"
-        aria-label="Barre mobile"
-      >
-        <div className="flex items-center gap-2">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black text-[var(--jaune)] text-sm font-bold">F</span>
-          <span className="text-sm font-semibold uppercase tracking-wider">Flex</span>
-        </div>
-        <UserButton />
-      </header>
-
-      {/* Nav mobile horizontale */}
-      <nav className="flex gap-1 overflow-x-auto border-b border-[var(--gris-bord)] bg-[var(--jaune)]/40 px-3 py-1 md:hidden" aria-label="Sections (mobile)">
-        {navItems.map((it) => (
-          <Link
-            key={it.href}
-            href={it.href as never}
-            className="whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-black hover:bg-black/10"
-          >
-            {it.label}
-          </Link>
-        ))}
-      </nav>
+      {/* Header mobile avec hamburger drawer (< md) */}
+      <AdminMobileTopBar locale={locale} />
 
       {/* Workshop info bar (desktop, sticky en haut du contenu) */}
-      <div
-        className="hidden items-center gap-3 border-b border-[var(--gris-bord)] bg-white/80 px-6 py-2 backdrop-blur md:flex"
-        style={{ paddingLeft: 'calc(var(--sidebar-w-collapsed) + 1.5rem)' }}
-      >
-        <OrganizationSwitcher
-          hidePersonal
-          createOrganizationMode="modal"
-          appearance={{
-            elements: { organizationSwitcherTrigger: { padding: '4px 8px', borderRadius: 999 } },
-          }}
-        />
-        <span className="text-xs text-[var(--text-secondary-60)]">
-          {workshop
-            ? `Workshop : ${workshop.name}`
-            : dbOk
-            ? 'Aucun workshop lié'
-            : 'DB indisponible'}
-        </span>
-      </div>
+      <AdminWorkshopBar workshopName={workshop?.name ?? null} />
 
       {/* Contenu principal — padding-left adapté à la sidebar */}
       <main
