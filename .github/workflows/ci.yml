@@ -41,6 +41,11 @@ jobs:
         run: pnpm prisma generate
 
       - name: Validate Prisma schema
+        # Validate exige de résoudre les env() du schéma — on injecte des
+        # dummies inline (jamais utilisés, validate ne se connecte pas).
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          DATABASE_URL_UNPOOLED: postgresql://dummy:dummy@localhost:5432/dummy
         run: pnpm prisma validate
 
       - name: Type-check
