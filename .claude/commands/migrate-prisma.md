@@ -1,6 +1,6 @@
 ---
 description: Créer et appliquer une migration Prisma en respectant la règle flex-prod (Neon main) — JAMAIS flex-v2
-allowed-tools: Read, Edit, Bash(pnpm prisma:*), Bash(pnpm db:*), Bash(git diff), Bash(git status)
+allowed-tools: Read, Edit, Bash(pnpm prisma migrate dev --create-only*), Bash(pnpm prisma migrate resolve*), Bash(pnpm prisma generate), Bash(pnpm prisma validate), Bash(pnpm prisma format), Bash(pnpm db:validate), Bash(pnpm db:generate), Bash(pnpm db:format), Bash(git diff), Bash(git status)
 ---
 
 Tu vas créer une migration Prisma pour le changement décrit ci-après. Suis
@@ -34,8 +34,8 @@ Changement demandé : $ARGUMENTS
 5. **Produis un bloc copy-paste pour yako-san** au format suivant :
 
    > ⚠️ Migration à appliquer sur **Neon `flex-prod` / branche `main`**
-   > (PAS `flex-v2`). Hostname prod actuel :
-   > `ep-broad-queen-anac9vrl-pooler.c-6.us-east-1.aws.neon.tech`.
+   > (PAS `flex-v2`). Hostname prod documenté dans `CLAUDE.md` section
+   > « Base de données ».
    >
    > ```sql
    > -- contenu de migration.sql

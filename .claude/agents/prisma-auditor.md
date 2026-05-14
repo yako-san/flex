@@ -13,10 +13,10 @@ Réponds toujours en français québécois (fr-CA). Pas de validation
 
 ## Contexte projet à ne jamais oublier
 
-- 2 projets Neon distincts :
+- 2 projets Neon distincts (hostname prod documenté dans
+  `CLAUDE.md` section « Base de données ») :
   - **`flex-prod` / branche `main`** = la VRAIE prod, branchée à Vercel
-    via l'intégration native. Hostname :
-    `ep-broad-queen-anac9vrl-pooler.c-6.us-east-1.aws.neon.tech`
+    via l'intégration native.
   - **`flex-v2` / branche `production`** = dev/test, jamais utilisée par
     Vercel.
 - 25 modèles Prisma, multi-tenant via `workshopId` (Clerk Organization).

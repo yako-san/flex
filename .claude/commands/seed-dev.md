@@ -1,6 +1,6 @@
 ---
 description: Seed la base de dev (Neon flex-v2) avec des données réalistes — refuse de toucher flex-prod
-allowed-tools: Read, Bash(pnpm:*), Bash(node:*), Bash(echo $DATABASE_URL)
+allowed-tools: Read, Edit, Write, Bash(pnpm db:generate), Bash(pnpm db:validate), Bash(pnpm exec tsx prisma/seed*), Bash(node --version), Bash(cat .env.local)
 ---
 
 Tu vas seed la base de **dev** avec des données réalistes pour qu'on
@@ -10,11 +10,8 @@ puisse tester $ARGUMENTS.
 
 **Avant toute écriture en DB**, vérifie que `DATABASE_URL` pointe bien
 vers le projet Neon `flex-v2` (dev) et **PAS** vers `flex-prod`. Le
-hostname prod à bloquer est :
-
-```
-ep-broad-queen-anac9vrl-pooler.c-6.us-east-1.aws.neon.tech
-```
+hostname prod à bloquer est documenté dans `CLAUDE.md` section
+« Base de données » — récupère-le là plutôt que de me le hardcoder ici.
 
 Si tu détectes ce hostname dans `DATABASE_URL` (via `.env.local` ou
 shell), **arrête-toi immédiatement** et demande à yako-san de switcher

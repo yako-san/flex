@@ -13,8 +13,10 @@
       "Bash(pnpm db:format)",
       "Bash(pnpm db:validate)",
       "Bash(pnpm db:generate)",
-      "Bash(pnpm prisma:*)",
-      "Bash(pnpm exec:*)",
+      "Bash(pnpm prisma generate)",
+      "Bash(pnpm prisma validate)",
+      "Bash(pnpm prisma format)",
+      "Bash(pnpm exec next lint*)",
       "Bash(git status)",
       "Bash(git status -s)",
       "Bash(git diff)",
@@ -42,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.ts|*.tsx) pnpm exec eslint --fix \"$f\" 2>/dev/null || true ;; esac"
+            "command": "f=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); case \"$f\" in *.ts|*.tsx) pnpm lint -- --fix --file \"$f\" 2>&1 || true ;; esac"
           }
         ]
       }
