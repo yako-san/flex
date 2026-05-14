@@ -226,12 +226,22 @@ dans l'UI Vercel).
   branches de travail jetables, à supprimer une fois leur PR mergée.
 - `main` est **protégée** côté GitHub : push direct refusé (HTTP 403),
   PR obligatoire. Ne pas tenter `git push origin HEAD:main` — ça échoue.
-- Branche de travail courante : `claude/resume-flex-v2-0DctE` (à supprimer
-  après merge de la PR #6 — Phase 0 UI).
-- Branches encore vivantes pendant la transition :
-  `claude/bootstrap-flex-app-v2-0Gwel` (défaut GitHub historique, à
-  basculer sur `main` quand yako-san s'en occupe dans GitHub Settings).
-- Vercel : suit `main` (le plus solide).
+  Idem pour `git push --delete origin <branch>` qui passe par le même
+  proxy et renvoie 403. La suppression de branches remote doit se faire
+  côté yako-san via https://github.com/yako-san/flex/branches → filtre
+  Merged → bulk delete. Mentionner cette étape périodiquement (toutes
+  les ~5 PR mergées) sinon les branches s'accumulent.
+- **Flux PR rapide** (décision yako-san 2026-05-13, après accumulation
+  visible de 8 branches mortes) :
+  1. Créer branche `claude/<sujet-court>` côté local
+  2. Commit + push
+  3. Créer PR via `mcp__github__create_pull_request`
+  4. Merger immédiatement via `mcp__github__merge_pull_request`
+     (squash) — pas d'attente review humaine sauf changement à risque
+     (DB destructif, prod, refactor lourd)
+  5. Supprimer branche locale (`git branch -D`)
+  6. Branche remote restera tant que yako-san ne fait pas le bulk-delete
+- Vercel : suit `main` (Production Branch = `main` confirmé 2026-05-13).
 - Commits : confiance, push direct sur la branche de travail, mais
   demander avant les opérations destructives (force-push, reset, delete
   branch, drop table).
