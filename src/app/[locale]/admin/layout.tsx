@@ -24,6 +24,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Sidebar, type SidebarItem } from '@/components/ui/sidebar';
+import { SidebarMobileDrawer } from '@/components/ui/sidebar-mobile-drawer';
 import { getActiveWorkshop } from '@/lib/workshop';
 
 export const dynamic = 'force-dynamic';
@@ -120,30 +121,33 @@ export default async function AdminLayout({ children, params }: Props) {
         }
       />
 
-      {/* Header mobile (visible < md) */}
+      {/* Header mobile (visible < md) — hamburger ouvre le drawer */}
       <header
         className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-[var(--gris-bord)] bg-[var(--jaune)] px-3 py-2 md:hidden"
         aria-label="Barre mobile"
       >
         <div className="flex items-center gap-2">
+          <SidebarMobileDrawer
+            items={navItems}
+            header={
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black text-[var(--jaune)] text-sm font-bold">
+                  F
+                </span>
+                <span className="text-sm font-semibold uppercase tracking-wider">Flex</span>
+              </div>
+            }
+            footer={
+              <div className="flex items-center justify-center py-2">
+                <UserButton />
+              </div>
+            }
+          />
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black text-[var(--jaune)] text-sm font-bold">F</span>
           <span className="text-sm font-semibold uppercase tracking-wider">Flex</span>
         </div>
         <UserButton />
       </header>
-
-      {/* Nav mobile horizontale */}
-      <nav className="flex gap-1 overflow-x-auto border-b border-[var(--gris-bord)] bg-[var(--jaune)]/40 px-3 py-1 md:hidden" aria-label="Sections (mobile)">
-        {navItems.map((it) => (
-          <Link
-            key={it.href}
-            href={it.href as never}
-            className="whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-black hover:bg-black/10"
-          >
-            {it.label}
-          </Link>
-        ))}
-      </nav>
 
       {/* Workshop info bar (desktop, sticky en haut du contenu) */}
       <div
