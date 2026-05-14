@@ -58,10 +58,31 @@ Aucune perte de données (DB Neon `flex-prod` jamais touchée par la session)
 mais les claims « livré en prod » du Sprint 4 β+ sont **techniquement
 faux** tant que la promotion n'est pas faite.
 
-## État actuel (mise à jour 2026-05-12 fin de session)
+## État actuel (mise à jour 2026-05-13 fin de session de débogage Vercel)
 
-**26 PRs mergées sur main dans la session 2026-05-12.** Toutes ces livraisons
-sont en prod sur `flex-tan.vercel.app` (Vercel suit `main`).
+### Session 2026-05-13 — debug infra Vercel + ajouts tests + drawer mobile
+
+**Découverte majeure** : Vercel avait sa **Production Branch** configurée
+sur `claude/bootstrap-flex-app-v2-0Gwel` (ancienne branche bootstrap) au
+lieu de `main`. Conséquence : tous les merges sur `main` depuis la mise
+en service ne déclenchaient que des **Preview** deployments — Production
+servait un build de la branche bootstrap, datant d'avant les Sprints 1-4.
+Donc même si le primer disait « 26 PRs livrées en prod », **prod servait
+en fait du vieux code**.
+
+**Fix livré** :
+1. Vercel Settings → Environments → Production → Production Branch = `main` (yako-san)
+2. `CRON_SECRET` configuré en env Production Vercel (yako-san)
+3. Fix middleware Clerk : `/api/cron/*` ajouté à `PUBLIC_ROUTES` (PR #29)
+4. Workflow GitHub Actions `ci.yml` (PR #30) : test + typecheck + build à chaque PR
+5. 39 tests sur `bdcs/actions.ts` (patch checkbox/eval/task/cmd/remises/avance/notes) (PR #30)
+6. PR #31 ouverte : drawer hamburger mobile (remplace nav horizontale scrollable) — **en attente validation visuelle yako-san sur Vercel preview**
+
+**Validation** : `curl https://flex-tan.vercel.app/api/cron/purge-photos?token=<SECRET>` → `HTTP/2 200`. Cron Vercel armé à 03:00 UTC tous les jours.
+
+**Tests** : 693 passants (16 skipped). type-check + build propres.
+
+### Récap session 2026-05-12
 
 ### Récap session 2026-05-12
 
@@ -86,8 +107,9 @@ sont en prod sur `flex-tan.vercel.app` (Vercel suit `main`).
 |---|---|
 | Vraies pages tuto `/admin/aide/01-recevoir-velo` etc. | 11 cards avec blurbs courts — pas de pages détaillées. Risque d'invention sans validation user. |
 | Audit Lighthouse / axe-core 90+ | Besoin Chrome + serveur tournant (Vercel preview). À faire manuellement. |
-| Tests Server Actions Sprint 2.8 photos (upload/delete/reorder) | Couverture incomplète. Demande mock Prisma + Vercel Blob. |
-| Refonte sidebar mobile en drawer | Actuellement nav horizontale scrollable < md, pourrait être un drawer hamburger plus ergonomique. |
+| ~~Tests Server Actions Sprint 2.8 photos~~ | ✅ Livré (PR #28). 37 tests sur photo-actions. |
+| Tests Server Actions admin/* (clients, velos, factures, ventes, pos, etc.) | 19 fichiers `actions.ts` non testés. Pattern : la plupart utilisent `redirect()` → besoin de mocker `next/navigation`. `bdcs/actions.ts` est couvert pour les 7 actions de patch (PR #30, 39 tests). |
+| ~~Refonte sidebar mobile en drawer~~ | ✅ Livré PR #31 (2026-05-13). `SidebarMobileDrawer` slide-in left, backdrop, escape, scroll-lock. **Attente validation visuelle sur preview Vercel avant merge.** |
 | i18n EN-CA des chaînes Sprint 4 | Beaucoup de FR hardcodées (eyebrows, sublines, labels). À externaliser si scale autres ateliers. |
 | Refonte BdtSidecard mobile | Sur mobile actuellement, la carte gauche prend full-width puis les blocs Services/Pièces stack. À tester sur viewport iPhone. |
 | ~~Job purge périodique Vercel Blob~~ | ✅ Livré (session 2026-05-12 suite). Cron `/api/cron/purge-photos` (`vercel.json` schedule `0 3 * * *`) appelle `purgeOrphanPhotos` qui supprime Blob + row pour `deletedAt > 30 jours`. Protégé par `CRON_SECRET` (à configurer côté Vercel). 11 tests sur `purge.ts`. |
