@@ -15,6 +15,7 @@ export const PUBLIC_ROUTES = [
   '/:locale/dev/(.*)',  // doc UI publique (Sprint 4 — voir /dev/ui-kit)
   '/api/health',
   '/api/workshop/logo',
+  '/api/cron/(.*)',  // Vercel Cron — auth gérée par CRON_SECRET dans la route
 ] as const;
 
 const isPublicRoute = createRouteMatcher([...PUBLIC_ROUTES]);
