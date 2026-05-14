@@ -41,6 +41,23 @@ une refonte de page, consulte le PNG correspondant.**
 ⚠ Découverte critique : le **layout BDT detail** est **3 colonnes** (pas 4 zones
 verticales empilées comme initialement décrit). Voir `1b-bon-de-travail-éval.png`.
 
+## ⚠ Alerte config Vercel découverte 2026-05-13
+
+**Vercel n'a pas `main` configurée comme Production Branch.** Tous les
+merges sur `main` (Sprint 4 β+, photos Sprint 2.8, mon cron purge, etc.)
+ont été déployés en **Preview** seulement, jamais promus en Production.
+Production Current sert un vieux Redeploy de la veille.
+
+**Fix en 2 étapes** (à faire avant toute autre action) :
+
+1. https://vercel.com/yako-sans-projects/flex/settings/git → **Production Branch** = `main` → Save
+2. `npx vercel promote https://flex-an6eb94a3-yako-sans-projects.vercel.app --scope=yako-sans-projects`
+3. Vérif : `curl -i https://flex-tan.vercel.app/api/cron/purge-photos` doit renvoyer `HTTP/2 401` (route déployée).
+
+Aucune perte de données (DB Neon `flex-prod` jamais touchée par la session)
+mais les claims « livré en prod » du Sprint 4 β+ sont **techniquement
+faux** tant que la promotion n'est pas faite.
+
 ## État actuel (mise à jour 2026-05-12 fin de session)
 
 **26 PRs mergées sur main dans la session 2026-05-12.** Toutes ces livraisons
