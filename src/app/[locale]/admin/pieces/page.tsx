@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { Prisma } from '@prisma/client';
-import { Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
+import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
 
 export const dynamic = 'force-dynamic';
@@ -75,32 +75,23 @@ export default async function PiecesPage({ params, searchParams }: Props) {
         title="Pièces"
         subline={`${pieces.length} pièce${pieces.length === 1 ? '' : 's'}${trimmed ? ` filtré sur « ${trimmed} »` : ''}`}
         actions={
-          <>
+          <ToolbarBlock>
             <SearchBar placeholder="SKU, code-barre, nom, catégorie…" />
-            <a
-              href="/api/admin/export/pieces"
-              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
-            >
+            <a href="/api/admin/export/pieces" className="btn-secondary" style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}>
               ↓ CSV
             </a>
             <a
               href={`/api/admin/export/labels${trimmed ? `?categorie=${encodeURIComponent(trimmed)}` : '?withSku=1'}`}
               target="_blank"
               rel="noreferrer"
-              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
+              className="btn-secondary"
+              style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}
               title="Étiquettes imprimables A4 avec code-barre"
             >
-              🏷️ Étiquettes
+              Étiquettes
             </a>
-            <Link
-              href={`/${locale}/admin/pieces/new`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
-              aria-label="Nouvelle pièce"
-              title="Nouvelle pièce"
-            >
-              <Plus size={20} />
-            </Link>
-          </>
+            <AddButton href={`/${locale}/admin/pieces/new`} title="Nouvelle pièce" />
+          </ToolbarBlock>
         }
       />
 

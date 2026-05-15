@@ -59,26 +59,34 @@ export default async function AdminLayout({ children, params }: Props) {
   const { workshop, dbOk } = await safeWorkshop();
 
   return (
-    <div className="min-h-screen">
-      {/* Sidebar fixe latérale jaune V1 (desktop ≥ md). Hover-expand. */}
-      <AdminSidebar locale={locale} />
-
-      {/* Header mobile avec hamburger drawer (< md) */}
+    /* Fond global gris V1 (#929292). Layout flex row desktop, colonne mobile. */
+    <div
+      className="min-h-screen bg-[var(--app-bg)] md:flex md:h-screen md:overflow-hidden md:p-5"
+      style={{ gap: '20px' }}
+    >
+      {/* Top bar mobile (< md) — pill jaune comme V1 */}
       <AdminMobileTopBar locale={locale} />
 
-      {/* Workshop info bar (desktop, sticky en haut du contenu) */}
-      <AdminWorkshopBar workshopName={workshop?.name ?? null} />
-
-      {/* Contenu principal — padding-left adapté à la sidebar */}
-      <main
-        className="overflow-auto p-4 sm:p-6 md:p-8"
-        style={{ paddingLeft: 'var(--sidebar-w-collapsed)' }}
+      {/* Wrapper sidebar desktop — maintient 60px dans le flux flex.
+          La sidebar elle-même se positionne en absolute lors du hover-expand
+          pour ne pas pousser le contenu. */}
+      <div
+        className="relative hidden shrink-0 self-stretch md:block"
+        style={{ width: 'var(--sidebar-w-collapsed)' }}
       >
-        <div className="md:pl-6">
+        <AdminSidebar locale={locale} />
+      </div>
+
+      {/* Panneau principal — verre sombre V1 (rgba(0,0,0,0.20) sur #929292).
+          data-admin-theme="dark" → CSS vars texte basculées en blanc-alpha. */}
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden md:rounded-[50px] md:bg-black/20" data-admin-theme="dark">
+        <AdminWorkshopBar workshopName={workshop?.name ?? null} />
+
+        <main className="flex-1 overflow-auto">
           {!dbOk ? (
             <div
               role="alert"
-              className="mb-6 rounded-xl border border-[#ffeaa7] bg-[#fff3cd] px-4 py-2 text-sm"
+              className="mx-6 mt-4 rounded-xl border border-[#ffeaa7] bg-[#fff3cd] px-4 py-2 text-sm"
             >
               ⚠️ Base de données indisponible — certaines pages peuvent être
               incomplètes.{' '}
@@ -88,8 +96,8 @@ export default async function AdminLayout({ children, params }: Props) {
             </div>
           ) : null}
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
@@ -104,7 +112,7 @@ function DegradedLayout({
   message: string;
 }) {
   return (
-    <div className="min-h-screen bg-[var(--gris-fond)]" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
+    <div className="min-h-screen bg-[var(--app-bg)]">
       <div
         role="alert"
         className="flex items-center justify-between gap-4 border-b border-[#ffeaa7] bg-[#fff3cd] px-6 py-2 text-sm"

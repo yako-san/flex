@@ -147,14 +147,13 @@ describe('Sidebar', () => {
     expect(screen.queryByLabelText(/\d+ Dashboard/)).toBeNull();
   });
 
-  it("fixed left-0 z-40 hidden md:flex (sidebar desktop seulement)", () => {
+  it("hidden md:flex rounded-[50px] (sidebar desktop pill V1)", () => {
     render(<Sidebar items={ITEMS} />);
     const aside = screen.getByLabelText('Navigation principale');
     const cls = aside.className;
-    expect(cls).toContain('fixed');
-    expect(cls).toContain('left-0');
     expect(cls).toContain('hidden');
     expect(cls).toContain('md:flex');
+    expect(cls).toContain('rounded-[50px]');
   });
 
   it("title attribute sur lien si sidebar collapsed (tooltip)", () => {

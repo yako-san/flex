@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { Prisma } from '@prisma/client';
-import { Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
 import { Pill } from '@/components/ui/pill';
+import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
 
 export const dynamic = 'force-dynamic';
@@ -56,23 +56,13 @@ export default async function VentesPage({ params, searchParams }: Props) {
         title="Ventes directes"
         subline={`${ventes.length} vente${ventes.length === 1 ? '' : 's'} · ${total.toFixed(2)} $${trimmed ? ` filtré sur « ${trimmed} »` : ''}`}
         actions={
-          <>
+          <ToolbarBlock>
             <SearchBar placeholder="Facture, client, notes…" />
-            <a
-              href="/api/admin/export/ventes"
-              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
-            >
+            <a href="/api/admin/export/ventes" className="btn-secondary" style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}>
               ↓ CSV
             </a>
-            <Link
-              href={`/${locale}/admin/ventes/new`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
-              aria-label="Nouvelle vente"
-              title="Nouvelle vente"
-            >
-              <Plus size={20} />
-            </Link>
-          </>
+            <AddButton href={`/${locale}/admin/ventes/new`} title="Nouvelle vente" />
+          </ToolbarBlock>
         }
       />
 

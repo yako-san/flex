@@ -57,28 +57,29 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
 
   return (
     <form action={formAction} style={{ maxWidth: 720 }}>
-      <div style={rowStyle}>
-        <label style={labelStyle}>Numéro vélo</label>
+      <div className="mb-4">
+        <label className="label-system">Numéro vélo</label>
         <input
           name="veloNumero"
           type="number"
           min="1"
           defaultValue={v('veloNumero')}
           placeholder={initial ? '' : 'Auto-incrément depuis le compteur'}
-          style={{ ...inputStyle, width: 200 }}
+          className="input-system"
+          style={{ width: 200 }}
         />
         {!initial ? (
           <p style={hintStyle}>Laissé vide → numéro suivant attribué automatiquement.</p>
         ) : null}
       </div>
 
-      <div style={rowStyle}>
-        <label style={labelStyle}>Client *</label>
+      <div className="mb-4">
+        <label className="label-system">Client *</label>
         <select
           name="clientId"
           defaultValue={initial?.clientId ?? defaultClientId ?? ''}
           required
-          style={inputStyle}
+          className="input-system"
         >
           <option value="">— sélectionner un client —</option>
           {clients.map((c) => (
@@ -90,13 +91,13 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
         {fe.clientId ? <Err msg={fe.clientId} /> : null}
       </div>
 
-      <div style={rowStyle}>
-        <label style={labelStyle}>Marque</label>
+      <div className="mb-4">
+        <label className="label-system">Marque</label>
         <select
           name="marqueId"
           value={selectedMarqueId}
           onChange={(e) => setSelectedMarqueId(e.target.value)}
-          style={inputStyle}
+          className="input-system"
         >
           <option value="">— aucune —</option>
           {marques.map((m) => (
@@ -108,18 +109,18 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
         </select>
       </div>
 
-      <div style={rowStyle}>
-        <label style={labelStyle}>Modèle</label>
-        <input name="modele" defaultValue={v('modele')} style={inputStyle} />
+      <div className="mb-4">
+        <label className="label-system">Modèle</label>
+        <input name="modele" defaultValue={v('modele')} className="input-system" />
       </div>
 
       <div style={twoColStyle}>
         <div>
-          <label style={labelStyle}>Couleur</label>
-          <input name="couleur" defaultValue={v('couleur')} style={inputStyle} />
+          <label className="label-system">Couleur</label>
+          <input name="couleur" defaultValue={v('couleur')} className="input-system" />
         </div>
         <div>
-          <label style={labelStyle}>
+          <label className="label-system">
             Taille
             {taillesPourMarque.length > 0 ? (
               <span style={{ color: '#888', fontWeight: 400, marginLeft: 4 }}>
@@ -133,7 +134,7 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
                 name="taille"
                 list="tailles-disponibles"
                 defaultValue={v('taille')}
-                style={inputStyle}
+                className="input-system"
                 placeholder={taillesPourMarque.join(' / ')}
               />
               <datalist id="tailles-disponibles">
@@ -143,19 +144,19 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
               </datalist>
             </>
           ) : (
-            <input name="taille" defaultValue={v('taille')} style={inputStyle} />
+            <input name="taille" defaultValue={v('taille')} className="input-system" />
           )}
         </div>
       </div>
 
-      <div style={rowStyle}>
-        <label style={labelStyle}>N° de série</label>
-        <input name="numeroSerie" defaultValue={v('numeroSerie')} style={inputStyle} />
+      <div className="mb-4">
+        <label className="label-system">N° de série</label>
+        <input name="numeroSerie" defaultValue={v('numeroSerie')} className="input-system" />
       </div>
 
-      <div style={rowStyle}>
-        <label style={labelStyle}>Statut *</label>
-        <select name="status" defaultValue={initial?.status ?? 'RV'} style={inputStyle}>
+      <div className="mb-4">
+        <label className="label-system">Statut *</label>
+        <select name="status" defaultValue={initial?.status ?? 'RV'} className="input-system">
           {STATUSES.map((s) => (
             <option key={s.value} value={s.value}>
               {s.label}
@@ -167,11 +168,11 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
       <h3 style={h3Style}>Mécaniciens assignés</h3>
       <div style={threeColStyle}>
         <div>
-          <label style={labelStyle}>Évaluation</label>
+          <label className="label-system">Évaluation</label>
           <select
             name="evalMecanoId"
             defaultValue={initial?.evalMecanoId ?? ''}
-            style={inputStyle}
+            className="input-system"
           >
             <option value="">— aucun —</option>
             {equipe.map((e) => (
@@ -182,11 +183,11 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
           </select>
         </div>
         <div>
-          <label style={labelStyle}>Mécanique</label>
+          <label className="label-system">Mécanique</label>
           <select
             name="mecaMecanoId"
             defaultValue={initial?.mecaMecanoId ?? ''}
-            style={inputStyle}
+            className="input-system"
           >
             <option value="">— aucun —</option>
             {equipe.map((e) => (
@@ -197,11 +198,11 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
           </select>
         </div>
         <div>
-          <label style={labelStyle}>Contrôle qualité</label>
+          <label className="label-system">Contrôle qualité</label>
           <select
             name="ctrlMecanoId"
             defaultValue={initial?.ctrlMecanoId ?? ''}
-            style={inputStyle}
+            className="input-system"
           >
             <option value="">— aucun —</option>
             {equipe.map((e) => (
@@ -214,41 +215,32 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
       </div>
 
       <h3 style={h3Style}>Notes</h3>
-      <div style={rowStyle}>
-        <label style={labelStyle}>Note vélo (interne)</label>
+      <div className="mb-4">
+        <label className="label-system">Note vélo (interne)</label>
         <textarea
           name="noteVelo"
           defaultValue={v('noteVelo')}
           rows={2}
-          style={{ ...inputStyle, fontFamily: 'inherit', resize: 'vertical' }}
+          className="input-system"
         />
       </div>
-      <div style={rowStyle}>
-        <label style={labelStyle}>Notes libres</label>
+      <div className="mb-4">
+        <label className="label-system">Notes libres</label>
         <textarea
           name="notes"
           defaultValue={v('notes')}
           rows={3}
-          style={{ ...inputStyle, fontFamily: 'inherit', resize: 'vertical' }}
+          className="input-system"
         />
       </div>
 
       {state?.error ? (
-        <div
-          style={{
-            background: '#ffebee',
-            border: '1px solid #f44336',
-            color: '#c62828',
-            padding: '0.75rem',
-            borderRadius: 4,
-            marginBottom: '1rem',
-          }}
-        >
+        <div className="mb-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">
           {state.error}
         </div>
       ) : null}
 
-      <button type="submit" disabled={pending} style={btnStyle(pending)}>
+      <button type="submit" disabled={pending} className="btn-primary">
         {pending
           ? initial
             ? 'Mise à jour…'
@@ -262,10 +254,9 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
 }
 
 function Err({ msg }: { msg: string }) {
-  return <div style={{ color: '#c62828', fontSize: '0.85rem', marginTop: '0.25rem' }}>{msg}</div>;
+  return <div className="mt-1 text-xs text-red-600">{msg}</div>;
 }
 
-const rowStyle: React.CSSProperties = { marginBottom: '1rem' };
 const twoColStyle: React.CSSProperties = {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
@@ -278,21 +269,6 @@ const threeColStyle: React.CSSProperties = {
   gap: '1rem',
   marginBottom: '1rem',
 };
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '0.85rem',
-  fontWeight: 500,
-  color: '#444',
-  marginBottom: '0.3rem',
-};
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '0.5rem 0.6rem',
-  fontSize: '0.95rem',
-  border: '1px solid #ccc',
-  borderRadius: 4,
-  background: 'white',
-};
 const hintStyle: React.CSSProperties = {
   fontSize: '0.8rem',
   color: '#888',
@@ -304,12 +280,3 @@ const h3Style: React.CSSProperties = {
   marginBottom: '0.75rem',
   color: '#333',
 };
-const btnStyle = (pending: boolean): React.CSSProperties => ({
-  padding: '0.7rem 1.5rem',
-  fontSize: '0.95rem',
-  background: pending ? '#999' : '#1a1a1a',
-  color: 'white',
-  border: 0,
-  borderRadius: 4,
-  cursor: pending ? 'wait' : 'pointer',
-});

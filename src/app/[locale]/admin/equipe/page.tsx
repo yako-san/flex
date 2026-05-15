@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
-import { Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
 import { Pill } from '@/components/ui/pill';
+import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,14 +30,9 @@ export default async function EquipePage({ params }: Props) {
         title="Équipe atelier"
         subline={`${actifs} actif${actifs === 1 ? '' : 's'} · ${equipe.length - actifs} inactif${equipe.length - actifs <= 1 ? '' : 's'}`}
         actions={
-          <Link
-            href={`/${locale}/admin/equipe/new`}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
-            aria-label="Nouveau membre"
-            title="Nouveau membre"
-          >
-            <Plus size={20} />
-          </Link>
+          <ToolbarBlock>
+            <AddButton href={`/${locale}/admin/equipe/new`} title="Nouveau membre" />
+          </ToolbarBlock>
         }
       />
 

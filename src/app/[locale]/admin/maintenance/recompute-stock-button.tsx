@@ -10,30 +10,18 @@ export function RecomputeStockButton() {
   );
 
   return (
-    <form action={formAction}>
+    <form action={formAction} className="flex flex-col gap-3">
       {state?.error ? (
-        <div style={{ background: '#ffebee', color: '#c62828', padding: '0.6rem', borderRadius: 4, marginBottom: '0.75rem', fontSize: '0.9rem' }}>
+        <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">
           {state.error}
         </div>
       ) : null}
       {state?.success ? (
-        <div style={{ background: '#e8f5e9', color: '#1b5e20', padding: '0.6rem', borderRadius: 4, marginBottom: '0.75rem', fontSize: '0.9rem' }}>
+        <div className="rounded-xl border border-green-300 bg-green-50 p-3 text-sm text-green-800">
           ✓ {state.success}
         </div>
       ) : null}
-      <button
-        type="submit"
-        disabled={pending}
-        style={{
-          padding: '0.55rem 1.1rem',
-          background: pending ? '#999' : '#1565c0',
-          color: 'white',
-          border: 0,
-          borderRadius: 4,
-          cursor: pending ? 'wait' : 'pointer',
-          fontSize: '0.9rem',
-        }}
-      >
+      <button type="submit" disabled={pending} className="btn-primary self-start">
         {pending ? 'Recalcul en cours…' : '🔄 Recalculer stockPhysique/stockReserve depuis les mouvements'}
       </button>
     </form>

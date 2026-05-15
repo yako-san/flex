@@ -1,10 +1,10 @@
 import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { Prisma } from '@prisma/client';
-import { Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
+import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
 
 export const dynamic = 'force-dynamic';
@@ -65,29 +65,16 @@ export default async function ClientsPage({ params, searchParams }: Props) {
         title="Clients"
         subline={`${clients.length} client${clients.length === 1 ? '' : 's'}${trimmed ? ` filtré sur « ${trimmed} »` : ''}`}
         actions={
-          <>
+          <ToolbarBlock>
             <SearchBar placeholder="Nom, courriel, tél, notes…" />
-            <a
-              href="/api/admin/export/clients"
-              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
-            >
+            <a href="/api/admin/export/clients" className="btn-secondary" style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}>
               ↓ CSV
             </a>
-            <Link
-              href={`/${locale}/admin/clients/import`}
-              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
-            >
-              ↑ Import CSV
+            <Link href={`/${locale}/admin/clients/import`} className="btn-secondary" style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}>
+              ↑ Import
             </Link>
-            <Link
-              href={`/${locale}/admin/clients/new`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
-              aria-label="Nouveau client"
-              title="Nouveau client"
-            >
-              <Plus size={20} />
-            </Link>
-          </>
+            <AddButton href={`/${locale}/admin/clients/new`} title="Nouveau client" />
+          </ToolbarBlock>
         }
       />
 

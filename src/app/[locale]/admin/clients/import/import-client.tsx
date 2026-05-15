@@ -34,20 +34,20 @@ export function ImportClientsPage() {
   return (
     <div>
       <h2 style={h2}>1. Téléverse ton fichier CSV</h2>
-      <form action={previewAction} style={{ marginBottom: '2rem' }}>
+      <form action={previewAction} className="mb-8">
         <input
           type="file"
           name="csvFile"
           accept=".csv,text/csv"
           required
-          style={{ marginBottom: '0.75rem' }}
+          className="mb-3"
         />
         <br />
-        <button type="submit" disabled={previewPending} style={btn(previewPending)}>
+        <button type="submit" disabled={previewPending} className="btn-primary">
           {previewPending ? 'Analyse…' : 'Analyser le CSV'}
         </button>
         {previewState?.error ? (
-          <div style={errBox}>{previewState.error}</div>
+          <div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{previewState.error}</div>
         ) : null}
       </form>
 
@@ -102,7 +102,7 @@ function PreviewAndImport({
                     name={`map_${f.key}`}
                     value={mapping[f.key] ?? ''}
                     onChange={(e) => setMapping({ ...mapping, [f.key]: e.target.value })}
-                    style={selectStyle}
+                    className="input-system"
                   >
                     <option value="">— ignorer —</option>
                     {headers.map((h) => (
@@ -154,7 +154,8 @@ function PreviewAndImport({
             name="dryRun"
             value="1"
             disabled={importPending}
-            style={{ ...btn(importPending), background: importPending ? '#999' : '#1565c0' }}
+            className="btn-primary"
+            style={{ background: importPending ? '#999' : '#1565c0' }}
           >
             {importPending ? 'Test…' : '🧪 Dry-run (compter sans insérer)'}
           </button>
@@ -163,15 +164,17 @@ function PreviewAndImport({
             name="dryRun"
             value="0"
             disabled={importPending}
-            style={btn(importPending)}
+            className="btn-primary"
           >
             {importPending ? 'Import…' : '⬇️ Importer pour de vrai'}
           </button>
         </div>
 
-        {importState?.error ? <div style={errBox}>{importState.error}</div> : null}
+        {importState?.error ? (
+          <div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{importState.error}</div>
+        ) : null}
         {importState && !importState.error ? (
-          <div style={successBox}>
+          <div className="mt-4 rounded-xl border border-green-400 bg-green-50 p-3 text-sm text-green-800">
             ✓ {importState.inserted ?? 0} ajoutés · {importState.skipped ?? 0} ignorés (doublons){importState.errors && importState.errors.length > 0 ? ` · ${importState.errors.length} erreurs` : ''}
             {importState.errors && importState.errors.length > 0 ? (
               <details style={{ marginTop: '0.5rem' }}>
@@ -194,36 +197,3 @@ const h2: React.CSSProperties = { fontSize: '1.15rem', marginTop: '1.5rem', marg
 const tbl: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' };
 const th: React.CSSProperties = { textAlign: 'left', padding: '0.5rem 0.6rem', fontWeight: 600, color: '#666', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
 const td: React.CSSProperties = { padding: '0.4rem 0.6rem' };
-const selectStyle: React.CSSProperties = {
-  padding: '0.35rem 0.5rem',
-  fontSize: '0.9rem',
-  border: '1px solid #ccc',
-  borderRadius: 4,
-  background: 'white',
-  width: '100%',
-};
-const btn = (p: boolean): React.CSSProperties => ({
-  padding: '0.6rem 1.2rem',
-  background: p ? '#999' : '#1a1a1a',
-  color: 'white',
-  border: 0,
-  borderRadius: 4,
-  cursor: p ? 'wait' : 'pointer',
-  fontSize: '0.95rem',
-});
-const errBox: React.CSSProperties = {
-  background: '#ffebee',
-  border: '1px solid #f44336',
-  color: '#c62828',
-  padding: '0.75rem',
-  borderRadius: 4,
-  marginTop: '1rem',
-};
-const successBox: React.CSSProperties = {
-  background: '#e8f5e9',
-  border: '1px solid #2e7d32',
-  color: '#1b5e20',
-  padding: '0.75rem',
-  borderRadius: 4,
-  marginTop: '1rem',
-};

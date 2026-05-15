@@ -16,8 +16,8 @@ export function AddItemForm({ venteId, pieces }: Props) {
     <form action={formAction} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
       <input type="hidden" name="venteId" value={venteId} />
       <div style={{ flex: '1 1 360px', minWidth: 240 }}>
-        <label style={labelStyle}>Pièce</label>
-        <select name="pieceId" required style={inputStyle} defaultValue="">
+        <label className="label-system">Pièce</label>
+        <select name="pieceId" required className="input-system" defaultValue="">
           <option value="" disabled>— Choisir une pièce —</option>
           {pieces.map((p) => (
             <option key={p.id} value={p.id}>
@@ -27,7 +27,7 @@ export function AddItemForm({ venteId, pieces }: Props) {
         </select>
       </div>
       <div style={{ width: 100 }}>
-        <label style={labelStyle}>Qté</label>
+        <label className="label-system">Qté</label>
         <input
           name="qty"
           type="number"
@@ -35,44 +35,20 @@ export function AddItemForm({ venteId, pieces }: Props) {
           min="1"
           defaultValue="1"
           required
-          style={inputStyle}
+          className="input-system"
         />
       </div>
       <button
         type="submit"
         disabled={pending}
-        style={{
-          padding: '0.55rem 1.1rem',
-          background: pending ? '#999' : '#1a1a1a',
-          color: 'white',
-          border: 0,
-          borderRadius: 4,
-          cursor: pending ? 'wait' : 'pointer',
-          fontSize: '0.95rem',
-          height: 38,
-        }}
+        className="btn-primary"
+        style={{ height: 38 }}
       >
         {pending ? 'Ajout…' : '+ Ajouter'}
       </button>
       {state?.error ? (
-        <div style={{ width: '100%', color: '#c62828', fontSize: '0.85rem' }}>{state.error}</div>
+        <div style={{ width: '100%' }} className="mt-1 text-xs text-red-600">{state.error}</div>
       ) : null}
     </form>
   );
 }
-
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '0.85rem',
-  fontWeight: 500,
-  color: '#444',
-  marginBottom: '0.3rem',
-};
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '0.5rem 0.6rem',
-  fontSize: '0.95rem',
-  border: '1px solid #ccc',
-  borderRadius: 4,
-  background: 'white',
-};

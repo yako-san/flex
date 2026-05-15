@@ -22,50 +22,50 @@ export function PieceForm({ initial }: Props) {
   return (
     <form action={formAction} style={{ maxWidth: 800 }}>
       <h3 style={h3}>Identification</h3>
-      <label style={lbl}>Nom canonique *</label>
+      <label className="label-system">Nom canonique *</label>
       <input
         name="nomCanonical"
         defaultValue={v('nomCanonical')}
         placeholder='ex "Schwalbe, Marathon, 700C x 35"'
         required
-        style={inp}
+        className="input-system"
       />
       {fe.nomCanonical ? <Err msg={fe.nomCanonical} /> : null}
 
       <div style={threeCol}>
         <div>
-          <label style={lbl}>Code legacy (v1)</label>
-          <input name="legacyCode" defaultValue={v('legacyCode')} placeholder="P00001" style={inp} />
+          <label className="label-system">Code legacy (v1)</label>
+          <input name="legacyCode" defaultValue={v('legacyCode')} placeholder="P00001" className="input-system" />
         </div>
         <div>
-          <label style={lbl}>SKU</label>
-          <input name="sku" defaultValue={v('sku')} placeholder="79-347" style={inp} />
+          <label className="label-system">SKU</label>
+          <input name="sku" defaultValue={v('sku')} placeholder="79-347" className="input-system" />
         </div>
         <div>
-          <label style={lbl}>Code-barre</label>
-          <input name="codeBarre" defaultValue={v('codeBarre')} style={inp} />
-        </div>
-      </div>
-
-      <div style={twoCol}>
-        <div>
-          <label style={lbl}>Catégorie</label>
-          <input name="categorie" defaultValue={v('categorie')} placeholder="2. Transmission, Chaines" style={inp} />
-        </div>
-        <div>
-          <label style={lbl}>Fournisseur</label>
-          <input name="fournisseur" defaultValue={v('fournisseur')} placeholder="Babac, HLC, C&L..." style={inp} />
+          <label className="label-system">Code-barre</label>
+          <input name="codeBarre" defaultValue={v('codeBarre')} className="input-system" />
         </div>
       </div>
 
       <div style={twoCol}>
         <div>
-          <label style={lbl}>Groupe (sous-classification optionnelle)</label>
-          <input name="groupe" defaultValue={v('groupe')} placeholder="ex. 11-vit, 12-vit" style={inp} />
+          <label className="label-system">Catégorie</label>
+          <input name="categorie" defaultValue={v('categorie')} placeholder="2. Transmission, Chaines" className="input-system" />
         </div>
         <div>
-          <label style={lbl}>Notes (libres)</label>
-          <input name="notes" defaultValue={v('notes')} placeholder="ex. Lot mars, à tester" style={inp} />
+          <label className="label-system">Fournisseur</label>
+          <input name="fournisseur" defaultValue={v('fournisseur')} placeholder="Babac, HLC, C&L..." className="input-system" />
+        </div>
+      </div>
+
+      <div style={twoCol}>
+        <div>
+          <label className="label-system">Groupe (sous-classification optionnelle)</label>
+          <input name="groupe" defaultValue={v('groupe')} placeholder="ex. 11-vit, 12-vit" className="input-system" />
+        </div>
+        <div>
+          <label className="label-system">Notes (libres)</label>
+          <input name="notes" defaultValue={v('notes')} placeholder="ex. Lot mars, à tester" className="input-system" />
         </div>
       </div>
 
@@ -76,15 +76,15 @@ export function PieceForm({ initial }: Props) {
       </p>
       <div style={threeCol}>
         <div>
-          <label style={lbl}>Prix achat</label>
-          <input name="prixAchat" type="number" step="0.01" min="0" defaultValue={v('prixAchat')} style={inp} />
+          <label className="label-system">Prix achat</label>
+          <input name="prixAchat" type="number" step="0.01" min="0" defaultValue={v('prixAchat')} className="input-system" />
         </div>
         <div>
-          <label style={lbl}>Prix base (groupe)</label>
-          <input name="prixBase" type="number" step="0.01" min="0" defaultValue={v('prixBase')} style={inp} />
+          <label className="label-system">Prix base (groupe)</label>
+          <input name="prixBase" type="number" step="0.01" min="0" defaultValue={v('prixBase')} className="input-system" />
         </div>
         <div>
-          <label style={lbl}>Prix vente HT *</label>
+          <label className="label-system">Prix vente HT *</label>
           <input
             name="prixVente"
             type="number"
@@ -92,19 +92,19 @@ export function PieceForm({ initial }: Props) {
             min="0"
             defaultValue={v('prixVente')}
             required
-            style={inp}
+            className="input-system"
           />
           {fe.prixVente ? <Err msg={fe.prixVente} /> : null}
         </div>
       </div>
       <div style={twoCol}>
         <div>
-          <label style={lbl}>Prix cost (unitaire)</label>
-          <input name="prixCost" type="number" step="0.01" min="0" defaultValue={v('prixCost')} style={inp} />
+          <label className="label-system">Prix cost (unitaire)</label>
+          <input name="prixCost" type="number" step="0.01" min="0" defaultValue={v('prixCost')} className="input-system" />
         </div>
         <div>
-          <label style={lbl}>Prix BDC (cible vente)</label>
-          <input name="prixBdc" type="number" step="0.01" min="0" defaultValue={v('prixBdc')} style={inp} />
+          <label className="label-system">Prix BDC (cible vente)</label>
+          <input name="prixBdc" type="number" step="0.01" min="0" defaultValue={v('prixBdc')} className="input-system" />
         </div>
       </div>
 
@@ -116,23 +116,23 @@ export function PieceForm({ initial }: Props) {
       <h3 style={h3}>Stock</h3>
       <div style={twoCol}>
         <div>
-          <label style={lbl}>Stock physique</label>
+          <label className="label-system">Stock physique</label>
           <input
             name="stockPhysique"
             type="number"
             min="0"
             defaultValue={initial?.stockPhysique ?? 0}
-            style={inp}
+            className="input-system"
           />
         </div>
         <div>
-          <label style={lbl}>Stock réservé (engagé sur BDT)</label>
+          <label className="label-system">Stock réservé (engagé sur BDT)</label>
           <input
             name="stockReserve"
             type="number"
             min="0"
             defaultValue={initial?.stockReserve ?? 0}
-            style={inp}
+            className="input-system"
           />
         </div>
       </div>
@@ -141,9 +141,9 @@ export function PieceForm({ initial }: Props) {
         c&apos;est une saisie manuelle.
       </p>
 
-      {state?.error ? <div style={errBox}>{state.error}</div> : null}
+      {state?.error ? <div className="mb-3 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{state.error}</div> : null}
 
-      <button type="submit" disabled={pending} style={btn(pending)}>
+      <button type="submit" disabled={pending} className="btn-primary">
         {pending ? '…' : initial ? 'Enregistrer' : 'Créer la pièce'}
       </button>
     </form>
@@ -154,10 +154,6 @@ function Err({ msg }: { msg: string }) {
   return <div style={{ color: '#c62828', fontSize: '0.85rem', marginTop: '-0.6rem', marginBottom: '0.5rem' }}>{msg}</div>;
 }
 
-const lbl: React.CSSProperties = { display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#444', marginBottom: '0.3rem' };
-const inp: React.CSSProperties = { width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.95rem', border: '1px solid #ccc', borderRadius: 4, marginBottom: '0.85rem', background: 'white' };
 const h3: React.CSSProperties = { fontSize: '1rem', marginTop: '1.5rem', marginBottom: '0.75rem', color: '#333' };
 const twoCol: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' };
 const threeCol: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' };
-const errBox: React.CSSProperties = { background: '#ffebee', border: '1px solid #f44336', color: '#c62828', padding: '0.6rem', borderRadius: 4, marginBottom: '0.75rem' };
-const btn = (p: boolean): React.CSSProperties => ({ padding: '0.6rem 1.2rem', background: p ? '#999' : '#1a1a1a', color: 'white', border: 0, borderRadius: 4, cursor: p ? 'wait' : 'pointer', fontSize: '0.95rem' });

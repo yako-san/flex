@@ -70,10 +70,10 @@ describe('PageHeader', () => {
     expect(screen.getByRole('banner').className).toContain('my-extra');
   });
 
-  it("border-b + backdrop-blur (classes communes)", () => {
+  it("border-b + fond gris-bg (classes communes)", () => {
     render(<PageHeader title="x" />);
     const cls = screen.getByRole('banner').className;
     expect(cls).toContain('border-b');
-    expect(cls).toContain('backdrop-blur');
+    expect(cls).toContain('gris-bg');
   });
 });

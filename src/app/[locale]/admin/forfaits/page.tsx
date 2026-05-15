@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
-import { Plus, Package } from 'lucide-react';
+import { Package } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
+import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,22 +29,12 @@ export default async function ForfaitsPage({ params }: Props) {
         title="Forfaits"
         subline={`${forfaits.length} forfait${forfaits.length === 1 ? '' : 's'} (services packagés avec sous-tâches)`}
         actions={
-          <>
-            <Link
-              href={`/${locale}/admin/services`}
-              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-70)] hover:bg-[var(--gris-fond)]"
-            >
+          <ToolbarBlock>
+            <Link href={`/${locale}/admin/services`} className="btn-secondary" style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}>
               ← Hub services
             </Link>
-            <Link
-              href={`/${locale}/admin/forfaits/new`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
-              aria-label="Nouveau forfait"
-              title="Nouveau forfait"
-            >
-              <Plus size={20} />
-            </Link>
-          </>
+            <AddButton href={`/${locale}/admin/forfaits/new`} title="Nouveau forfait" />
+          </ToolbarBlock>
         }
       />
 

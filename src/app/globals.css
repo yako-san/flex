@@ -22,6 +22,7 @@
   --gris-bord:    #e0e0e0;
   --gris-fond:    #fafafa;
   --dark:         #1a1a1a;
+  --app-bg:       #929292;  /* fond global AppShell V1 */
 
   /* Statuts vélo — bg / fg */
   --st-rv-bg:         #fff056;  --st-rv-fg:         #000000;
@@ -203,4 +204,199 @@ th {
   font-size: 14pt;
   font-weight: 400;
 }
+
+/* --- Thème sombre admin (data-admin-theme="dark") -----------------
+   Le panneau principal admin est bg-black/20 sur #929292.
+   Les --text-secondary-* (rgba noirs) deviennent blancs-alpha.
+   Réinitialisation pour les cartes blanches et les lignes colorées. */
+[data-admin-theme="dark"] {
+  --text-secondary-35: rgba(255,255,255,0.35);
+  --text-secondary-50: rgba(255,255,255,0.50);
+  --text-secondary-60: rgba(255,255,255,0.60);
+  --text-secondary-70: rgba(255,255,255,0.70);
+  --text-secondary-80: rgba(255,255,255,0.80);
+  color: rgba(255,255,255,0.90);
+}
+
+/* Réinitialisation pour cartes blanches (bg-white/* classes) */
+[data-admin-theme="dark"] .bg-white\/85,
+[data-admin-theme="dark"] .bg-white\/80,
+[data-admin-theme="dark"] .bg-white\/70,
+[data-admin-theme="dark"] .bg-white\/50,
+[data-admin-theme="dark"] .bg-white\/20,
+[data-admin-theme="dark"] [style*="background-color: rgb(255"],
+[data-admin-theme="dark"] [style*="background-color: #fff"],
+[data-admin-theme="dark"] [style*="background-color: white"] {
+  --text-secondary-35: rgba(0,0,0,0.35);
+  --text-secondary-50: rgba(0,0,0,0.50);
+  --text-secondary-60: rgba(0,0,0,0.60);
+  --text-secondary-70: rgba(0,0,0,0.70);
+  --text-secondary-80: rgba(0,0,0,0.80);
+  color: var(--dark);
+}
+
+/* Réinitialisation pour lignes status (bg défini en inline) */
+[data-admin-theme="dark"] .list-row-even,
+[data-admin-theme="dark"] .list-row-odd {
+  --text-secondary-60: rgba(0,0,0,0.60);
+  --text-secondary-70: rgba(0,0,0,0.70);
+  color: var(--dark);
+}
+
+/* --- Boutons V1 ---------------------------------------------------- */
+@layer components {
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--btn-radius);
+    font-size: var(--h4-size);
+    font-weight: var(--h4-weight);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background-color: var(--jaune);
+    color: #000;
+    border: none;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+  .btn-primary:hover    { background-color: var(--jaune-h); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--btn-radius);
+    font-size: var(--h4-size);
+    font-weight: var(--h4-weight);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background-color: transparent;
+    color: #000;
+    border: 2px solid rgba(0,0,0,0.5);
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+  .btn-secondary:hover    { background-color: rgba(0,0,0,0.05); }
+  .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--btn-radius);
+    font-size: var(--h4-size);
+    font-weight: var(--h4-weight);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background-color: var(--rouge);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+  .btn-danger:hover    { background-color: var(--rouge-h); }
+  .btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+/* --- Input / label V1 --------------------------------------------- */
+.input-system {
+  width: 100%;
+  border: 1.5px solid rgba(0,0,0,0.2);
+  border-radius: var(--input-radius);
+  padding: 8px 14px;
+  font-size: 16px;
+  background-color: #fff;
+  color: #000;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+@media (min-width: 768px) {
+  .input-system { font-size: 14px; }
+}
+.input-system:focus {
+  border-color: var(--jaune);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
+}
+.input-system:disabled {
+  background-color: rgba(0,0,0,0.04);
+  cursor: not-allowed;
+}
+
+.label-system {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: lowercase;
+  color: rgba(0,0,0,0.5);
+  margin-bottom: 4px;
+  letter-spacing: normal;
+}
+
+/* --- Checkbox custom V1 ------------------------------------------- */
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(0,0,0,0.5);
+  border-radius: 4px;
+  background-color: transparent;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
+}
+.custom-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px; top: 0;
+  width: 6px; height: 12px;
+  border: solid rgba(0,0,0,0.7);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.custom-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* --- Input qté (spinner natif) ------------------------------------ */
+.qte-input::-webkit-outer-spin-button,
+.qte-input::-webkit-inner-spin-button {
+  -webkit-appearance: auto;
+  appearance: auto;
+  opacity: 1;
+  margin: 0;
+}
+.qte-input { -moz-appearance: number-input; }
+
+/* --- Bouton (+) rond V1 ------------------------------------------- */
+.btn-plus-round {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--addbtn-size);
+  height: var(--addbtn-size);
+  border-radius: 50%;
+  background-color: var(--jaune);
+  border: none;
+  color: rgba(0,0,0,0.5);
+  cursor: pointer;
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+}
+.btn-plus-round:hover {
+  background-color: var(--jaune-h);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+}
+.btn-plus-round svg { width: 24px; height: 24px; color: rgba(0,0,0,0.5); stroke-width: 3; }
+.btn-plus-round--outline {
+  background-color: transparent;
+  border: 1.5px solid rgba(0,0,0,0.5);
+  box-shadow: none;
+}
+.btn-plus-round--outline:hover { background-color: rgba(0,0,0,0.05); box-shadow: none; }
 

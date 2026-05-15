@@ -25,26 +25,16 @@ export function LogoForm({ currentLogoBase64 }: Props) {
   return (
     <div>
       {currentLogoBase64 ? (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            padding: '1rem',
-            background: '#fafafa',
-            border: '1px solid #e0e0e0',
-            borderRadius: 6,
-            marginBottom: '1rem',
-          }}
-        >
+        <div className="mb-4 flex items-center gap-4 rounded-xl border border-[var(--gris-bord)] bg-white/60 p-4">
           <img
             src={currentLogoBase64}
             alt="Logo actuel"
-            style={{ width: 80, height: 80, objectFit: 'contain', background: 'white', border: '1px solid #eee', borderRadius: 4 }}
+            className="rounded-lg border border-[var(--gris-bord)] bg-white"
+            style={{ width: 80, height: 80, objectFit: 'contain' }}
           />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.9rem', fontWeight: 500 }}>Logo actuel</div>
-            <div style={{ fontSize: '0.8rem', color: '#666', marginTop: 2 }}>
+          <div className="flex-1">
+            <div className="text-sm font-medium">Logo actuel</div>
+            <div className="mt-0.5 text-xs text-[var(--text-secondary-60)]">
               Utilisé sur les PDFs et le favicon (onglet du navigateur).
             </div>
           </div>
@@ -75,17 +65,9 @@ export function LogoForm({ currentLogoBase64 }: Props) {
         </div>
       ) : null}
 
-      <form action={formAction}>
-        <div style={{ marginBottom: '0.85rem' }}>
-          <label
-            style={{
-              display: 'block',
-              fontSize: '0.85rem',
-              fontWeight: 500,
-              color: '#444',
-              marginBottom: '0.3rem',
-            }}
-          >
+      <form action={formAction} className="flex flex-col gap-3">
+        <div className="mb-3">
+          <label className="label-system">
             {currentLogoBase64 ? 'Remplacer par' : 'Choisir un fichier'}
           </label>
           <input
@@ -94,65 +76,27 @@ export function LogoForm({ currentLogoBase64 }: Props) {
             accept="image/png,image/jpeg,image/webp,image/svg+xml"
             required
             disabled={pending}
-            style={{
-              padding: '0.5rem',
-              border: '1px solid #ccc',
-              borderRadius: 4,
-              background: 'white',
-              width: '100%',
-            }}
+            className="input-system mt-1"
           />
-          <p style={{ fontSize: '0.78rem', color: '#888', marginTop: 4 }}>
+          <p className="mt-1 text-xs text-[var(--text-secondary-60)]">
             PNG, JPG, WebP ou SVG. Max 500 KB. Format carré recommandé pour
             le favicon.
           </p>
         </div>
 
         {state?.error ? (
-          <div
-            style={{
-              background: '#ffebee',
-              border: '1px solid #f44336',
-              color: '#c62828',
-              padding: '0.6rem 0.75rem',
-              borderRadius: 4,
-              marginBottom: '0.75rem',
-              fontSize: '0.9rem',
-            }}
-          >
+          <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">
             {state.error}
           </div>
         ) : null}
 
         {state?.success ? (
-          <div
-            style={{
-              background: '#e8f5e9',
-              border: '1px solid #4caf50',
-              color: '#2e7d32',
-              padding: '0.6rem 0.75rem',
-              borderRadius: 4,
-              marginBottom: '0.75rem',
-              fontSize: '0.9rem',
-            }}
-          >
+          <div className="rounded-xl border border-green-300 bg-green-50 p-3 text-sm text-green-800">
             ✓ Logo enregistré.
           </div>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={pending}
-          style={{
-            padding: '0.55rem 1.1rem',
-            background: pending ? '#999' : '#1a1a1a',
-            color: 'white',
-            border: 0,
-            borderRadius: 4,
-            cursor: pending ? 'wait' : 'pointer',
-            fontSize: '0.9rem',
-          }}
-        >
+        <button type="submit" disabled={pending} className="btn-primary self-start">
           {pending ? 'Upload…' : 'Téléverser'}
         </button>
       </form>

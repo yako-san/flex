@@ -11,70 +11,38 @@ export function RefreshForm() {
 
   return (
     <div>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+      <h2 className="mb-2 text-lg font-semibold">
         Refresh partiel (workshop existant)
       </h2>
-      <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '1rem' }}>
+      <p className="mb-4 text-sm text-[var(--text-secondary-60)]">
         Si le workshop est déjà importé et que tu veux juste hydrater les{' '}
         <strong>nouveaux champs du dump 1.1.0+</strong>{' '}
         (templates courriels, tailles vélo, paramètres v1) sans toucher aux
         clients/vélos/BDT déjà en place, utilise ce bouton. Ne crée pas de
         doublon, ne supprime rien.
       </p>
-      <form action={formAction} style={{ marginBottom: '1.5rem' }}>
+      <form action={formAction} className="mb-6 flex flex-col gap-3">
         <input
           type="file"
           name="dump"
           accept="application/json,.json"
           required
-          style={{ marginBottom: '0.75rem' }}
+          className="input-system"
         />
-        <br />
-        <button
-          type="submit"
-          disabled={pending}
-          style={{
-            padding: '0.6rem 1.2rem',
-            background: pending ? '#999' : '#1565c0',
-            color: 'white',
-            border: 0,
-            borderRadius: 4,
-            cursor: pending ? 'wait' : 'pointer',
-            fontSize: '0.95rem',
-          }}
-        >
+        <button type="submit" disabled={pending} className="btn-primary self-start">
           {pending ? 'Refresh…' : '🔄 Hydrater les nouveaux champs (sans toucher au reste)'}
         </button>
 
         {state?.error ? (
-          <div
-            style={{
-              background: '#ffebee',
-              border: '1px solid #f44336',
-              color: '#c62828',
-              padding: '0.75rem',
-              borderRadius: 4,
-              marginTop: '1rem',
-            }}
-          >
+          <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">
             {state.error}
           </div>
         ) : null}
 
         {state?.ok && state.details ? (
-          <div
-            style={{
-              background: '#e8f5e9',
-              border: '1px solid #2e7d32',
-              color: '#1b5e20',
-              padding: '0.75rem',
-              borderRadius: 4,
-              marginTop: '1rem',
-              fontSize: '0.9rem',
-            }}
-          >
+          <div className="rounded-xl border border-green-300 bg-green-50 p-3 text-sm text-green-800">
             ✓ Refresh terminé (schema {state.details.schemaVersion ?? '?'})<br />
-            <ul style={{ marginTop: '0.5rem', paddingLeft: '1.2rem' }}>
+            <ul className="mt-2 list-disc pl-5">
               <li>
                 Templates courriels :{' '}
                 {state.details.templatesUpdated ? '✓ hydratés' : '— rien à faire'}

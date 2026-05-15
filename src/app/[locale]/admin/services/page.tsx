@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
-import { Plus, Package, Wrench } from 'lucide-react';
+import { Package, Wrench } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
+import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,22 +44,12 @@ export default async function ServicesPage({ params }: Props) {
         title="Services"
         subline={`${forfaits.length} forfait${forfaits.length === 1 ? '' : 's'} · ${services.length} service${services.length === 1 ? '' : 's'} à la carte`}
         actions={
-          <>
-            <Link
-              href={`/${locale}/admin/forfaits/new`}
-              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-70)] hover:bg-[var(--gris-fond)]"
-            >
+          <ToolbarBlock>
+            <Link href={`/${locale}/admin/forfaits/new`} className="btn-secondary" style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}>
               + Forfait
             </Link>
-            <Link
-              href={`/${locale}/admin/services/new`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
-              aria-label="Nouveau service"
-              title="Nouveau service"
-            >
-              <Plus size={20} />
-            </Link>
-          </>
+            <AddButton href={`/${locale}/admin/services/new`} title="Nouveau service" />
+          </ToolbarBlock>
         }
       />
 
