@@ -91,7 +91,7 @@ export function AdhocForm({ pieces, categories }: Props) {
       <h3 style={{ fontSize: '1.05rem', marginTop: '1.5rem', marginBottom: '0.5rem' }}>
         Items reçus
       </h3>
-      <p style={{ color: '#666', fontSize: '0.85rem', marginTop: 0, marginBottom: '0.75rem' }}>
+      <p className="text-sm text-[var(--text-secondary-60)]" style={{ marginTop: 0, marginBottom: '0.75rem' }}>
         Si la pièce existe déjà au catalogue, sélectionne-la dans le dropdown
         (le nom et SKU se rempliront). Sinon laisse « — Nouvelle pièce — » et
         elle sera créée automatiquement (catégorie + prix d&apos;achat).

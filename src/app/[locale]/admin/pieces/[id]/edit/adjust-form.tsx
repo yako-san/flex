@@ -49,7 +49,7 @@ export function AdjustStockForm({ pieceId, currentStock }: Props) {
         </button>
       </div>
       {delta && Number(delta) !== 0 ? (
-        <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
+        <p className="text-sm text-[var(--text-secondary-60)]" style={{ marginTop: '0.5rem' }}>
           Nouveau stock : <strong>{newStock}</strong> (était {currentStock})
         </p>
       ) : null}
