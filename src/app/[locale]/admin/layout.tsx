@@ -59,7 +59,7 @@ export default async function AdminLayout({ children, params }: Props) {
   const { workshop, dbOk } = await safeWorkshop();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[var(--gris-bg)]">
       {/* Sidebar fixe latérale jaune V1 (desktop ≥ md). Hover-expand. */}
       <AdminSidebar locale={locale} />
 

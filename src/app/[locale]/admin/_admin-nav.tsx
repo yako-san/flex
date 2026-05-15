@@ -130,7 +130,7 @@ export function AdminMobileTopBar({ locale }: { locale: string }) {
 export function AdminWorkshopBar({ workshopName }: { workshopName: string | null }) {
   return (
     <div
-      className="hidden items-center gap-3 border-b border-[var(--gris-bord)] bg-white/80 px-6 py-2 backdrop-blur md:flex"
+      className="hidden items-center gap-3 border-b border-[rgba(0,0,0,0.15)] bg-[var(--gris-bg)] px-6 py-2 md:flex"
       style={{ paddingLeft: 'calc(var(--sidebar-w-collapsed) + 1.5rem)' }}
     >
       <OrganizationSwitcher

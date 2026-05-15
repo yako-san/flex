@@ -31,7 +31,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        'flex w-full items-end justify-between gap-4 border-b border-[var(--gris-bord)] bg-white/80 px-6 py-4 backdrop-blur',
+        'flex w-full items-end justify-between gap-4 border-b border-[rgba(0,0,0,0.15)] bg-[var(--gris-bg)] px-6 py-4',
         sticky && 'sticky top-0 z-30',
         className,
       )}
