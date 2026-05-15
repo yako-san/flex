@@ -22,6 +22,7 @@
   --gris-bord:    #e0e0e0;
   --gris-fond:    #fafafa;
   --dark:         #1a1a1a;
+  --app-bg:       #929292;  /* fond global AppShell V1 */
 
   /* Statuts vélo — bg / fg */
   --st-rv-bg:         #fff056;  --st-rv-fg:         #000000;

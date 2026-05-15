@@ -2,15 +2,15 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 type Props = {
-  /** Sur-titre gris en majuscules (ex: « vélos en atelier »). */
+  /** Sur-titre blanc en gras (ex: « vélos en atelier »). */
   eyebrow?: string;
-  /** Titre H1 grand thin. */
+  /** Titre H1 jaune thin V1 — clamp(32px, 7vw, 50px). */
   title: React.ReactNode;
   /** Hint/tooltip discret à droite du titre. */
   hint?: React.ReactNode;
   /** Sous-ligne (compteur, breadcrumb, contexte). */
   subline?: React.ReactNode;
-  /** Zone droite : search + UtilButtons + AddButton, etc. */
+  /** Zone droite : ToolbarBlock + boutons + search. */
   actions?: React.ReactNode;
   className?: string;
   /**
@@ -38,16 +38,26 @@ export function PageHeader({
     >
       <div className="min-w-0 flex-1">
         {eyebrow ? (
-          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary-60)]">
+          <p className="mb-1 text-xs font-bold uppercase tracking-widest" style={{ color: '#fff' }}>
             {eyebrow}
           </p>
         ) : null}
         <div className="flex items-baseline gap-3">
-          <h1 className="truncate">{title}</h1>
-          {hint ? <span className="text-sm text-[var(--text-secondary-50)]">{hint}</span> : null}
+          <h1
+            className="truncate"
+            style={{
+              color: '#fff056',
+              fontWeight: 300,
+              fontSize: 'clamp(32px, 7vw, 50px)',
+              lineHeight: 1,
+            }}
+          >
+            {title}
+          </h1>
+          {hint ? <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{hint}</span> : null}
         </div>
         {subline ? (
-          <div className="mt-1 text-sm text-[var(--text-secondary-60)]">{subline}</div>
+          <div className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{subline}</div>
         ) : null}
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}

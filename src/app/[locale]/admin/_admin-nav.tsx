@@ -96,7 +96,8 @@ export function AdminMobileTopBar({ locale }: { locale: string }) {
   const navItems = buildNavItems(locale);
   return (
     <header
-      className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-[var(--gris-bord)] bg-[var(--jaune)] px-3 py-2 md:hidden"
+      className="sticky top-0 z-30 flex items-center justify-between gap-2 bg-[var(--jaune)] px-3 py-2 md:hidden"
+      style={{ borderRadius: '50px', margin: '12px', boxShadow: '0 6px 12px rgba(0,0,0,0.23)' }}
       aria-label="Barre mobile"
     >
       <div className="flex items-center gap-2">
@@ -131,7 +132,6 @@ export function AdminWorkshopBar({ workshopName }: { workshopName: string | null
   return (
     <div
       className="hidden items-center gap-3 border-b border-[rgba(0,0,0,0.15)] bg-[var(--gris-bg)] px-6 py-2 md:flex"
-      style={{ paddingLeft: 'calc(var(--sidebar-w-collapsed) + 1.5rem)' }}
     >
       <OrganizationSwitcher
         hidePersonal
