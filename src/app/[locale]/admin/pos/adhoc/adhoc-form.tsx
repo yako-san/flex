@@ -216,10 +216,10 @@ export function AdhocForm({ pieces, categories }: Props) {
       </div>
 
       {state?.error ? (
-        <div style={errBox}>{state.error}</div>
+        <div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{state.error}</div>
       ) : null}
       {state?.ok ? (
-        <div style={successBox}>
+        <div className="mt-4 rounded-xl border border-green-300 bg-green-50 p-3 text-sm text-green-800">
           ✓ ADHOC <strong>{state.poNumero}</strong> créé. Redirection vers la fiche…
         </div>
       ) : null}
@@ -236,19 +236,3 @@ export function AdhocForm({ pieces, categories }: Props) {
   );
 }
 
-const errBox: React.CSSProperties = {
-  marginTop: '1rem',
-  padding: '0.75rem',
-  background: '#ffebee',
-  border: '1px solid #f44336',
-  color: '#c62828',
-  borderRadius: 4,
-};
-const successBox: React.CSSProperties = {
-  marginTop: '1rem',
-  padding: '0.75rem',
-  background: '#e8f5e9',
-  border: '1px solid #2e7d32',
-  color: '#1b5e20',
-  borderRadius: 4,
-};
