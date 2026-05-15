@@ -34,7 +34,7 @@ export function MarqueForm({ initial }: Props) {
         marque ne suit pas un standard.
       </p>
 
-      {state?.error ? <div style={errBox}>{state.error}</div> : null}
+      {state?.error ? <div className="mb-3 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{state.error}</div> : null}
       <button type="submit" disabled={pending} className="btn-primary">
         {pending ? '…' : initial ? 'Enregistrer' : 'Créer la marque'}
       </button>
@@ -43,4 +43,3 @@ export function MarqueForm({ initial }: Props) {
 }
 
 const err: React.CSSProperties = { color: '#c62828', fontSize: '0.85rem', marginTop: '-0.5rem', marginBottom: '0.5rem' };
-const errBox: React.CSSProperties = { background: '#ffebee', border: '1px solid #f44336', color: '#c62828', padding: '0.6rem', borderRadius: 4, marginBottom: '0.75rem' };

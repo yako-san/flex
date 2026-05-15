@@ -101,7 +101,7 @@ export function ForfaitForm({ initial, initialTasks = [] }: Props) {
         </button>
       </div>
 
-      {state?.error ? <div style={errBox}>{state.error}</div> : null}
+      {state?.error ? <div className="mb-3 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{state.error}</div> : null}
 
       <button type="submit" disabled={pending} className="btn-primary">
         {pending ? '…' : initial ? 'Enregistrer' : 'Créer le forfait'}
@@ -116,4 +116,3 @@ function Err({ msg }: { msg: string }) {
 
 const h3: React.CSSProperties = { fontSize: '1rem', marginTop: '1.5rem', marginBottom: '0.5rem', color: '#333' };
 const twoCol: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' };
-const errBox: React.CSSProperties = { background: '#ffebee', border: '1px solid #f44336', color: '#c62828', padding: '0.6rem', borderRadius: 4, marginBottom: '0.75rem' };
