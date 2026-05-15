@@ -39,12 +39,15 @@ export function SearchBar({ placeholder = 'Rechercher…' }: Props) {
       onChange={(e) => setValue(e.target.value)}
       placeholder={placeholder}
       style={{
-        padding: '0.5rem 0.75rem',
-        fontSize: '0.95rem',
-        border: '1px solid #ccc',
-        borderRadius: 4,
-        background: 'white',
-        width: 280,
+        height: '32px',
+        borderRadius: '32px',
+        backgroundColor: 'rgba(255,255,255,0.7)',
+        color: 'rgba(0,0,0,0.7)',
+        border: 'none',
+        width: '220px',
+        fontSize: '13px',
+        padding: '0 16px',
+        outline: 'none',
       }}
     />
   );

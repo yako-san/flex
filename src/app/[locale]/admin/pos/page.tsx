@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { Prisma } from '@prisma/client';
-import { Plus, Package } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
+import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
 
 export const dynamic = 'force-dynamic';
@@ -72,29 +72,20 @@ export default async function PosPage({ params, searchParams }: Props) {
         title="Réception"
         subline={`${pos.length} PO${pos.length === 1 ? '' : 's'} · ${actifs.length} actif${actifs.length === 1 ? '' : 's'}${trimmed ? ` · filtré sur « ${trimmed} »` : ''}`}
         actions={
-          <>
+          <ToolbarBlock>
             <SearchBar placeholder="N° PO, fournisseur, notes…" />
-            <a
-              href="/api/admin/export/pos"
-              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
-            >
+            <a href="/api/admin/export/pos" className="btn-secondary" style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}>
               ↓ CSV
             </a>
             <Link
               href={`/${locale}/admin/pos/adhoc`}
-              className="inline-flex items-center gap-1 rounded-full bg-[var(--st-approuve-bg)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-black hover:opacity-90"
+              className="btn-secondary"
+              style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}
             >
-              <Package size={14} /> ADHOC
+              ADHOC
             </Link>
-            <Link
-              href={`/${locale}/admin/pos/new` as never}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
-              aria-label="Nouveau PO"
-              title="Nouveau PO"
-            >
-              <Plus size={20} />
-            </Link>
-          </>
+            <AddButton href={`/${locale}/admin/pos/new`} title="Nouveau PO" />
+          </ToolbarBlock>
         }
       />
 

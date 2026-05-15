@@ -205,6 +205,44 @@ th {
   font-weight: 400;
 }
 
+/* --- Thème sombre admin (data-admin-theme="dark") -----------------
+   Le panneau principal admin est bg-black/20 sur #929292.
+   Les --text-secondary-* (rgba noirs) deviennent blancs-alpha.
+   Réinitialisation pour les cartes blanches et les lignes colorées. */
+[data-admin-theme="dark"] {
+  --text-secondary-35: rgba(255,255,255,0.35);
+  --text-secondary-50: rgba(255,255,255,0.50);
+  --text-secondary-60: rgba(255,255,255,0.60);
+  --text-secondary-70: rgba(255,255,255,0.70);
+  --text-secondary-80: rgba(255,255,255,0.80);
+  color: rgba(255,255,255,0.90);
+}
+
+/* Réinitialisation pour cartes blanches (bg-white/* classes) */
+[data-admin-theme="dark"] .bg-white\/85,
+[data-admin-theme="dark"] .bg-white\/80,
+[data-admin-theme="dark"] .bg-white\/70,
+[data-admin-theme="dark"] .bg-white\/50,
+[data-admin-theme="dark"] .bg-white\/20,
+[data-admin-theme="dark"] [style*="background-color: rgb(255"],
+[data-admin-theme="dark"] [style*="background-color: #fff"],
+[data-admin-theme="dark"] [style*="background-color: white"] {
+  --text-secondary-35: rgba(0,0,0,0.35);
+  --text-secondary-50: rgba(0,0,0,0.50);
+  --text-secondary-60: rgba(0,0,0,0.60);
+  --text-secondary-70: rgba(0,0,0,0.70);
+  --text-secondary-80: rgba(0,0,0,0.80);
+  color: var(--dark);
+}
+
+/* Réinitialisation pour lignes status (bg défini en inline) */
+[data-admin-theme="dark"] .list-row-even,
+[data-admin-theme="dark"] .list-row-odd {
+  --text-secondary-60: rgba(0,0,0,0.60);
+  --text-secondary-70: rgba(0,0,0,0.70);
+  color: var(--dark);
+}
+
 /* --- Boutons V1 ---------------------------------------------------- */
 @layer components {
   .btn-primary {

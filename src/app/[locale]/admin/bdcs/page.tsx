@@ -1,11 +1,11 @@
 import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { Prisma, type VeloStatus } from '@prisma/client';
-import { Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
 import { Pill } from '@/components/ui/pill';
+import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
 import { VELO_STATUS_LABELS, VELO_STATUS_COLORS } from '@/lib/velo/status-labels';
 
@@ -120,23 +120,17 @@ export default async function BdcsPage({ params, searchParams }: Props) {
         title="Inventaire"
         subline={`${totalShown} BDT${trimmed ? ` filtré sur « ${trimmed} »` : ''}`}
         actions={
-          <>
+          <ToolbarBlock>
             <SearchBar placeholder="N° vélo, client, modèle, marque, série, facture…" />
             <a
               href="/api/admin/export/bdcs"
-              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] transition-colors hover:bg-[var(--gris-fond)]"
+              className="btn-secondary"
+              style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}
             >
               ↓ CSV
             </a>
-            <Link
-              href={`/${locale}/admin/bdcs/new`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
-              title="Nouveau BDT"
-              aria-label="Nouveau BDT"
-            >
-              <Plus size={20} />
-            </Link>
-          </>
+            <AddButton href={`/${locale}/admin/bdcs/new`} title="Nouveau BDT" />
+          </ToolbarBlock>
         }
       />
 

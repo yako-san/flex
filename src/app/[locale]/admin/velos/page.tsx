@@ -1,11 +1,11 @@
 import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { Prisma } from '@prisma/client';
-import { Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
 import { Pill } from '@/components/ui/pill';
+import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
 import { VELO_STATUS_LABELS } from '@/lib/velo/status-labels';
 import type { VeloStatus } from '@prisma/client';
@@ -79,23 +79,13 @@ export default async function VelosPage({ params, searchParams }: Props) {
         title="Vélos"
         subline={`${velos.length} vélo${velos.length === 1 ? '' : 's'}${trimmed ? ` filtré sur « ${trimmed} »` : ''}`}
         actions={
-          <>
+          <ToolbarBlock>
             <SearchBar placeholder="N°, modèle, marque, client, série…" />
-            <a
-              href="/api/admin/export/velos"
-              className="rounded-full border border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-60)] hover:bg-[var(--gris-fond)]"
-            >
+            <a href="/api/admin/export/velos" className="btn-secondary" style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}>
               ↓ CSV
             </a>
-            <Link
-              href={`/${locale}/admin/velos/new`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
-              aria-label="Nouveau vélo"
-              title="Nouveau vélo"
-            >
-              <Plus size={20} />
-            </Link>
-          </>
+            <AddButton href={`/${locale}/admin/velos/new`} title="Nouveau vélo" />
+          </ToolbarBlock>
         }
       />
 

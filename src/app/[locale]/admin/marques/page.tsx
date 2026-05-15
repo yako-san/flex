@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
-import { Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
+import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,14 +28,9 @@ export default async function MarquesPage({ params }: Props) {
         title="Marques"
         subline={`${marques.length} marque${marques.length === 1 ? '' : 's'} disponible${marques.length === 1 ? '' : 's'} dans les dropdowns BDT`}
         actions={
-          <Link
-            href={`/${locale}/admin/marques/new`}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--jaune)] text-black shadow-sm transition-colors hover:bg-[var(--jaune-h)]"
-            aria-label="Nouvelle marque"
-            title="Nouvelle marque"
-          >
-            <Plus size={20} />
-          </Link>
+          <ToolbarBlock>
+            <AddButton href={`/${locale}/admin/marques/new`} title="Nouvelle marque" />
+          </ToolbarBlock>
         }
       />
 

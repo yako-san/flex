@@ -77,8 +77,9 @@ export default async function AdminLayout({ children, params }: Props) {
         <AdminSidebar locale={locale} />
       </div>
 
-      {/* Panneau principal — verre sombre V1 (rgba(0,0,0,0.20) sur #929292) */}
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden md:rounded-[50px] md:bg-black/20">
+      {/* Panneau principal — verre sombre V1 (rgba(0,0,0,0.20) sur #929292).
+          data-admin-theme="dark" → CSS vars texte basculées en blanc-alpha. */}
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden md:rounded-[50px] md:bg-black/20" data-admin-theme="dark">
         <AdminWorkshopBar workshopName={workshop?.name ?? null} />
 
         <main className="flex-1 overflow-auto">
