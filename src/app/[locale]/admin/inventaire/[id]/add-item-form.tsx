@@ -39,12 +39,12 @@ export function AddItemForm({ bdcId, services, pieces, forfaits }: Props) {
       <input type="hidden" name="bdcId" value={bdcId} />
 
       <div>
-        <label style={labelStyle}>Type</label>
+        <label className="label-system">Type</label>
         <select
           name="kind"
           value={kind}
           onChange={(e) => setKind(e.target.value as 'SERVICE' | 'PIECE' | 'FORFAIT')}
-          style={inputStyle}
+          className="input-system"
         >
           <option value="SERVICE">Service</option>
           <option value="PIECE">Pièce</option>
@@ -53,10 +53,10 @@ export function AddItemForm({ bdcId, services, pieces, forfaits }: Props) {
       </div>
 
       <div>
-        <label style={labelStyle}>
+        <label className="label-system">
           {kind === 'SERVICE' ? 'Service' : kind === 'PIECE' ? 'Pièce' : 'Forfait'} *
         </label>
-        <select name="refId" required style={inputStyle} key={kind}>
+        <select name="refId" required className="input-system" key={kind}>
           <option value="">— choisir —</option>
           {options.map((o) => (
             <option key={o.id} value={o.id}>
@@ -67,30 +67,23 @@ export function AddItemForm({ bdcId, services, pieces, forfaits }: Props) {
       </div>
 
       <div>
-        <label style={labelStyle}>Qté</label>
+        <label className="label-system">Qté</label>
         <input
           name="qty"
           type="number"
           step="0.01"
           min="0.01"
           defaultValue="1"
-          style={inputStyle}
+          className="input-system"
         />
       </div>
 
-      <button type="submit" disabled={pending} style={btnStyle(pending)}>
+      <button type="submit" disabled={pending} className="btn-primary" style={{ height: '2.1rem', alignSelf: 'end' }}>
         {pending ? '…' : '+ Ajouter'}
       </button>
 
       {state?.error ? (
-        <div
-          style={{
-            gridColumn: '1 / -1',
-            color: '#c62828',
-            fontSize: '0.85rem',
-            marginTop: '0.25rem',
-          }}
-        >
+        <div className="mt-1 text-xs text-red-600" style={{ gridColumn: '1 / -1' }}>
           {state.error}
           {state.fieldErrors
             ? ` — ${Object.values(state.fieldErrors).join(', ')}`
@@ -100,32 +93,3 @@ export function AddItemForm({ bdcId, services, pieces, forfaits }: Props) {
     </form>
   );
 }
-
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '0.75rem',
-  fontWeight: 500,
-  color: '#666',
-  marginBottom: '0.2rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-};
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '0.4rem 0.5rem',
-  fontSize: '0.9rem',
-  border: '1px solid #ccc',
-  borderRadius: 4,
-  background: 'white',
-};
-const btnStyle = (pending: boolean): React.CSSProperties => ({
-  padding: '0.45rem 0.9rem',
-  fontSize: '0.9rem',
-  background: pending ? '#999' : '#1a1a1a',
-  color: 'white',
-  border: 0,
-  borderRadius: 4,
-  cursor: pending ? 'wait' : 'pointer',
-  height: '2.1rem',
-  alignSelf: 'end',
-});

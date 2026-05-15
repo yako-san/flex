@@ -26,26 +26,26 @@ export function ForfaitForm({ initial, initialTasks = [] }: Props) {
 
   return (
     <form action={formAction} style={{ maxWidth: 720 }}>
-      <label style={lbl}>Libellé canonique *</label>
+      <label className="label-system">Libellé canonique *</label>
       <input
         name="labelCanonical"
         defaultValue={v('labelCanonical')}
         placeholder='ex "👌🏻 Forfait BASE — mise au point de sécurité"'
         required
-        style={inp}
+        className="input-system"
       />
       {fe.labelCanonical ? <Err msg={fe.labelCanonical} /> : null}
 
-      <label style={lbl}>Code legacy (v1)</label>
-      <input name="legacyCode" defaultValue={v('legacyCode')} placeholder="S00001" style={inp} />
+      <label className="label-system">Code legacy (v1)</label>
+      <input name="legacyCode" defaultValue={v('legacyCode')} placeholder="S00001" className="input-system" />
 
       <div style={twoCol}>
         <div>
-          <label style={lbl}>Durée (minutes)</label>
-          <input name="dureeMinutes" type="number" min="0" defaultValue={v('dureeMinutes')} style={inp} />
+          <label className="label-system">Durée (minutes)</label>
+          <input name="dureeMinutes" type="number" min="0" defaultValue={v('dureeMinutes')} className="input-system" />
         </div>
         <div>
-          <label style={lbl}>Prix HT *</label>
+          <label className="label-system">Prix HT *</label>
           <input
             name="prix"
             type="number"
@@ -53,7 +53,7 @@ export function ForfaitForm({ initial, initialTasks = [] }: Props) {
             min="0"
             defaultValue={v('prix')}
             required
-            style={inp}
+            className="input-system"
           />
           {fe.prix ? <Err msg={fe.prix} /> : null}
         </div>
@@ -84,25 +84,26 @@ export function ForfaitForm({ initial, initialTasks = [] }: Props) {
                 setTasks((prev) => prev.map((x, i) => (i === idx ? e.target.value : x)))
               }
               placeholder="ex évaluation de l'état général du vélo"
-              style={{ ...inp, marginBottom: 0, flex: 1 }}
+              className="input-system"
+              style={{ marginBottom: 0, flex: 1 }}
             />
             <button
               type="button"
               onClick={() => setTasks((prev) => prev.filter((_, i) => i !== idx))}
-              style={btnRemove}
+              className="btn-danger text-xs"
             >
               ✕
             </button>
           </div>
         ))}
-        <button type="button" onClick={() => setTasks((prev) => [...prev, ''])} style={btnAdd}>
+        <button type="button" onClick={() => setTasks((prev) => [...prev, ''])} className="btn-secondary text-xs">
           + Ajouter une sous-tâche
         </button>
       </div>
 
       {state?.error ? <div style={errBox}>{state.error}</div> : null}
 
-      <button type="submit" disabled={pending} style={btn(pending)}>
+      <button type="submit" disabled={pending} className="btn-primary">
         {pending ? '…' : initial ? 'Enregistrer' : 'Créer le forfait'}
       </button>
     </form>
@@ -113,11 +114,6 @@ function Err({ msg }: { msg: string }) {
   return <div style={{ color: '#c62828', fontSize: '0.85rem', marginTop: '-0.6rem', marginBottom: '0.5rem' }}>{msg}</div>;
 }
 
-const lbl: React.CSSProperties = { display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#444', marginBottom: '0.3rem' };
-const inp: React.CSSProperties = { width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.95rem', border: '1px solid #ccc', borderRadius: 4, marginBottom: '0.85rem', background: 'white' };
 const h3: React.CSSProperties = { fontSize: '1rem', marginTop: '1.5rem', marginBottom: '0.5rem', color: '#333' };
 const twoCol: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' };
 const errBox: React.CSSProperties = { background: '#ffebee', border: '1px solid #f44336', color: '#c62828', padding: '0.6rem', borderRadius: 4, marginBottom: '0.75rem' };
-const btn = (p: boolean): React.CSSProperties => ({ padding: '0.6rem 1.2rem', background: p ? '#999' : '#1a1a1a', color: 'white', border: 0, borderRadius: 4, cursor: p ? 'wait' : 'pointer', fontSize: '0.95rem' });
-const btnAdd: React.CSSProperties = { padding: '0.4rem 0.9rem', background: 'transparent', color: '#1565c0', border: '1px dashed #1565c0', borderRadius: 4, cursor: 'pointer', fontSize: '0.85rem' };
-const btnRemove: React.CSSProperties = { padding: '0 0.6rem', background: 'transparent', color: '#c62828', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer' };

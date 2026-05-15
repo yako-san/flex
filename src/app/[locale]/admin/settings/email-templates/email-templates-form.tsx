@@ -113,7 +113,7 @@ export function EmailTemplatesForm({ initial, unmapped }: Props) {
           defaultValue={initial.smsRappel?.body?.[tab] ?? ''}
           placeholder={tab === 'fr' ? DEFAULT_SMS_RAPPEL_FR : DEFAULT_SMS_RAPPEL_EN}
           rows={3}
-          style={textareaStyle}
+          className="input-system font-mono text-sm"
         />
       </Row>
 
@@ -124,7 +124,7 @@ export function EmailTemplatesForm({ initial, unmapped }: Props) {
           defaultValue={initial.smsSuivi?.body?.[tab] ?? ''}
           placeholder={tab === 'fr' ? DEFAULT_SMS_SUIVI_FR : DEFAULT_SMS_SUIVI_EN}
           rows={3}
-          style={textareaStyle}
+          className="input-system font-mono text-sm"
         />
       </Row>
 
@@ -137,7 +137,7 @@ export function EmailTemplatesForm({ initial, unmapped }: Props) {
           name={`outro_${tab}`}
           defaultValue={initial.outro?.[tab] ?? ''}
           rows={2}
-          style={textareaStyle}
+          className="input-system font-mono text-sm"
         />
       </Row>
 
@@ -151,7 +151,7 @@ export function EmailTemplatesForm({ initial, unmapped }: Props) {
           name="signatures_yako"
           defaultValue={initial.signatures?.yako ?? ''}
           rows={2}
-          style={textareaStyle}
+          className="input-system font-mono text-sm"
         />
       </Row>
       <Row label="Signature cyclo-flex">
@@ -159,7 +159,7 @@ export function EmailTemplatesForm({ initial, unmapped }: Props) {
           name="signatures_cf"
           defaultValue={initial.signatures?.cf ?? ''}
           rows={2}
-          style={textareaStyle}
+          className="input-system font-mono text-sm"
         />
       </Row>
 
@@ -185,30 +185,17 @@ export function EmailTemplatesForm({ initial, unmapped }: Props) {
       ) : null}
 
       {state?.error ? (
-        <div style={{ background: '#ffebee', border: '1px solid #f44336', color: '#c62828', padding: '0.75rem', borderRadius: 4, marginTop: '1rem' }}>
+        <div className="mt-4 mb-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">
           {state.error}
         </div>
       ) : null}
       {state?.success ? (
-        <div style={{ background: '#e8f5e9', border: '1px solid #2e7d32', color: '#1b5e20', padding: '0.75rem', borderRadius: 4, marginTop: '1rem' }}>
+        <div className="mt-4 rounded-xl border border-green-400 bg-green-50 p-3 text-sm text-green-800">
           ✓ Templates enregistrés.
         </div>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={pending}
-        style={{
-          marginTop: '1rem',
-          padding: '0.7rem 1.5rem',
-          fontSize: '0.95rem',
-          background: pending ? '#999' : '#1a1a1a',
-          color: 'white',
-          border: 0,
-          borderRadius: 4,
-          cursor: pending ? 'wait' : 'pointer',
-        }}
-      >
+      <button type="submit" disabled={pending} className="btn-primary mt-4">
         {pending ? 'Enregistrement…' : 'Enregistrer'}
       </button>
     </form>
@@ -241,7 +228,7 @@ function Block({
               name={`${prefix}_subject_${loc}`}
               defaultValue={initial?.subject?.[loc] ?? ''}
               placeholder={loc === 'fr' ? defaults.subject_fr : defaults.subject_en}
-              style={inputStyle}
+              className="input-system"
             />
           </Row>
           <Row label={`Corps (${loc.toUpperCase()}, HTML accepté)`}>
@@ -250,7 +237,7 @@ function Block({
               defaultValue={initial?.body?.[loc] ?? ''}
               placeholder={loc === 'fr' ? defaults.body_fr : defaults.body_en}
               rows={8}
-              style={textareaStyle}
+              className="input-system font-mono text-sm"
             />
           </Row>
           <details style={{ marginTop: '0.4rem' }}>
@@ -264,7 +251,7 @@ function Block({
                     name={`${prefix}_${f}_${loc}`}
                     defaultValue={(initial?.[f] as { [k in LocaleTab]?: string } | undefined)?.[loc] ?? ''}
                     rows={2}
-                    style={textareaStyle}
+                    className="input-system font-mono text-sm"
                   />
                 </Row>
               ))}
@@ -318,20 +305,6 @@ function TabBtn({
 
 const h3: React.CSSProperties = { fontSize: '1.05rem', marginTop: '1.5rem', marginBottom: '0.5rem' };
 const subtitleStyle: React.CSSProperties = { color: '#888', fontSize: '0.8rem', marginTop: 0, marginBottom: '0.4rem' };
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '0.5rem 0.6rem',
-  fontSize: '0.95rem',
-  border: '1px solid #ccc',
-  borderRadius: 4,
-  background: 'white',
-};
-const textareaStyle: React.CSSProperties = {
-  ...inputStyle,
-  fontFamily: 'monospace',
-  fontSize: '0.85rem',
-  resize: 'vertical',
-};
 const tagStyle: React.CSSProperties = {
   background: '#f0f0f0',
   padding: '1px 5px',

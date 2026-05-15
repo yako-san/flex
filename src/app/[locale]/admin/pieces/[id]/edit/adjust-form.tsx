@@ -24,11 +24,11 @@ export function AdjustStockForm({ pieceId, currentStock }: Props) {
   const newStock = currentStock + (Number(delta) || 0);
 
   return (
-    <form action={formAction} style={{ background: '#fafafa', border: '1px solid #e0e0e0', borderRadius: 6, padding: '1rem' }}>
+    <form action={formAction} className="rounded-xl border border-[var(--gris-bord)] bg-white/60 p-4">
       <input type="hidden" name="pieceId" value={pieceId} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: '0.75rem', alignItems: 'end' }}>
         <div>
-          <label style={lbl}>Delta (+/-)</label>
+          <label className="label-system">Delta (+/-)</label>
           <input
             name="delta"
             type="number"
@@ -37,14 +37,14 @@ export function AdjustStockForm({ pieceId, currentStock }: Props) {
             onChange={(e) => setDelta(e.target.value)}
             placeholder="ex +5 ou -2"
             required
-            style={inp}
+            className="input-system"
           />
         </div>
         <div>
-          <label style={lbl}>Raison (audit trail)</label>
-          <input name="reason" required placeholder="ex inventaire physique, perte, retour..." style={inp} />
+          <label className="label-system">Raison (audit trail)</label>
+          <input name="reason" required placeholder="ex inventaire physique, perte, retour..." className="input-system" />
         </div>
-        <button type="submit" disabled={pending} style={btn(pending)}>
+        <button type="submit" disabled={pending} className="btn-primary">
           {pending ? '…' : 'Ajuster'}
         </button>
       </div>
@@ -62,7 +62,3 @@ export function AdjustStockForm({ pieceId, currentStock }: Props) {
     </form>
   );
 }
-
-const lbl: React.CSSProperties = { display: 'block', fontSize: '0.78rem', color: '#666', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
-const inp: React.CSSProperties = { width: '100%', padding: '0.45rem 0.6rem', fontSize: '0.9rem', border: '1px solid #ccc', borderRadius: 4, background: 'white' };
-const btn = (p: boolean): React.CSSProperties => ({ padding: '0.45rem 1rem', background: p ? '#999' : '#1565c0', color: 'white', border: 0, borderRadius: 4, cursor: p ? 'wait' : 'pointer', fontSize: '0.9rem', height: '2.1rem' });

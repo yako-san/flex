@@ -127,122 +127,119 @@ export default async function VeloDetailPage({ params }: Props) {
           ← Tous les vélos
         </Link>
 
-      <h2 style={h2Style}>Caractéristiques</h2>
-      <Row label="Client">
-        {velo.client ? (
-          <Link href={`/${locale}/admin/clients/${velo.client.id}`} style={linkStyle}>
-            {velo.client.prenom} {velo.client.nom}
+        <h2 className="mb-3 mt-4 text-base font-semibold">Caractéristiques</h2>
+        <Row label="Client">
+          {velo.client ? (
+            <Link href={`/${locale}/admin/clients/${velo.client.id}`} className="text-blue-600 hover:underline">
+              {velo.client.prenom} {velo.client.nom}
+            </Link>
+          ) : '—'}
+        </Row>
+        <Row label="Marque">{velo.marque?.nom ?? '—'}</Row>
+        <Row label="Modèle">{velo.modele ?? '—'}</Row>
+        <Row label="Couleur">{velo.couleur ?? '—'}</Row>
+        <Row label="Taille">{velo.taille ?? '—'}</Row>
+        <Row label="N° série">{velo.numeroSerie ?? '—'}</Row>
+        <Row label="Status">{VELO_STATUS_LABELS[velo.status].fr}</Row>
+
+        <h2 className="mb-3 mt-8 text-base font-semibold">Mécaniciens assignés</h2>
+        <Row label="Évaluation">{velo.evalMecano?.surnom ?? '—'}</Row>
+        <Row label="Mécanique">{velo.mecaMecano?.surnom ?? '—'}</Row>
+        <Row label="Contrôle qualité">{velo.ctrlMecano?.surnom ?? '—'}</Row>
+
+        <h2 className="mb-3 mt-8 text-base font-semibold">Notes</h2>
+        <Row label="Note vélo (interne)">{velo.noteVelo ?? '—'}</Row>
+        <Row label="Notes libres">{velo.notes ?? '—'}</Row>
+        <p className="mt-2 text-xs text-[var(--text-secondary-60)]">
+          Les notes client (éval / facture) sont désormais éditées par-BDT
+          directement (cf. fiche BDT).
+        </p>
+
+        <div className="mb-3 mt-8 flex items-center justify-between">
+          <h2 className="text-base font-semibold">Historique BDT ({velo.bdcs.length})</h2>
+          <Link
+            href={`/${locale}/admin/bdcs/new?veloId=${velo.id}`}
+            className="btn-secondary"
+            style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}
+          >
+            + Nouveau BDT pour ce vélo
           </Link>
-        ) : '—'}
-      </Row>
-      <Row label="Marque">{velo.marque?.nom ?? '—'}</Row>
-      <Row label="Modèle">{velo.modele ?? '—'}</Row>
-      <Row label="Couleur">{velo.couleur ?? '—'}</Row>
-      <Row label="Taille">{velo.taille ?? '—'}</Row>
-      <Row label="N° série">{velo.numeroSerie ?? '—'}</Row>
-      <Row label="Status">{VELO_STATUS_LABELS[velo.status].fr}</Row>
-
-      <h2 style={{ ...h2Style, marginTop: '2rem' }}>Mécaniciens assignés</h2>
-      <Row label="Évaluation">{velo.evalMecano?.surnom ?? '—'}</Row>
-      <Row label="Mécanique">{velo.mecaMecano?.surnom ?? '—'}</Row>
-      <Row label="Contrôle qualité">{velo.ctrlMecano?.surnom ?? '—'}</Row>
-
-      <h2 style={{ ...h2Style, marginTop: '2rem' }}>Notes</h2>
-      <Row label="Note vélo (interne)">{velo.noteVelo ?? '—'}</Row>
-      <Row label="Notes libres">{velo.notes ?? '—'}</Row>
-      <p style={{ color: '#888', fontSize: '0.78rem', margin: '0.5rem 0 0 0' }}>
-        Les notes client (éval / facture) sont désormais éditées par-BDT
-        directement (cf. fiche BDT).
-      </p>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem', marginBottom: '0.75rem' }}>
-        <h2 style={{ ...h2Style, marginBottom: 0 }}>Historique BDT ({velo.bdcs.length})</h2>
-        <Link
-          href={`/${locale}/admin/bdcs/new?veloId=${velo.id}`}
-          style={{
-            padding: '0.4rem 0.9rem',
-            background: 'transparent',
-            color: '#1565c0',
-            border: '1px solid #1565c0',
-            borderRadius: 4,
-            textDecoration: 'none',
-            fontSize: '0.85rem',
-          }}
-        >
-          + Nouveau BDT pour ce vélo
-        </Link>
-      </div>
-      {velo.bdcs.length === 0 ? (
-        <p style={{ color: '#888' }}>Aucun BDT pour ce vélo.</p>
-      ) : (
-        <table style={tableStyle}>
-          <thead>
-            <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
-              <th style={thStyle}>Date</th>
-              <th style={thStyle}>BDT</th>
-              <th style={thStyle}>Statut éval</th>
-              <th style={thStyle}>Archive</th>
-              <th style={thStyle}>Facture</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>Items</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>Total facturé</th>
-            </tr>
-          </thead>
-          <tbody>
-            {velo.bdcs.map((b) => {
-              const facture = b.factures[0] ?? null;
-              return (
-                <tr key={b.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                  <td style={{ ...tdStyle, fontSize: '0.85rem', color: '#666' }}>
-                    {b.createdAt.toLocaleDateString('fr-CA')}
-                  </td>
-                  <td style={tdStyle}>
-                    <Link href={`/${locale}/admin/bdcs/${b.id}`} style={linkCellStyle}>
-                      voir →
-                    </Link>
-                  </td>
-                  <td style={tdStyle}>{bdcEvalStatusLabel(b.evalStatus)}</td>
-                  <td style={{ ...tdStyle, fontSize: '0.85rem' }}>{b.archiveStatus}</td>
-                  <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                    {facture ? (
-                      <>
-                        <a
-                          href={`/api/admin/factures/${facture.id}/pdf`}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ color: '#2e7d32', textDecoration: 'none', fontWeight: 600 }}
-                        >
-                          {facture.factureNumero}
-                        </a>
-                        {facture.modePaiement ? (
-                          <span style={{ color: '#888', marginLeft: 4 }}>
-                            ({facture.modePaiement.toLowerCase()})
-                          </span>
-                        ) : null}
-                      </>
-                    ) : (
-                      <span style={{ color: '#888' }}>—</span>
-                    )}
-                  </td>
-                  <td style={{ ...tdStyle, textAlign: 'right' }}>{b._count.items}</td>
-                  <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace', fontWeight: facture ? 600 : 400 }}>
-                    {facture ? `${Number(facture.grandTotal).toFixed(2)} $` : '—'}
-                  </td>
+        </div>
+        {velo.bdcs.length === 0 ? (
+          <p className="text-sm text-[var(--text-secondary-60)]">Aucun BDT pour ce vélo.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl bg-white/85 shadow-sm">
+            <table className="w-full text-sm">
+              <thead className="border-b border-[var(--gris-bord)] bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+                <tr>
+                  <th className="px-3 py-2 text-left">Date</th>
+                  <th className="px-3 py-2 text-left">BDT</th>
+                  <th className="px-3 py-2 text-left">Statut éval</th>
+                  <th className="px-3 py-2 text-left">Archive</th>
+                  <th className="px-3 py-2 text-left">Facture</th>
+                  <th className="px-3 py-2 text-right">Items</th>
+                  <th className="px-3 py-2 text-right">Total facturé</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
+              </thead>
+              <tbody>
+                {velo.bdcs.map((b) => {
+                  const facture = b.factures[0] ?? null;
+                  return (
+                    <tr key={b.id} className="border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
+                      <td className="px-3 py-2 text-xs text-[var(--text-secondary-60)]">
+                        {b.createdAt.toLocaleDateString('fr-CA')}
+                      </td>
+                      <td className="px-3 py-2">
+                        <Link href={`/${locale}/admin/bdcs/${b.id}`} className="text-blue-600 hover:underline">
+                          voir →
+                        </Link>
+                      </td>
+                      <td className="px-3 py-2">{bdcEvalStatusLabel(b.evalStatus)}</td>
+                      <td className="px-3 py-2 text-xs">{b.archiveStatus}</td>
+                      <td className="px-3 py-2 font-mono text-xs">
+                        {facture ? (
+                          <>
+                            <a
+                              href={`/api/admin/factures/${facture.id}/pdf`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="font-semibold text-green-700 hover:underline"
+                            >
+                              {facture.factureNumero}
+                            </a>
+                            {facture.modePaiement ? (
+                              <span className="ml-1 text-[var(--text-secondary-60)]">
+                                ({facture.modePaiement.toLowerCase()})
+                              </span>
+                            ) : null}
+                          </>
+                        ) : (
+                          <span className="text-[var(--text-secondary-60)]">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums">{b._count.items}</td>
+                      <td className={`px-3 py-2 text-right font-mono tabular-nums${facture ? ' font-semibold' : ''}`}>
+                        {facture ? `${Number(facture.grandTotal).toFixed(2)} $` : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-      {v1 ? (
-        <>
-          <h2 style={{ ...h2Style, marginTop: '2rem' }}>Données v1 brutes</h2>
-          <details>
-            <summary style={{ cursor: 'pointer', color: '#666' }}>Afficher le JSON v1</summary>
-            <pre style={preStyle}>{JSON.stringify(v1, null, 2)}</pre>
-          </details>
-        </>
-      ) : null}
+        {v1 ? (
+          <>
+            <h2 className="mb-3 mt-8 text-base font-semibold">Données v1 brutes</h2>
+            <details>
+              <summary className="cursor-pointer text-[var(--text-secondary-60)]">Afficher le JSON v1</summary>
+              <pre className="mt-2 overflow-auto rounded-xl bg-white/60 p-4 text-xs">
+                {JSON.stringify(v1, null, 2)}
+              </pre>
+            </details>
+          </>
+        ) : null}
       </div>
     </div>
   );
@@ -250,32 +247,9 @@ export default async function VeloDetailPage({ params }: Props) {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', gap: '1rem', padding: '0.35rem 0', fontSize: '0.95rem' }}>
-      <span style={{ width: 220, color: '#666' }}>{label}</span>
+    <div className="flex gap-4 py-1.5 text-sm">
+      <span className="w-[220px] shrink-0 text-[var(--text-secondary-60)]">{label}</span>
       <span>{children}</span>
     </div>
   );
 }
-
-const h2Style: React.CSSProperties = { fontSize: '1.15rem', marginBottom: '0.75rem' };
-const tableStyle: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' };
-const thStyle: React.CSSProperties = {
-  textAlign: 'left',
-  padding: '0.5rem 0.6rem',
-  fontWeight: 600,
-  color: '#666',
-  fontSize: '0.78rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-};
-const tdStyle: React.CSSProperties = { padding: '0.5rem 0.6rem' };
-const linkStyle: React.CSSProperties = { color: '#1565c0', textDecoration: 'none' };
-const linkCellStyle: React.CSSProperties = { color: '#1565c0', textDecoration: 'none' };
-const preStyle: React.CSSProperties = {
-  fontSize: '0.8rem',
-  background: '#fafafa',
-  padding: '1rem',
-  marginTop: '0.5rem',
-  overflow: 'auto',
-  borderRadius: 4,
-};

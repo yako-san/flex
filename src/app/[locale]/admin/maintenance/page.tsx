@@ -15,7 +15,6 @@ export default async function MaintenancePage({ params }: Props) {
   const workshop = await getActiveWorkshop();
   if (!workshop) return <p>Aucun workshop actif.</p>;
 
-  // Stats utiles pour diagnostiquer la santé des données
   const [
     bdcSoftDeleted,
     veloOrphelin,
@@ -30,7 +29,6 @@ export default async function MaintenancePage({ params }: Props) {
     prisma.piece.count({
       where: { workshopId: workshop.id, deletedAt: null, stockPhysique: { lt: 0 } },
     }),
-    // Compte les BDT dont le velo a été soft-deleted
     prisma.bdc.count({
       where: {
         workshopId: workshop.id,
@@ -51,58 +49,46 @@ export default async function MaintenancePage({ params }: Props) {
         subline={`Workshop : ${workshop.name}`}
       />
       <div className="mx-auto max-w-[800px] p-6">
-      <p style={{ color: '#666', marginTop: 0, marginBottom: '1.5rem' }}>
-        ⚠️ Ces opérations affectent les données du workshop {workshop.name}. Pas de
-        bouton « annuler » — vérifie deux fois avant de cliquer.
-      </p>
+        <p className="mb-6 text-sm text-[var(--text-secondary-60)]">
+          ⚠️ Ces opérations affectent les données du workshop {workshop.name}. Pas de
+          bouton « annuler » — vérifie deux fois avant de cliquer.
+        </p>
 
-      <h2 style={h2}>Diagnostic</h2>
-      <div style={panelStyle}>
-        <Stat label="BDT soft-deleted (deletedAt non-null)" value={bdcSoftDeleted} />
-        <Stat label="Vélos sans aucun BDT (orphelins potentiels)" value={veloOrphelin} />
-        <Stat label="BDT actifs avec vélo soft-deleted" value={bdcSansVelo} {...(bdcSansVelo > 0 ? { accent: '#c62828' } : {})} />
-        <Stat label="Pièces avec stock physique négatif" value={pieceStockNegatif} {...(pieceStockNegatif > 0 ? { accent: '#c62828' } : {})} />
-        <Stat label="Ventes brouillon (jamais facturées)" value={venteBrouillon} />
-      </div>
+        <h2 className="mb-3 mt-6 text-base font-semibold">Diagnostic</h2>
+        <div className="rounded-xl border border-[var(--gris-bord)] bg-white/60 px-4 py-3">
+          <Stat label="BDT soft-deleted (deletedAt non-null)" value={bdcSoftDeleted} />
+          <Stat label="Vélos sans aucun BDT (orphelins potentiels)" value={veloOrphelin} />
+          {bdcSansVelo > 0 ? <Stat label="BDT actifs avec vélo soft-deleted" value={bdcSansVelo} accent="var(--rouge)" /> : <Stat label="BDT actifs avec vélo soft-deleted" value={bdcSansVelo} />}
+          {pieceStockNegatif > 0 ? <Stat label="Pièces avec stock physique négatif" value={pieceStockNegatif} accent="var(--rouge)" /> : <Stat label="Pièces avec stock physique négatif" value={pieceStockNegatif} />}
+          <Stat label="Ventes brouillon (jamais facturées)" value={venteBrouillon} />
+        </div>
 
-      <h2 style={{ ...h2, marginTop: '2rem' }}>Snapshot complet de la base</h2>
-      <p style={{ color: '#666', fontSize: '0.9rem' }}>
-        Télécharge un fichier JSON contenant <strong>toutes les données</strong> du
-        workshop actif (clients, vélos, BDT, ventes, factures, mouvements de
-        stock, audit logs, etc.). Lecture seule, ne modifie rien. Utile pour
-        backup avant opération destructive ou audit point-in-time.
-      </p>
-      <a
-        href="/api/admin/snapshot"
-        style={{
-          display: 'inline-block',
-          padding: '0.55rem 1.1rem',
-          background: '#1565c0',
-          color: 'white',
-          border: 0,
-          borderRadius: 4,
-          textDecoration: 'none',
-          fontSize: '0.9rem',
-        }}
-      >
-        ⬇ Télécharger snapshot JSON
-      </a>
+        <h2 className="mb-3 mt-8 text-base font-semibold">Snapshot complet de la base</h2>
+        <p className="mb-3 text-sm text-[var(--text-secondary-60)]">
+          Télécharge un fichier JSON contenant <strong>toutes les données</strong> du
+          workshop actif (clients, vélos, BDT, ventes, factures, mouvements de
+          stock, audit logs, etc.). Lecture seule, ne modifie rien. Utile pour
+          backup avant opération destructive ou audit point-in-time.
+        </p>
+        <a href="/api/admin/snapshot" className="btn-secondary">
+          ⬇ Télécharger snapshot JSON
+        </a>
 
-      <h2 style={{ ...h2, marginTop: '2rem' }}>Recalculer le stock</h2>
-      <p style={{ color: '#666', fontSize: '0.9rem' }}>
-        Reconstruit <code>Piece.stockPhysique</code> et <code>Piece.stockReserve</code>{' '}
-        depuis la table <code>StockMovement</code> (source de vérité). Utile après
-        un import ou pour corriger un désalignement.
-      </p>
-      <RecomputeStockButton />
+        <h2 className="mb-3 mt-8 text-base font-semibold">Recalculer le stock</h2>
+        <p className="mb-3 text-sm text-[var(--text-secondary-60)]">
+          Reconstruit <code>Piece.stockPhysique</code> et <code>Piece.stockReserve</code>{' '}
+          depuis la table <code>StockMovement</code> (source de vérité). Utile après
+          un import ou pour corriger un désalignement.
+        </p>
+        <RecomputeStockButton />
 
-      <h2 style={{ ...h2, marginTop: '2rem' }}>Supprimer un BDT par ID</h2>
-      <p style={{ color: '#666', fontSize: '0.9rem' }}>
-        Soft-delete (positionne <code>deletedAt</code>). Refusé si le BDT a une
-        facture émise — pour préserver l&apos;intégrité comptable. Pour ces cas-là,
-        passer par la BD directement avec un comptable.
-      </p>
-      <DeleteBdcForm />
+        <h2 className="mb-3 mt-8 text-base font-semibold">Supprimer un BDT par ID</h2>
+        <p className="mb-3 text-sm text-[var(--text-secondary-60)]">
+          Soft-delete (positionne <code>deletedAt</code>). Refusé si le BDT a une
+          facture émise — pour préserver l&apos;intégrité comptable. Pour ces cas-là,
+          passer par la BD directement avec un comptable.
+        </p>
+        <DeleteBdcForm />
       </div>
     </div>
   );
@@ -110,25 +96,14 @@ export default async function MaintenancePage({ params }: Props) {
 
 function Stat({ label, value, accent }: { label: string; value: number; accent?: string }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #f5f5f5' }}>
-      <span style={{ color: '#666', fontSize: '0.9rem' }}>{label}</span>
+    <div className="flex items-center justify-between border-b border-[var(--gris-bord)]/40 py-1.5 last:border-0">
+      <span className="text-sm text-[var(--text-secondary-60)]">{label}</span>
       <span
-        style={{
-          fontFamily: 'monospace',
-          fontWeight: 600,
-          color: accent ?? (value > 0 ? '#1a1a1a' : '#888'),
-        }}
+        className="font-mono font-semibold"
+        style={{ color: accent ?? (value > 0 ? 'var(--dark)' : 'rgba(0,0,0,0.4)') }}
       >
         {value.toLocaleString('fr-CA')}
       </span>
     </div>
   );
 }
-
-const h2: React.CSSProperties = { fontSize: '1.15rem', marginTop: '1.5rem', marginBottom: '0.75rem' };
-const panelStyle: React.CSSProperties = {
-  background: 'white',
-  border: '1px solid #e0e0e0',
-  borderRadius: 6,
-  padding: '0.75rem 1rem',
-};

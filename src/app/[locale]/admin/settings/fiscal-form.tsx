@@ -78,28 +78,28 @@ export function FiscalForm({ initial }: { initial: FiscalEntity }) {
 
       <h3 style={h3Style}>Footer PDF</h3>
       <div>
-        <label style={labelStyle}>Texte affiché en bas des factures (optionnel)</label>
+        <label className="label-system">Texte affiché en bas des factures (optionnel)</label>
         <textarea
           name="footerText"
           defaultValue={initial.footerText ?? ''}
           rows={3}
           placeholder="Merci de votre visite ! Suivez-nous : @yako.cyclo"
-          style={{ ...inputStyle, fontFamily: 'inherit', resize: 'vertical' }}
+          className="input-system"
         />
       </div>
 
       {state?.error ? (
-        <div style={{ background: '#ffebee', border: '1px solid #f44336', color: '#c62828', padding: '0.75rem', borderRadius: 4, marginTop: '1rem' }}>
+        <div className="mt-4 mb-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">
           {state.error}
         </div>
       ) : null}
       {state?.success ? (
-        <div style={{ background: '#e8f5e9', border: '1px solid #4caf50', color: '#2e7d32', padding: '0.75rem', borderRadius: 4, marginTop: '1rem' }}>
+        <div className="mt-4 rounded-xl border border-green-400 bg-green-50 p-3 text-sm text-green-800">
           ✓ Identité fiscale enregistrée. Les prochaines factures émises l&apos;utiliseront.
         </div>
       ) : null}
 
-      <button type="submit" disabled={pending} style={btnStyle(pending)}>
+      <button type="submit" disabled={pending} className="btn-primary mt-4">
         {pending ? 'Enregistrement…' : 'Enregistrer'}
       </button>
     </form>
@@ -120,14 +120,14 @@ function Field({
   type?: string;
 }) {
   return (
-    <div style={{ marginBottom: '0.85rem' }}>
-      <label style={labelStyle}>{label}</label>
+    <div className="mb-3">
+      <label className="label-system">{label}</label>
       <input
         type={type}
         name={name}
         defaultValue={defaultValue ?? ''}
         placeholder={placeholder}
-        style={inputStyle}
+        className="input-system"
       />
     </div>
   );
@@ -139,21 +139,6 @@ const h3Style: React.CSSProperties = {
   marginBottom: '0.75rem',
   color: '#333',
 };
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '0.85rem',
-  fontWeight: 500,
-  color: '#444',
-  marginBottom: '0.3rem',
-};
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '0.5rem 0.6rem',
-  fontSize: '0.95rem',
-  border: '1px solid #ccc',
-  borderRadius: 4,
-  background: 'white',
-};
 const twoCol: React.CSSProperties = {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
@@ -164,13 +149,3 @@ const threeCol: React.CSSProperties = {
   gridTemplateColumns: '2fr 1fr 1fr',
   gap: '1rem',
 };
-const btnStyle = (pending: boolean): React.CSSProperties => ({
-  marginTop: '1rem',
-  padding: '0.7rem 1.5rem',
-  fontSize: '0.95rem',
-  background: pending ? '#999' : '#1a1a1a',
-  color: 'white',
-  border: 0,
-  borderRadius: 4,
-  cursor: pending ? 'wait' : 'pointer',
-});

@@ -40,7 +40,6 @@ export default async function ClientDetailPage({ params }: Props) {
 
   if (!client) notFound();
 
-  // Historique facturation (BDT + ventes directes)
   const [factures, ventes] = await Promise.all([
     prisma.factureLog.findMany({
       where: { workshopId: workshop.id, clientId: client.id },
@@ -120,139 +119,138 @@ export default async function ClientDetailPage({ params }: Props) {
           ← Tous les clients
         </Link>
 
-      <h2 style={h2Style}>Coordonnées</h2>
-      <Row label="Téléphone">{client.telephone ? `${client.indicatif ?? ''} ${client.telephone}` : '—'}</Row>
-      <Row label="Courriel">{client.courriel ?? '—'}</Row>
-      <Row label="Communication préférée">{client.commPref}</Row>
-      <Row label="Lang">{client.lang}</Row>
-      <Row label="Lead">{client.lead ?? '—'}</Row>
-      <Row label="Remise par défaut">{client.remiseDefault ? `${Number(client.remiseDefault)}%` : '—'}</Row>
-      <Row label="Notes">{client.notes ?? '—'}</Row>
+        <h2 className="mb-3 mt-4 text-base font-semibold">Coordonnées</h2>
+        <Row label="Téléphone">{client.telephone ? `${client.indicatif ?? ''} ${client.telephone}` : '—'}</Row>
+        <Row label="Courriel">{client.courriel ?? '—'}</Row>
+        <Row label="Communication préférée">{client.commPref}</Row>
+        <Row label="Lang">{client.lang}</Row>
+        <Row label="Lead">{client.lead ?? '—'}</Row>
+        <Row label="Remise par défaut">{client.remiseDefault ? `${Number(client.remiseDefault)}%` : '—'}</Row>
+        <Row label="Notes">{client.notes ?? '—'}</Row>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem', marginBottom: '0.75rem' }}>
-        <h2 style={{ ...h2Style, marginBottom: 0 }}>Vélos ({client.velos.length})</h2>
-        <Link
-          href={`/${locale}/admin/velos/new?clientId=${client.id}`}
-          style={{
-            padding: '0.4rem 0.9rem',
-            background: 'transparent',
-            color: '#1565c0',
-            border: '1px solid #1565c0',
-            borderRadius: 4,
-            textDecoration: 'none',
-            fontSize: '0.85rem',
-          }}
-        >
-          + Nouveau vélo pour ce client
-        </Link>
-      </div>
-      {client.velos.length === 0 ? (
-        <p style={{ color: '#888' }}>Aucun vélo enregistré.</p>
-      ) : (
-        <table style={tableStyle}>
-          <thead>
-            <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
-              <th style={thStyle}>Vélo #</th>
-              <th style={thStyle}>Marque/Modèle</th>
-              <th style={thStyle}>Status</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>BDT</th>
-            </tr>
-          </thead>
-          <tbody>
-            {client.velos.map((v) => (
-              <tr key={v.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={tdStyle}>
-                  <Link href={`/${locale}/admin/velos/${v.id}`} style={linkCellStyle}>
-                    {String(v.veloNumero).padStart(4, '0')}
+        <div className="mb-3 mt-8 flex items-center justify-between">
+          <h2 className="text-base font-semibold">Vélos ({client.velos.length})</h2>
+          <Link
+            href={`/${locale}/admin/velos/new?clientId=${client.id}`}
+            className="btn-secondary"
+            style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}
+          >
+            + Nouveau vélo pour ce client
+          </Link>
+        </div>
+        {client.velos.length === 0 ? (
+          <p className="text-sm text-[var(--text-secondary-60)]">Aucun vélo enregistré.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl bg-white/85 shadow-sm">
+            <table className="w-full text-sm">
+              <thead className="border-b border-[var(--gris-bord)] bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+                <tr>
+                  <th className="px-3 py-2 text-left">Vélo #</th>
+                  <th className="px-3 py-2 text-left">Marque/Modèle</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-3 py-2 text-right">BDT</th>
+                </tr>
+              </thead>
+              <tbody>
+                {client.velos.map((v) => (
+                  <tr key={v.id} className="border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
+                    <td className="px-3 py-2">
+                      <Link href={`/${locale}/admin/velos/${v.id}`} className="font-mono text-blue-600 hover:underline">
+                        {String(v.veloNumero).padStart(4, '0')}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2">{[v.marque?.nom, v.modele, v.couleur].filter(Boolean).join(', ') || '—'}</td>
+                    <td className="px-3 py-2">{v.status}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{v.bdcs.length}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <h2 className="mb-3 mt-8 text-base font-semibold">Historique factures ({factures.length})</h2>
+        {factures.length === 0 ? (
+          <p className="text-sm text-[var(--text-secondary-60)]">Aucune facture.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl bg-white/85 shadow-sm">
+            <table className="w-full text-sm">
+              <thead className="border-b border-[var(--gris-bord)] bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+                <tr>
+                  <th className="px-3 py-2 text-left">Date</th>
+                  <th className="px-3 py-2 text-left">N°</th>
+                  <th className="px-3 py-2 text-left">Type</th>
+                  <th className="px-3 py-2 text-left">Statut</th>
+                  <th className="px-3 py-2 text-right">Total</th>
+                  <th className="px-3 py-2 text-left"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {factures.map((f) => (
+                  <tr key={f.id} className="border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
+                    <td className="px-3 py-2 text-xs">{f.date.toLocaleDateString('fr-CA')}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{f.factureNumero}</td>
+                    <td className="px-3 py-2 text-xs">{f.type}</td>
+                    <td className="px-3 py-2">
+                      <FactureStatutControls
+                        factureLogId={f.id}
+                        statut={f.statut}
+                        modePaiement={f.modePaiement}
+                      />
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono font-semibold tabular-nums">
+                      {Number(f.grandTotal).toFixed(2)} $
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      <a href={`/api/admin/factures/${f.id}/pdf`} target="_blank" rel="noreferrer" className="font-mono text-blue-600 hover:underline">
+                        PDF
+                      </a>
+                      {f.bdcId ? (
+                        <>
+                          {' · '}
+                          <Link href={`/${locale}/admin/bdcs/${f.bdcId}`} className="font-mono text-blue-600 hover:underline">BDT</Link>
+                        </>
+                      ) : null}
+                      {f.venteId ? (
+                        <>
+                          {' · '}
+                          <Link href={`/${locale}/admin/ventes/${f.venteId}`} className="font-mono text-blue-600 hover:underline">Vente</Link>
+                        </>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {ventes.length > 0 ? (
+          <>
+            <h2 className="mb-3 mt-8 text-base font-semibold">Ventes brouillon ({ventes.length})</h2>
+            <ul className="list-disc pl-5">
+              {ventes.map((v) => (
+                <li key={v.id} className="mb-1">
+                  <Link href={`/${locale}/admin/ventes/${v.id}`} className="text-blue-600 hover:underline">
+                    {v.date.toLocaleDateString('fr-CA')} — {Number(v.totalPieces).toFixed(2)} $
                   </Link>
-                </td>
-                <td style={tdStyle}>{[v.marque?.nom, v.modele, v.couleur].filter(Boolean).join(', ') || '—'}</td>
-                <td style={tdStyle}>{v.status}</td>
-                <td style={{ ...tdStyle, textAlign: 'right' }}>{v.bdcs.length}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
 
-      <h2 style={{ ...h2Style, marginTop: '2rem' }}>Historique factures ({factures.length})</h2>
-      {factures.length === 0 ? (
-        <p style={{ color: '#888' }}>Aucune facture.</p>
-      ) : (
-        <table style={tableStyle}>
-          <thead>
-            <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
-              <th style={thStyle}>Date</th>
-              <th style={thStyle}>N°</th>
-              <th style={thStyle}>Type</th>
-              <th style={thStyle}>Statut</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
-              <th style={thStyle}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {factures.map((f) => (
-              <tr key={f.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={{ ...tdStyle, fontSize: '0.85rem' }}>{f.date.toLocaleDateString('fr-CA')}</td>
-                <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '0.85rem' }}>{f.factureNumero}</td>
-                <td style={{ ...tdStyle, fontSize: '0.85rem' }}>{f.type}</td>
-                <td style={tdStyle}>
-                  <FactureStatutControls
-                    factureLogId={f.id}
-                    statut={f.statut}
-                    modePaiement={f.modePaiement}
-                  />
-                </td>
-                <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace', fontWeight: 600 }}>
-                  {Number(f.grandTotal).toFixed(2)} $
-                </td>
-                <td style={{ ...tdStyle, fontSize: '0.85rem' }}>
-                  <a href={`/api/admin/factures/${f.id}/pdf`} target="_blank" rel="noreferrer" style={linkCellStyle}>
-                    PDF
-                  </a>
-                  {f.bdcId ? (
-                    <>
-                      {' · '}
-                      <Link href={`/${locale}/admin/bdcs/${f.bdcId}`} style={linkCellStyle}>BDT</Link>
-                    </>
-                  ) : null}
-                  {f.venteId ? (
-                    <>
-                      {' · '}
-                      <Link href={`/${locale}/admin/ventes/${f.venteId}`} style={linkCellStyle}>Vente</Link>
-                    </>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {ventes.length > 0 ? (
-        <>
-          <h2 style={{ ...h2Style, marginTop: '2rem' }}>Ventes brouillon ({ventes.length})</h2>
-          <ul style={{ paddingLeft: '1.2rem' }}>
-            {ventes.map((v) => (
-              <li key={v.id} style={{ marginBottom: '0.25rem' }}>
-                <Link href={`/${locale}/admin/ventes/${v.id}`} style={{ color: '#1565c0', textDecoration: 'none' }}>
-                  {v.date.toLocaleDateString('fr-CA')} — {Number(v.totalPieces).toFixed(2)} $
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : null}
-
-      {v1 ? (
-        <>
-          <h2 style={{ ...h2Style, marginTop: '2rem' }}>Données v1 brutes</h2>
-          <details>
-            <summary style={{ cursor: 'pointer', color: '#666' }}>Afficher le JSON v1</summary>
-            <pre style={preStyle}>{JSON.stringify(v1, null, 2)}</pre>
-          </details>
-        </>
-      ) : null}
+        {v1 ? (
+          <>
+            <h2 className="mb-3 mt-8 text-base font-semibold">Données v1 brutes</h2>
+            <details>
+              <summary className="cursor-pointer text-[var(--text-secondary-60)]">Afficher le JSON v1</summary>
+              <pre className="mt-2 overflow-auto rounded-xl bg-white/60 p-4 text-xs">
+                {JSON.stringify(v1, null, 2)}
+              </pre>
+            </details>
+          </>
+        ) : null}
       </div>
     </div>
   );
@@ -260,31 +258,9 @@ export default async function ClientDetailPage({ params }: Props) {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', gap: '1rem', padding: '0.35rem 0', fontSize: '0.95rem' }}>
-      <span style={{ width: 220, color: '#666' }}>{label}</span>
+    <div className="flex gap-4 py-1.5 text-sm">
+      <span className="w-[220px] shrink-0 text-[var(--text-secondary-60)]">{label}</span>
       <span>{children}</span>
     </div>
   );
 }
-
-const h2Style: React.CSSProperties = { fontSize: '1.15rem', marginBottom: '0.75rem' };
-const tableStyle: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' };
-const thStyle: React.CSSProperties = {
-  textAlign: 'left',
-  padding: '0.5rem 0.6rem',
-  fontWeight: 600,
-  color: '#666',
-  fontSize: '0.78rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-};
-const tdStyle: React.CSSProperties = { padding: '0.5rem 0.6rem' };
-const linkCellStyle: React.CSSProperties = { color: '#1565c0', textDecoration: 'none', fontFamily: 'monospace' };
-const preStyle: React.CSSProperties = {
-  fontSize: '0.8rem',
-  background: '#fafafa',
-  padding: '1rem',
-  marginTop: '0.5rem',
-  overflow: 'auto',
-  borderRadius: 4,
-};
