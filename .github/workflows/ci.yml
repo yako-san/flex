@@ -40,11 +40,36 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma generate
 
+      - name: Validate Prisma schema
+        # Validate exige de résoudre les env() du schéma — on injecte des
+        # dummies inline (jamais utilisés, validate ne se connecte pas).
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          DATABASE_URL_UNPOOLED: postgresql://dummy:dummy@localhost:5432/dummy
+        run: pnpm prisma validate
+
       - name: Type-check
         run: pnpm typecheck
 
+      - name: Lint
+        # Non bloquant transitoirement. À durcir (continue-on-error: false)
+        # avant 2026-07-01 — ouvrir un suivi GitHub si dépassé.
+        continue-on-error: true
+        run: pnpm lint
+
       - name: Tests
         run: pnpm test
+
+      - name: Cache .next build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          # Bust le cache au moindre changement de lockfile, sources ou
+          # traductions next-intl.
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**/*.[jt]s', 'src/**/*.[jt]sx', 'messages/**/*.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-
 
       - name: Build
         run: pnpm build
