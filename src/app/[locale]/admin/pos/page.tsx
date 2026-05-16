@@ -69,7 +69,12 @@ export default async function PosPage({ params, searchParams }: Props) {
     <div>
       <PageHeader
         eyebrow="commandes fournisseurs"
-        title="Réception"
+        title={
+          <>
+            Pièces{' '}
+            <span className="opacity-70" style={{ fontSize: '0.6em' }}>: réception</span>
+          </>
+        }
         subline={`${pos.length} PO${pos.length === 1 ? '' : 's'} · ${actifs.length} actif${actifs.length === 1 ? '' : 's'}${trimmed ? ` · filtré sur « ${trimmed} »` : ''}`}
         actions={
           <ToolbarBlock>
@@ -90,6 +95,27 @@ export default async function PosPage({ params, searchParams }: Props) {
       />
 
       <div className="p-6">
+        {/* Pills toggle 4 onglets V1 — partagés avec /admin/pieces */}
+        <nav className="mb-4 inline-flex gap-1 rounded-full bg-[rgba(0,0,0,0.20)] p-1">
+          {[
+            { label: 'Catalogue',    href: `/${locale}/admin/pieces?onglet=catalogue`,    active: false },
+            { label: 'Fournisseurs', href: `/${locale}/admin/pieces?onglet=fournisseurs`, active: false },
+            { label: 'Commandes',    href: `/${locale}/admin/pos`,                        active: false },
+            { label: 'Réception',    href: `/${locale}/admin/pos`,                        active: true  },
+          ].map((t) => (
+            <Link
+              key={t.label}
+              href={t.href as never}
+              className={`inline-flex h-8 items-center rounded-full px-4 text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+                t.active
+                  ? 'bg-[var(--jaune)] text-black'
+                  : 'text-white/70 hover:bg-white/10'
+              }`}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </nav>
         {pos.length === 0 ? (
           <p className="rounded-xl border border-dashed border-[var(--gris-bord)] p-8 text-center text-sm text-[var(--text-secondary-60)]">
             Aucun PO {trimmed ? `pour « ${trimmed} »` : ''}.
