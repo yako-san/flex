@@ -76,7 +76,7 @@ function PreviewAndImport({
   return (
     <>
       <h2 style={h2}>2. Mappe les colonnes ({preview.totalRows} lignes détectées)</h2>
-      <p style={{ color: '#666', fontSize: '0.9rem' }}>
+      <p className="text-sm text-[var(--text-secondary-60)]">
         Détection automatique faite. Ajuste si nécessaire. Champs marqués * obligatoires.
       </p>
 
@@ -144,7 +144,7 @@ function PreviewAndImport({
         </div>
 
         <h2 style={h2}>3. Lance l&apos;import</h2>
-        <p style={{ color: '#666', fontSize: '0.9rem' }}>
+        <p className="text-sm text-[var(--text-secondary-60)]">
           Doublons détectés sur (prénom + nom) ou courriel — ignorés sans modification.
           Fais un dry-run d&apos;abord pour vérifier les chiffres.
         </p>

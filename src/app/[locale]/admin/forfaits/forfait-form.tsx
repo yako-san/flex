@@ -65,7 +65,7 @@ export function ForfaitForm({ initial, initialTasks = [] }: Props) {
       </label>
 
       <h3 style={h3}>Sous-tâches du forfait</h3>
-      <p style={{ fontSize: '0.78rem', color: '#888', marginTop: 0, marginBottom: '0.5rem' }}>
+      <p className="text-xs text-[var(--text-secondary-60)]" style={{ marginTop: 0, marginBottom: '0.5rem' }}>
         Quand un BDT inclura ce forfait, ces sous-tâches seront créées
         automatiquement avec status TODO. Modifier ici n&apos;affecte pas les BDT existants
         (snapshot au moment de l&apos;ajout).
@@ -74,7 +74,7 @@ export function ForfaitForm({ initial, initialTasks = [] }: Props) {
       <div style={{ marginBottom: '0.85rem' }}>
         {tasks.map((t, idx) => (
           <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.4rem' }}>
-            <span style={{ alignSelf: 'center', color: '#888', fontSize: '0.85rem', width: 20 }}>
+            <span className="text-xs text-[var(--text-secondary-60)]" style={{ alignSelf: 'center', width: 20 }}>
               {idx + 1}.
             </span>
             <input

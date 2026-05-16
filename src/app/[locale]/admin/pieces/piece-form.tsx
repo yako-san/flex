@@ -70,7 +70,7 @@ export function PieceForm({ initial }: Props) {
       </div>
 
       <h3 style={h3}>Prix</h3>
-      <p style={{ fontSize: '0.78rem', color: '#888', marginTop: 0, marginBottom: '0.75rem' }}>
+      <p className="text-xs text-[var(--text-secondary-60)]" style={{ marginTop: 0, marginBottom: '0.75rem' }}>
         Prix vente HT est utilisé sur les BDT et ventes. Les autres champs sont
         informationnels (analyse marges, achats, etc.).
       </p>
@@ -136,7 +136,7 @@ export function PieceForm({ initial }: Props) {
           />
         </div>
       </div>
-      <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '-0.4rem', marginBottom: '0.85rem' }}>
+      <p className="text-xs text-[var(--text-secondary-60)]" style={{ marginTop: '-0.4rem', marginBottom: '0.85rem' }}>
         ⚠️ La gestion dynamique du stock arrive en Phase 5. Pour l&apos;instant,
         c&apos;est une saisie manuelle.
       </p>

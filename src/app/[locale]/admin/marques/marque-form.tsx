@@ -29,7 +29,7 @@ export function MarqueForm({ initial }: Props) {
         placeholder="XS, S, M, L, XL  ou  48, 51, 54, 57"
         className="input-system"
       />
-      <p style={{ color: '#888', fontSize: '0.78rem', marginTop: '-0.5rem', marginBottom: '0.85rem' }}>
+      <p className="text-xs text-[var(--text-secondary-60)]" style={{ marginTop: '-0.5rem', marginBottom: '0.85rem' }}>
         Affichées comme dropdown dans le formulaire vélo. Laisse vide si la
         marque ne suit pas un standard.
       </p>

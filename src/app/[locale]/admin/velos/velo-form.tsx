@@ -69,7 +69,7 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
           style={{ width: 200 }}
         />
         {!initial ? (
-          <p style={hintStyle}>Laissé vide → numéro suivant attribué automatiquement.</p>
+          <p className="text-xs text-[var(--text-secondary-60)]" style={{ margin: '0.25rem 0 0' }}>Laissé vide → numéro suivant attribué automatiquement.</p>
         ) : null}
       </div>
 
@@ -123,7 +123,7 @@ export function VeloForm({ initial, defaultClientId, clients, marques, equipe }:
           <label className="label-system">
             Taille
             {taillesPourMarque.length > 0 ? (
-              <span style={{ color: '#888', fontWeight: 400, marginLeft: 4 }}>
+              <span className="text-xs text-[var(--text-secondary-60)]" style={{ fontWeight: 400, marginLeft: 4 }}>
                 (suggestions de la marque)
               </span>
             ) : null}
@@ -268,11 +268,6 @@ const threeColStyle: React.CSSProperties = {
   gridTemplateColumns: '1fr 1fr 1fr',
   gap: '1rem',
   marginBottom: '1rem',
-};
-const hintStyle: React.CSSProperties = {
-  fontSize: '0.8rem',
-  color: '#888',
-  margin: '0.25rem 0 0',
 };
 const h3Style: React.CSSProperties = {
   fontSize: '1rem',
