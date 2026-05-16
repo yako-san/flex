@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Pill } from '@/components/ui/pill';
 import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
-import { VELO_STATUS_LABELS } from '@/lib/velo/status-labels';
+import { VELO_STATUS_LABELS, VELO_STATUS_COLORS } from '@/lib/velo/status-labels';
 import type { VeloStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
@@ -110,8 +110,14 @@ export default async function VelosPage({ params, searchParams }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {velos.map((v) => (
-                  <tr key={v.id} className="border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
+                {velos.map((v) => {
+                  const colors = VELO_STATUS_COLORS[v.status];
+                  return (
+                  <tr
+                    key={v.id}
+                    className="transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: colors.bg, color: colors.fg }}
+                  >
                     <td className="px-3 py-2 font-mono font-semibold">
                       <Link href={`/${locale}/admin/velos/${v.id}`} className="hover:underline">
                         {String(v.veloNumero).padStart(4, '0')}
@@ -137,7 +143,8 @@ export default async function VelosPage({ params, searchParams }: Props) {
                     <td className="px-3 py-2">{v.taille ?? '—'}</td>
                     <td className="px-3 py-2 text-right font-mono tabular-nums">{v._count.bdcs}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
