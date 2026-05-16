@@ -4,8 +4,19 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
+import { Pill } from '@/components/ui/pill';
 import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
+
+type CmdVariant = 'cmd-recue' | 'cmd-listee' | 'cmd-a-cmder' | 'cmd-estimee';
+
+function stockStatus(physique: number, reserve: number): { variant: CmdVariant; label: string; title: string } {
+  const dispo = physique - reserve;
+  if (physique <= 0)          return { variant: 'cmd-estimee', label: '…',  title: 'Stock épuisé — à commander' };
+  if (dispo <= 0)             return { variant: 'cmd-a-cmder', label: '—',  title: 'Tout réservé sur BDT en cours' };
+  if (physique <= 2)          return { variant: 'cmd-listee',  label: '√',  title: 'Stock faible (≤ 2)' };
+  return                            { variant: 'cmd-recue',   label: '√',  title: `${dispo} en stock` };
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -148,30 +159,37 @@ export default async function PiecesPage({ params, searchParams }: Props) {
                         <th className="px-3 py-1.5 text-right">Prix vente</th>
                         <th className="px-3 py-1.5 text-right">Stock</th>
                         <th className="px-3 py-1.5 text-right">Réservé</th>
+                        <th className="px-3 py-1.5 text-center">Statut</th>
                         <th className="px-3 py-1.5" />
                       </tr>
                     </thead>
                     <tbody>
-                      {items.map((p) => (
-                        <tr key={p.id} className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
-                          <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{p.legacyCode ?? '—'}</td>
-                          <td className="px-3 py-1.5 font-mono">{p.sku ?? '—'}</td>
-                          <td className="px-3 py-1.5">{p.nomCanonical}</td>
-                          <td className="px-3 py-1.5 text-[var(--text-secondary-70)]">
-                            {view === 'catalogue' ? (p.fournisseur ?? '—') : (p.categorie ?? '—')}
-                          </td>
-                          <td className="px-3 py-1.5 text-right font-mono tabular-nums">{Number(p.prixVente).toFixed(2)} $</td>
-                          <td className={`px-3 py-1.5 text-right font-mono tabular-nums ${p.stockPhysique < 0 ? 'text-[var(--rouge)] font-semibold' : ''}`}>
-                            {p.stockPhysique}
-                          </td>
-                          <td className="px-3 py-1.5 text-right font-mono tabular-nums text-[var(--text-secondary-60)]">{p.stockReserve}</td>
-                          <td className="px-3 py-1.5 text-right">
-                            <Link href={`/${locale}/admin/pieces/${p.id}/edit`} className="text-[11px] text-[var(--jaune-h)] hover:underline">
-                              Modifier
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
+                      {items.map((p) => {
+                        const st = stockStatus(p.stockPhysique, p.stockReserve);
+                        return (
+                          <tr key={p.id} className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
+                            <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{p.legacyCode ?? '—'}</td>
+                            <td className="px-3 py-1.5 font-mono">{p.sku ?? '—'}</td>
+                            <td className="px-3 py-1.5">{p.nomCanonical}</td>
+                            <td className="px-3 py-1.5 text-[var(--text-secondary-70)]">
+                              {view === 'catalogue' ? (p.fournisseur ?? '—') : (p.categorie ?? '—')}
+                            </td>
+                            <td className="px-3 py-1.5 text-right font-mono tabular-nums">{Number(p.prixVente).toFixed(2)} $</td>
+                            <td className={`px-3 py-1.5 text-right font-mono tabular-nums ${p.stockPhysique < 0 ? 'text-[var(--rouge)] font-semibold' : ''}`}>
+                              {p.stockPhysique}
+                            </td>
+                            <td className="px-3 py-1.5 text-right font-mono tabular-nums text-[var(--text-secondary-60)]">{p.stockReserve}</td>
+                            <td className="px-3 py-1.5 text-center">
+                              <Pill variant={st.variant} size="sm" title={st.title}>{st.label}</Pill>
+                            </td>
+                            <td className="px-3 py-1.5 text-right">
+                              <Link href={`/${locale}/admin/pieces/${p.id}/edit`} className="text-[11px] text-[var(--jaune-h)] hover:underline">
+                                Modifier
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

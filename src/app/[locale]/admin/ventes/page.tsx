@@ -80,7 +80,9 @@ export default async function VentesPage({ params, searchParams }: Props) {
                   key={v.id}
                   href={`/${locale}/admin/ventes/${v.id}`}
                   className={`flex items-center justify-between gap-3 rounded-2xl px-4 py-3 shadow-sm transition-colors ${
-                    facture ? 'bg-[var(--st-facture-bg)]/40 hover:bg-[var(--st-facture-bg)]/60' : 'bg-white/85 hover:bg-white/95'
+                    facture
+                      ? 'bg-[var(--st-facture-bg)]/40 hover:bg-[var(--st-facture-bg)]/60'
+                      : 'bg-[var(--jaune)] ring-2 ring-[var(--jaune-h)] hover:bg-[var(--jaune-h)]'
                   }`}
                 >
                   <span className="flex items-baseline gap-3">

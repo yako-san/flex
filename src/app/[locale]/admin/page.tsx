@@ -388,7 +388,7 @@ function KpiCard({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl bg-white/85 p-4 shadow-sm">
+    <div className="rounded-2xl bg-[var(--overlay-dark-20)] p-4 shadow-sm">
       <div className="mb-2 flex items-center gap-2">
         <span
           aria-hidden
@@ -397,11 +397,16 @@ function KpiCard({
         >
           {icon}
         </span>
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-70)]">
           {label}
         </span>
       </div>
-      <div className="font-mono text-2xl font-bold tabular-nums">{value}</div>
+      <div
+        className="font-mono text-2xl font-bold tabular-nums"
+        style={{ color: 'var(--jaune)' }}
+      >
+        {value}
+      </div>
       {sub ? <div className="mt-1 text-[11px] text-[var(--text-secondary-60)]">{sub}</div> : null}
       {children}
     </div>

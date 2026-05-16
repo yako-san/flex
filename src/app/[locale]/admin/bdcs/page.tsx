@@ -96,13 +96,18 @@ export default async function BdcsPage({ params, searchParams }: Props) {
           modele: true,
           couleur: true,
           status: true,
+          date2: true,
           client: { select: { id: true, prenom: true, nom: true } },
           marque: { select: { nom: true } },
+          evalMecano: { select: { id: true, surnom: true } },
+          mecaMecano: { select: { id: true, surnom: true } },
+          ctrlMecano: { select: { id: true, surnom: true } },
         },
       },
-      _count: { select: { items: true } },
     },
   });
+
+  const dateFmt = new Intl.DateTimeFormat('fr-CA', { year: 'numeric', month: '2-digit', day: '2-digit' });
 
   const grouped = new Map<SectionKey, typeof bdcs>();
   for (const sec of SECTIONS) grouped.set(sec.key, []);
@@ -156,11 +161,12 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                           <th className="px-3 py-2 text-left">Statut</th>
                           <th className="px-3 py-2 text-left">BDT</th>
                           <th className="px-3 py-2 text-left">Vélo</th>
-                          <th className="px-3 py-2 text-left">Client</th>
                           <th className="px-3 py-2 text-left">Description</th>
-                          <th className="px-3 py-2 text-right">Items</th>
-                          <th className="px-3 py-2 text-right">Services</th>
-                          <th className="px-3 py-2 text-right">Pièces</th>
+                          <th className="px-3 py-2 text-left">Client</th>
+                          <th className="px-3 py-2 text-left">Éval</th>
+                          <th className="px-3 py-2 text-left">Méca</th>
+                          <th className="px-3 py-2 text-left">Contrôle</th>
+                          <th className="px-3 py-2 text-right">Date</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -168,6 +174,12 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                           const colors = VELO_STATUS_COLORS[b.velo.status];
                           const pill = STATUS_TO_PILL[b.velo.status];
                           const label = VELO_STATUS_LABELS[b.velo.status].fr;
+                          const eval_ = b.velo.evalMecano?.surnom;
+                          const meca  = b.velo.mecaMecano?.surnom;
+                          const ctrl  = b.velo.ctrlMecano?.surnom;
+                          const placeholder = (
+                            <span className="text-[var(--text-secondary-50)] italic">Sélection →</span>
+                          );
                           return (
                             <tr
                               key={b.id}
@@ -185,6 +197,9 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                               <td className="px-3 py-2 font-mono text-xs opacity-80">
                                 {String(b.velo.veloNumero).padStart(4, '0')}
                               </td>
+                              <td className="px-3 py-2 truncate max-w-[220px]">
+                                {[b.velo.marque?.nom, b.velo.modele, b.velo.couleur].filter(Boolean).join(', ') || '—'}
+                              </td>
                               <td className="px-3 py-2">
                                 {b.velo.client ? (
                                   <Link
@@ -197,12 +212,12 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                                   '—'
                                 )}
                               </td>
-                              <td className="px-3 py-2 truncate max-w-[260px]">
-                                {[b.velo.marque?.nom, b.velo.modele, b.velo.couleur].filter(Boolean).join(', ') || '—'}
+                              <td className="px-3 py-2">{eval_ ?? placeholder}</td>
+                              <td className="px-3 py-2">{meca ?? placeholder}</td>
+                              <td className="px-3 py-2">{ctrl ?? placeholder}</td>
+                              <td className="px-3 py-2 text-right font-mono text-xs tabular-nums opacity-80">
+                                {b.velo.date2 ? dateFmt.format(b.velo.date2) : '—'}
                               </td>
-                              <td className="px-3 py-2 text-right tabular-nums">{b._count.items}</td>
-                              <td className="px-3 py-2 text-right font-mono tabular-nums">{Number(b.totalServices).toFixed(2)}</td>
-                              <td className="px-3 py-2 text-right font-mono tabular-nums">{Number(b.totalPieces).toFixed(2)}</td>
                             </tr>
                           );
                         })}
