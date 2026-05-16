@@ -233,7 +233,11 @@ function PoAccordion({
                 const restant = qcm - qrc;
                 const recuComplet = restant <= 0 && qcm > 0;
                 return (
-                  <tr key={it.id} className="border-t border-black/5" style={recuComplet ? { backgroundColor: 'var(--st-approuve-bg)' } : undefined}>
+                  <tr
+                    key={it.id}
+                    className="odd:bg-white/85 even:bg-white/70 border-t border-black/5"
+                    style={recuComplet ? { backgroundColor: 'var(--st-approuve-bg)' } : undefined}
+                  >
                     <td className="px-3 py-1.5">{it.nomSnapshot}</td>
                     <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{it.skuSnapshot ?? '—'}</td>
                     <td className="px-3 py-1.5 text-[var(--text-secondary-70)]">{it.categorie ?? '—'}</td>

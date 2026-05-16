@@ -164,7 +164,7 @@ export default async function ClientDetailPage({ params }: Props) {
               </thead>
               <tbody>
                 {client.velos.map((v) => (
-                  <tr key={v.id} className="border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
+                  <tr key={v.id} className="odd:bg-white/85 even:bg-white/70 border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
                     <td className="px-3 py-2">
                       <Link href={`/${locale}/admin/velos/${v.id}`} className="font-mono text-[var(--jaune-h)] hover:underline">
                         {String(v.veloNumero).padStart(4, '0')}
@@ -202,7 +202,7 @@ export default async function ClientDetailPage({ params }: Props) {
               </thead>
               <tbody>
                 {factures.map((f) => (
-                  <tr key={f.id} className="border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
+                  <tr key={f.id} className="odd:bg-white/85 even:bg-white/70 border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
                     <td className="px-3 py-2 text-xs">{f.date.toLocaleDateString('fr-CA')}</td>
                     <td className="px-3 py-2 font-mono text-xs">{f.factureNumero}</td>
                     <td className="px-3 py-2 text-xs">{f.type}</td>

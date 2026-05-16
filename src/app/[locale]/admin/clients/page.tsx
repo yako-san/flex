@@ -137,7 +137,7 @@ export default async function ClientsPage({ params, searchParams }: Props) {
                         const activeVelo = c.velos[0];
                         const activeBdc = activeVelo?.bdcs[0];
                         return (
-                          <tr key={c.id} className="border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
+                          <tr key={c.id} className="odd:bg-white/85 even:bg-white/70 border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
                             <td className="px-3 py-2">
                               <Link href={`/${locale}/admin/clients/${c.id}`} className="font-semibold text-[var(--dark)] hover:underline">
                                 {c.prenom} {c.nom}

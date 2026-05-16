@@ -33,7 +33,7 @@ type PieceLite = {
 function PieceRow({ p, view, locale }: { p: PieceLite; view: 'catalogue' | 'fournisseurs'; locale: string }) {
   const st = stockStatus(p.stockPhysique, p.stockReserve);
   return (
-    <tr className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
+    <tr className="odd:bg-white/85 even:bg-white/70 border-t border-black/5 hover:bg-[var(--gris-fond)]">
       <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{p.legacyCode ?? '—'}</td>
       <td className="px-3 py-1.5 font-mono">{p.sku ?? '—'}</td>
       <td className="px-3 py-1.5">{p.nomCanonical}</td>

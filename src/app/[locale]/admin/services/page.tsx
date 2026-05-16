@@ -98,7 +98,7 @@ export default async function ServicesPage({ params, searchParams }: Props) {
                 </thead>
                 <tbody>
                   {forfaits.map((f) => (
-                    <tr key={f.id} className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
+                    <tr key={f.id} className="odd:bg-white/85 even:bg-white/70 border-t border-black/5 hover:bg-[var(--gris-fond)]">
                       <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{f.legacyCode ?? '—'}</td>
                       <td className="px-3 py-1.5 font-semibold">{f.labelCanonical}</td>
                       <td className="px-3 py-1.5 text-right tabular-nums">
@@ -143,7 +143,7 @@ export default async function ServicesPage({ params, searchParams }: Props) {
                   <table className="w-full text-xs">
                     <tbody>
                       {list.map((s) => (
-                        <tr key={s.id} className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
+                        <tr key={s.id} className="odd:bg-white/85 even:bg-white/70 border-t border-black/5 hover:bg-[var(--gris-fond)]">
                           <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)] w-[60px]">{s.legacyCode ?? '—'}</td>
                           <td className="px-3 py-1.5">{s.labelCanonical}</td>
                           <td className="px-3 py-1.5 text-right tabular-nums w-[80px]">

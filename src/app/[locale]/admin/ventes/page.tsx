@@ -168,7 +168,7 @@ export default async function VentesPage({ params, searchParams }: Props) {
                         </thead>
                         <tbody>
                           {v.items.map((it) => (
-                            <tr key={it.id} className="border-t border-black/5">
+                            <tr key={it.id} className="odd:bg-white/85 even:bg-white/70 border-t border-black/5">
                               <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">
                                 {it.skuSnapshot ?? '—'}
                               </td>
