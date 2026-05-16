@@ -34,7 +34,6 @@ export default async function AdminDashboardPage({ params }: Props) {
 
   const wid = workshop.id;
   const now = new Date();
-  const start30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const eyebrow = `${MOIS_FR[now.getMonth()]} ${now.getFullYear()}`;
 
@@ -42,11 +41,10 @@ export default async function AdminDashboardPage({ params }: Props) {
     bdcActifCount,
     bdcByEvalStatus,
     revenueMonth,
-    factureCount30,
     stockLow,
-    topPieces30,
     recentFactures,
     recentVentes,
+    rendezVous,
     bdtTermines,
     bdtSuivi,
   ] = await Promise.all([
@@ -60,26 +58,16 @@ export default async function AdminDashboardPage({ params }: Props) {
       where: { workshopId: wid, date: { gte: startMonth } },
       _sum: { grandTotal: true },
     }),
-    prisma.factureLog.count({ where: { workshopId: wid, date: { gte: start30 } } }),
     prisma.piece.findMany({
       where: { workshopId: wid, deletedAt: null, stockPhysique: { lte: 0 } },
       select: { id: true, sku: true, nomCanonical: true, stockPhysique: true, stockReserve: true },
       orderBy: { stockPhysique: 'asc' },
-      take: 10,
-    }),
-    prisma.venteDirecteItem.groupBy({
-      by: ['nomSnapshot'],
-      where: {
-        vente: { workshopId: wid, deletedAt: null, factureNumero: { not: null }, factureDate: { gte: start30 } },
-      },
-      _sum: { qty: true, total: true },
-      orderBy: { _sum: { total: 'desc' } },
-      take: 5,
+      take: 20,
     }),
     prisma.factureLog.findMany({
       where: { workshopId: wid },
       orderBy: { date: 'desc' },
-      take: 5,
+      take: 6,
       select: {
         id: true,
         factureNumero: true,
@@ -104,10 +92,33 @@ export default async function AdminDashboardPage({ params }: Props) {
       where: {
         workshopId: wid,
         deletedAt: null,
+        velo: { status: { in: ['RV', 'RECU'] } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 6,
+      select: {
+        id: true,
+        numero: true,
+        evalStatus: true,
+        velo: {
+          select: {
+            status: true,
+            date2: true,
+            client: { select: { prenom: true, nom: true } },
+            marque: { select: { nom: true } },
+            modele: true,
+          },
+        },
+      },
+    }),
+    prisma.bdc.findMany({
+      where: {
+        workshopId: wid,
+        deletedAt: null,
         velo: { status: { in: ['CTRL_QLTE', 'FINI', 'FACTURER', 'FACTURE'] } },
       },
       orderBy: { updatedAt: 'desc' },
-      take: 5,
+      take: 6,
       select: {
         id: true,
         numero: true,
@@ -221,17 +232,17 @@ export default async function AdminDashboardPage({ params }: Props) {
             icon={<Package size={18} />}
             iconBg="var(--rouge)"
             iconFg="white"
-            label="Stock épuisé"
+            label="Stock à commander"
             value={stockLow.length}
-            sub={stockNegatif > 0 ? `${stockNegatif} unités en négatif` : 'pièces à 0 ou moins'}
+            sub={stockNegatif > 0 ? `${stockNegatif} unités du stock` : 'pièces à 0 ou moins'}
           />
 
           <KpiCard
             icon={<Bell size={18} />}
             iconBg="var(--jaune)"
             label="Suivis"
-            value={factureCount30}
-            sub="factures émises (30j)"
+            value={bdtSuivi.length}
+            sub="factures à suivre"
           />
 
           <KpiCard
@@ -243,10 +254,32 @@ export default async function AdminDashboardPage({ params }: Props) {
           />
         </section>
 
-        {/* 3 colonnes */}
-        <div className="grid gap-4 lg:grid-cols-3">
-          {/* Col 1 : BDT - Terminés + BDT - Suivi */}
+        {/* 3 colonnes V1 — Rendez-vous + Terminés + Suivi / Pièces / Factures + Ventes */}
+        <div className="grid gap-4 lg:grid-cols-3 items-start">
+          {/* Col 1 : Rendez-vous + BDT Terminés + BDT Suivi */}
           <div className="space-y-4">
+            <DashSection icon={<Calendar size={16} />} title="Rendez-vous" count={rendezVous.length}>
+              {rendezVous.length === 0 ? (
+                <EmptyState>Aucun BDT en RV/REÇU.</EmptyState>
+              ) : (
+                <ul className="space-y-1.5">
+                  {rendezVous.map((b) => (
+                    <li key={b.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-xs hover:bg-[var(--gris-fond)]">
+                      <Link href={`/${locale}/admin/inventaire/${b.id}`} className="font-mono font-semibold text-[var(--dark)] hover:underline">
+                        {String(b.numero).padStart(4, '0')}
+                      </Link>
+                      <span className="flex-1 truncate text-[var(--text-secondary-70)]">
+                        {b.velo.client ? `${b.velo.client.prenom} ${b.velo.client.nom}` : 'walk-in'} · {[b.velo.marque?.nom, b.velo.modele].filter(Boolean).join(' ')}
+                      </span>
+                      <Pill variant={b.velo.status === 'RV' ? 'rv' : 'recu'} size="sm">
+                        {b.velo.status === 'RV' ? 'rv' : 'reçu'}
+                      </Pill>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </DashSection>
+
             <DashSection icon={<Wrench size={16} />} title="BDT — Terminés" count={bdtTermines.length}>
               {bdtTermines.length === 0 ? (
                 <EmptyState>Aucun BDT en CTRL QLTÉ/FINI/FACTURER.</EmptyState>
@@ -349,22 +382,6 @@ export default async function AdminDashboardPage({ params }: Props) {
             </DashSection>
           </div>
         </div>
-
-        {/* Top pièces vendues (en bas si data) */}
-        {topPieces30.length > 0 ? (
-          <DashSection icon={<Package size={16} />} title="Top pièces vendues (30j)" count={topPieces30.length}>
-            <ul className="space-y-1">
-              {topPieces30.map((p, i) => (
-                <li key={`${p.nomSnapshot}-${i}`} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-xs hover:bg-[var(--gris-fond)]">
-                  <span className="flex-1 truncate">{p.nomSnapshot}</span>
-                  <span className="font-mono tabular-nums">
-                    {Number(p._sum.qty ?? 0)} × · {Number(p._sum.total ?? 0).toFixed(2)} $
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </DashSection>
-        ) : null}
       </div>
     </div>
   );
@@ -388,7 +405,7 @@ function KpiCard({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl bg-white/85 p-4 shadow-sm">
+    <div className="rounded-2xl bg-[var(--overlay-dark-20)] p-4 shadow-sm">
       <div className="mb-2 flex items-center gap-2">
         <span
           aria-hidden
@@ -397,11 +414,16 @@ function KpiCard({
         >
           {icon}
         </span>
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-70)]">
           {label}
         </span>
       </div>
-      <div className="font-mono text-2xl font-bold tabular-nums">{value}</div>
+      <div
+        className="font-mono text-2xl font-bold tabular-nums"
+        style={{ color: 'var(--jaune)' }}
+      >
+        {value}
+      </div>
       {sub ? <div className="mt-1 text-[11px] text-[var(--text-secondary-60)]">{sub}</div> : null}
       {children}
     </div>

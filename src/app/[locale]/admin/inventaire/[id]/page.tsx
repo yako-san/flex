@@ -7,12 +7,14 @@ import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { BdtSidecard } from '@/components/domain/bdt-sidecard';
 import { BDCTotaux } from '@/components/domain/bdc-totaux';
+import { PageHeader } from '@/components/ui/page-header';
 import { Pill } from '@/components/ui/pill';
 import { VELO_STATUS_COLORS } from '@/lib/velo/status-labels';
 import { AddItemForm } from './add-item-form';
 import { RemoveItemButton } from './remove-item-button';
 import { TaskStatusButton } from './task-status-button';
 import { AvanceFragment, NotesFragment, RemisesFragment } from './workflow-fragments';
+import { NoteInterneFragment } from './note-interne-fragment';
 import { DeleteBdtButton } from './delete-button';
 import { ArchiveBdtButton } from './archive-button';
 import { PdfButtons } from './pdf-buttons';
@@ -128,36 +130,34 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
   const veloLine = [bdc.velo.marque?.nom, bdc.velo.modele].filter(Boolean).join(' ');
 
   return (
-    <div className="mx-auto flex max-w-[1400px] flex-col gap-4 p-4">
-      <Link
-        href={`/${locale}/admin/bdcs`}
-        className="text-sm text-[var(--text-secondary-60)] no-underline hover:text-[var(--dark)]"
-      >
-        ← Inventaire
-      </Link>
+    <div>
+      <PageHeader
+        eyebrow="vélos en atelier"
+        title={
+          <>
+            Bon de travail{' '}
+            <span className="font-mono font-bold">
+              #{String(bdc.numero).padStart(4, '0')}
+            </span>
+          </>
+        }
+        subline={
+          <Link
+            href={`/${locale}/admin/bdcs`}
+            className="hover:underline"
+          >
+            ← Inventaire {veloLine ? `· ${veloLine}` : ''}
+          </Link>
+        }
+        actions={
+          <div className="flex items-center gap-2">
+            <ArchiveBdtButton bdcId={bdc.id} resteAPayer={Math.max(0, grandTotal - (avanceMontant ?? 0))} />
+            <DeleteBdtButton bdcId={bdc.id} />
+          </div>
+        }
+      />
 
-      <header className="mb-2 flex items-baseline gap-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary-60)]">
-          vélos en atelier
-        </p>
-      </header>
-
-      <h1 className="text-3xl font-thin tracking-tight">
-        Bon de travail{' '}
-        <span className="font-mono font-bold">
-          #{String(bdc.numero).padStart(4, '0')}
-        </span>
-        {veloLine ? (
-          <span className="ml-3 text-2xl text-[var(--text-secondary-60)]">{veloLine}</span>
-        ) : (
-          <span className="ml-3 text-2xl text-[var(--text-secondary-60)]">Sélection → …</span>
-        )}
-        <span className="ml-3 inline-flex gap-2 align-middle">
-          <ArchiveBdtButton bdcId={bdc.id} resteAPayer={Math.max(0, grandTotal - (avanceMontant ?? 0))} />
-          <DeleteBdtButton bdcId={bdc.id} />
-        </span>
-      </h1>
-
+      <div className="mx-auto flex max-w-[1400px] flex-col gap-4 p-4">
       {/* 3 colonnes principales : carte gauche unifiée + Services + Pièces */}
       <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)_minmax(0,1fr)]">
         <BdtSidecard
@@ -205,7 +205,15 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
             client: `${baseUrl}?vue=client`,
             velo: `${baseUrl}?vue=velo`,
           }}
-          noteInterne={bdc.notes}
+          noteInterneSlot={
+            <NoteInterneFragment
+              bdcId={bdc.id}
+              initialNotes={bdc.notes ?? ''}
+              noteClientEval={bdc.noteClientEval ?? ''}
+              noteClientFacture={bdc.noteClientFacture ?? ''}
+              key={`note-interne-${bdc.updatedAt.toISOString()}`}
+            />
+          }
         />
 
         {/* COLONNE CENTRE — Services + Forfaits */}
@@ -387,6 +395,7 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
           <BdcPhotoUpload bdcId={bdc.id} />
         </div>
       </section>
+      </div>
     </div>
   );
 }

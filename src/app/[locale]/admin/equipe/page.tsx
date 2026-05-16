@@ -59,7 +59,7 @@ export default async function EquipePage({ params }: Props) {
                 {equipe.map((m) => (
                   <tr
                     key={m.id}
-                    className={`border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)] ${m.active ? '' : 'opacity-50'}`}
+                    className={`odd:bg-white/85 even:bg-white/70 border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)] ${m.active ? '' : 'opacity-50'}`}
                   >
                     <td className="px-3 py-2 font-semibold">{m.surnom}</td>
                     <td className="px-3 py-2">{m.prenom} {m.nom}</td>

@@ -37,7 +37,7 @@ export function DeleteBdcForm() {
         type="submit"
         disabled={pending}
         className="btn-primary"
-        style={{ background: pending ? '#999' : '#c62828' }}
+        style={{ background: pending ? 'var(--text-secondary-50)' : 'var(--rouge)', color: '#fff' }}
       >
         {pending ? 'Suppression…' : 'Supprimer le BDT'}
       </button>

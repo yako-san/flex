@@ -1,29 +1,43 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { Package, Wrench } from 'lucide-react';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
 import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
+import { SearchBar } from '../_components/search-bar';
 
 export const dynamic = 'force-dynamic';
 
-type Props = { params: Promise<{ locale: string }> };
+type Props = { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> };
 
-export default async function ServicesPage({ params }: Props) {
+export default async function ServicesPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { q } = await searchParams;
   setRequestLocale(locale);
   const workshop = await getActiveWorkshop();
   if (!workshop) return <p className="p-6 text-[var(--text-secondary-60)]">Aucun workshop actif.</p>;
 
+  const trimmed = q?.trim() ?? '';
+  const textFilter = trimmed
+    ? {
+        OR: [
+          { labelCanonical: { contains: trimmed, mode: Prisma.QueryMode.insensitive } },
+          { legacyCode: { contains: trimmed, mode: Prisma.QueryMode.insensitive } },
+          { categorie: { contains: trimmed, mode: Prisma.QueryMode.insensitive } },
+        ],
+      }
+    : {};
+
   const [forfaits, services] = await Promise.all([
     prisma.forfait.findMany({
-      where: { workshopId: workshop.id, deletedAt: null },
+      where: { workshopId: workshop.id, deletedAt: null, ...textFilter },
       orderBy: [{ legacyCode: 'asc' }, { labelCanonical: 'asc' }],
       include: { _count: { select: { taskTemplates: true } } },
     }),
     prisma.service.findMany({
-      where: { workshopId: workshop.id, deletedAt: null },
+      where: { workshopId: workshop.id, deletedAt: null, ...textFilter },
       orderBy: [{ categorie: 'asc' }, { labelCanonical: 'asc' }],
     }),
   ]);
@@ -45,6 +59,7 @@ export default async function ServicesPage({ params }: Props) {
         subline={`${forfaits.length} forfait${forfaits.length === 1 ? '' : 's'} · ${services.length} service${services.length === 1 ? '' : 's'} à la carte`}
         actions={
           <ToolbarBlock>
+            <SearchBar placeholder="Code, libellé, catégorie…" />
             <Link href={`/${locale}/admin/forfaits/new`} className="btn-secondary" style={{ height: '32px', padding: '0 14px', fontSize: '11px' }}>
               + Forfait
             </Link>
@@ -83,7 +98,7 @@ export default async function ServicesPage({ params }: Props) {
                 </thead>
                 <tbody>
                   {forfaits.map((f) => (
-                    <tr key={f.id} className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
+                    <tr key={f.id} className="odd:bg-white/85 even:bg-white/70 border-t border-black/5 hover:bg-[var(--gris-fond)]">
                       <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{f.legacyCode ?? '—'}</td>
                       <td className="px-3 py-1.5 font-semibold">{f.labelCanonical}</td>
                       <td className="px-3 py-1.5 text-right tabular-nums">
@@ -128,7 +143,7 @@ export default async function ServicesPage({ params }: Props) {
                   <table className="w-full text-xs">
                     <tbody>
                       {list.map((s) => (
-                        <tr key={s.id} className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
+                        <tr key={s.id} className="odd:bg-white/85 even:bg-white/70 border-t border-black/5 hover:bg-[var(--gris-fond)]">
                           <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)] w-[60px]">{s.legacyCode ?? '—'}</td>
                           <td className="px-3 py-1.5">{s.labelCanonical}</td>
                           <td className="px-3 py-1.5 text-right tabular-nums w-[80px]">

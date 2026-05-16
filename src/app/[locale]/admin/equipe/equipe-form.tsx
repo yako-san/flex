@@ -96,7 +96,7 @@ export function EquipeForm({ initial }: Props) {
 }
 
 function Err({ msg }: { msg: string }) {
-  return <div style={{ color: '#c62828', fontSize: '0.85rem', marginTop: '-0.6rem', marginBottom: '0.5rem' }}>{msg}</div>;
+  return <div style={{ color: 'var(--rouge)', fontSize: '0.85rem', marginTop: '-0.6rem', marginBottom: '0.5rem' }}>{msg}</div>;
 }
 
 const twoCol: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' };

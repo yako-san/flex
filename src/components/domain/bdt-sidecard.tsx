@@ -54,6 +54,9 @@ export type BdtSidecardProps = {
   sectionToggleUrl?: { client: string; velo: string };
   /** Note interne (textarea read-only par défaut). */
   noteInterne?: string | null;
+  /** Slot interactif pour rendre la note interne en textarea autosave. Si
+   *  fourni, écrase l'affichage read-only de `noteInterne`. */
+  noteInterneSlot?: React.ReactNode;
   /** Slot bas : workflow form complet (remises, avance, etc.). */
   footerSlot?: React.ReactNode;
 };
@@ -85,6 +88,7 @@ export function BdtSidecard({
   section = 'client',
   sectionToggleUrl,
   noteInterne,
+  noteInterneSlot,
   footerSlot,
 }: BdtSidecardProps) {
   const bg = VELO_STATUS_COLORS[veloStatus].bg;
@@ -206,12 +210,16 @@ export function BdtSidecard({
 
       {/* Panneau note interne (toujours visible, en dehors de la carte colorée) */}
       <div className="rounded-2xl bg-white/85 p-3 shadow-sm">
-        <SectionLabel fg="rgba(0,0,0,0.6)">Note interne</SectionLabel>
-        <div className="whitespace-pre-wrap text-xs text-[var(--text-secondary-70)]">
-          {noteInterne?.trim() || (
-            <span className="italic opacity-60">aucune note</span>
-          )}
-        </div>
+        {noteInterneSlot ?? (
+          <>
+            <SectionLabel fg="rgba(0,0,0,0.6)">Note interne</SectionLabel>
+            <div className="whitespace-pre-wrap text-xs text-[var(--text-secondary-70)]">
+              {noteInterne?.trim() || (
+                <span className="italic opacity-60">aucune note</span>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {footerSlot}

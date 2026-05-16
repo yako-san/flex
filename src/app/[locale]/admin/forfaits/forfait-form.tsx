@@ -111,8 +111,8 @@ export function ForfaitForm({ initial, initialTasks = [] }: Props) {
 }
 
 function Err({ msg }: { msg: string }) {
-  return <div style={{ color: '#c62828', fontSize: '0.85rem', marginTop: '-0.6rem', marginBottom: '0.5rem' }}>{msg}</div>;
+  return <div style={{ color: 'var(--rouge)', fontSize: '0.85rem', marginTop: '-0.6rem', marginBottom: '0.5rem' }}>{msg}</div>;
 }
 
-const h3: React.CSSProperties = { fontSize: '1rem', marginTop: '1.5rem', marginBottom: '0.5rem', color: '#333' };
+const h3: React.CSSProperties = { fontSize: '1rem', marginTop: '1.5rem', marginBottom: '0.5rem', color: 'var(--dark)' };
 const twoCol: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' };
