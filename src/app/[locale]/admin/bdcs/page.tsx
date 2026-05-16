@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; archive?: string; refuse?: string }>;
 };
 
 type PillVariant = 'rv' | 'recu' | 'eval' | 'attente' | 'approuve' | 'on-bench' | 'ctrl-qlte' | 'fini' | 'facturer' | 'facture' | 'livre';
@@ -64,7 +64,7 @@ function getEtatText(
 
 export default async function BdcsPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { q } = await searchParams;
+  const { q, archive, refuse } = await searchParams;
   setRequestLocale(locale);
 
   const workshop = await getActiveWorkshop();
@@ -73,9 +73,19 @@ export default async function BdcsPage({ params, searchParams }: Props) {
   const trimmed = q?.trim() ?? '';
   const numeroAsInt = trimmed && /^\d+$/.test(trimmed) ? Number(trimmed) : undefined;
 
+  // Filtres V1 — vue Archives (BDT plus dans le workflow actif) ou Refusés.
+  // Par défaut on n'affiche QUE les BDT ACTIF (vue Inventaire principale).
+  const archiveFilter: Prisma.BdcWhereInput =
+    refuse === '1'
+      ? { archiveStatus: 'ARCHIVE_REFUSE' }
+      : archive === '1'
+        ? { archiveStatus: { in: ['ARCHIVE_FACTURE', 'ARCHIVE_A_FACTURER', 'ARCHIVE_CTRL_QLTE'] } }
+        : { archiveStatus: 'ACTIF' };
+
   const where: Prisma.BdcWhereInput = {
     workshopId: workshop.id,
     deletedAt: null,
+    ...archiveFilter,
     ...(trimmed
       ? {
           OR: [
@@ -129,8 +139,8 @@ export default async function BdcsPage({ params, searchParams }: Props) {
   return (
     <div>
       <PageHeader
-        eyebrow="vélos en atelier"
-        title="Inventaire"
+        eyebrow={refuse === '1' ? 'archives' : archive === '1' ? 'archives' : 'vélos en atelier'}
+        title={refuse === '1' ? 'BDT refusés' : archive === '1' ? 'BDT archivés' : 'Inventaire'}
         subline={`${totalShown} BDT${trimmed ? ` filtré sur « ${trimmed} »` : ''}`}
         actions={
           <ToolbarBlock>
