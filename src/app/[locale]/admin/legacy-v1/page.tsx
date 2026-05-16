@@ -84,7 +84,7 @@ export default async function LegacyV1Page({ params }: Props) {
       </div>
 
       <h2 style={h2}>📌 Clés prioritaires (paramètres v1)</h2>
-      <p style={{ color: '#666', fontSize: '0.9rem' }}>
+      <p style={{ color: 'var(--text-secondary-60)', fontSize: '0.9rem' }}>
         Ce sont les sections qui contiennent typiquement les <strong>paramètres et
         textes</strong> à récupérer manuellement (templates messages, configuration
         atelier, etc.).
@@ -94,7 +94,7 @@ export default async function LegacyV1Page({ params }: Props) {
       ))}
 
       <h2 style={h2}>Autres clés (déjà mappées en v2)</h2>
-      <p style={{ color: '#666', fontSize: '0.9rem' }}>
+      <p style={{ color: 'var(--text-secondary-60)', fontSize: '0.9rem' }}>
         Ces données sont déjà importées dans les tables v2. Conservées brutes pour
         audit/traçabilité.
       </p>
@@ -131,11 +131,11 @@ function Section({
       }}
     >
       <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}>
-        <code style={{ color: '#1565c0' }}>{keyName}</code>
-        {count !== null ? <span style={{ color: '#999', fontWeight: 400, marginLeft: 8 }}>({count} clés)</span> : null}
+        <code style={{ color: 'var(--jaune-h)' }}>{keyName}</code>
+        {count !== null ? <span style={{ color: 'var(--text-secondary-50)', fontWeight: 400, marginLeft: 8 }}>({count} clés)</span> : null}
       </summary>
-      {doc ? <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>{doc}</p> : null}
-      <div style={{ marginTop: '0.5rem', maxHeight: 600, overflow: 'auto', background: '#fafafa', padding: '0.75rem', borderRadius: 4 }}>
+      {doc ? <p style={{ color: 'var(--text-secondary-60)', fontSize: '0.85rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>{doc}</p> : null}
+      <div style={{ marginTop: '0.5rem', maxHeight: 600, overflow: 'auto', background: 'var(--gris-fond)', padding: '0.75rem', borderRadius: 4 }}>
         <JsonTree data={value} />
       </div>
     </details>
@@ -145,7 +145,7 @@ function Section({
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
-      <div style={{ color: '#666', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ color: 'var(--text-secondary-60)', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
       <div style={{ fontFamily: 'monospace', fontWeight: 600, marginTop: '0.2rem' }}>{value}</div>
     </div>
   );
@@ -156,8 +156,8 @@ const statsBox: React.CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
   gap: '1rem',
-  background: 'white',
-  border: '1px solid #e0e0e0',
+  background: 'var(--overlay-light-85)',
+  border: '1px solid var(--gris-bord)',
   borderRadius: 6,
   padding: '1rem',
   marginBottom: '1.5rem',

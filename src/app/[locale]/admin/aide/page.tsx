@@ -130,7 +130,7 @@ export default async function AidePage({ params }: Props) {
         <div className="grid gap-6 lg:grid-cols-3">
           {SECTIONS.map((sec) => (
             <section key={sec.label}>
-              <h2 className="mb-3 px-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-secondary-60)]">
+              <h2 className="mb-3 px-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--jaune)]">
                 {sec.label}
               </h2>
               <div className="space-y-2">
