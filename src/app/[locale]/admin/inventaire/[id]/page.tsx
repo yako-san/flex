@@ -14,6 +14,7 @@ import { AddItemForm } from './add-item-form';
 import { RemoveItemButton } from './remove-item-button';
 import { TaskStatusButton } from './task-status-button';
 import { AvanceFragment, NotesFragment, RemisesFragment } from './workflow-fragments';
+import { NoteInterneFragment } from './note-interne-fragment';
 import { DeleteBdtButton } from './delete-button';
 import { ArchiveBdtButton } from './archive-button';
 import { PdfButtons } from './pdf-buttons';
@@ -204,7 +205,15 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
             client: `${baseUrl}?vue=client`,
             velo: `${baseUrl}?vue=velo`,
           }}
-          noteInterne={bdc.notes}
+          noteInterneSlot={
+            <NoteInterneFragment
+              bdcId={bdc.id}
+              initialNotes={bdc.notes ?? ''}
+              noteClientEval={bdc.noteClientEval ?? ''}
+              noteClientFacture={bdc.noteClientFacture ?? ''}
+              key={`note-interne-${bdc.updatedAt.toISOString()}`}
+            />
+          }
         />
 
         {/* COLONNE CENTRE — Services + Forfaits */}

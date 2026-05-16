@@ -1,6 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
-import { Prisma, type VeloStatus } from '@prisma/client';
+import { Prisma, type BdcEvalStatus, type VeloStatus } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
@@ -16,43 +16,51 @@ type Props = {
   searchParams: Promise<{ q?: string }>;
 };
 
-type SectionKey = 'nouveau' | 'en-cours' | 'facture' | 'livre';
+type PillVariant = 'rv' | 'recu' | 'eval' | 'attente' | 'approuve' | 'on-bench' | 'ctrl-qlte' | 'fini' | 'facturer' | 'facture' | 'livre';
 
-type SectionDef = {
-  key: SectionKey;
-  label: string;
-  statuses: VeloStatus[];
-  order: number;
+const STATUS_TO_PILL: Record<VeloStatus, PillVariant> = {
+  RV: 'rv', RECU: 'recu', EVAL: 'eval', EN_ATTENTE: 'attente', APPROUVE: 'approuve',
+  ON_BENCH: 'on-bench', CTRL_QLTE: 'ctrl-qlte', FINI: 'fini', FACTURER: 'facturer',
+  FACTURE: 'facture', LIVRE: 'livre',
 };
 
-const SECTIONS: readonly SectionDef[] = [
-  { key: 'nouveau',  label: 'Nouveau',  statuses: ['RV', 'RECU'],                                          order: 0 },
-  { key: 'en-cours', label: 'En cours', statuses: ['EVAL', 'EN_ATTENTE', 'APPROUVE', 'ON_BENCH', 'CTRL_QLTE', 'FINI'], order: 1 },
-  { key: 'facture',  label: 'Facturé',  statuses: ['FACTURER', 'FACTURE'],                                 order: 2 },
-  { key: 'livre',    label: 'Livré',    statuses: ['LIVRE'],                                                order: 3 },
-] as const;
-
-const STATUS_TO_SECTION: Record<VeloStatus, SectionKey> = SECTIONS.reduce(
-  (acc, sec) => {
-    for (const s of sec.statuses) acc[s] = sec.key;
-    return acc;
-  },
-  {} as Record<VeloStatus, SectionKey>,
-);
-
-const STATUS_TO_PILL: Record<VeloStatus, 'rv' | 'recu' | 'eval' | 'attente' | 'approuve' | 'on-bench' | 'ctrl-qlte' | 'fini' | 'facturer' | 'facture' | 'livre'> = {
-  RV:         'rv',
-  RECU:       'recu',
-  EVAL:       'eval',
-  EN_ATTENTE: 'attente',
-  APPROUVE:   'approuve',
-  ON_BENCH:   'on-bench',
-  CTRL_QLTE:  'ctrl-qlte',
-  FINI:       'fini',
-  FACTURER:   'facturer',
-  FACTURE:    'facture',
-  LIVRE:      'livre',
+// Ordre V1 : RV → REÇU → EVAL → ON_BENCH → … → LIVRE. UNE seule table continue
+// (pas de sections groupées avec headers comme V2 historique). La séparation
+// visuelle vient des couleurs de fond par statut.
+const STATUS_ORDER: Record<VeloStatus, number> = {
+  RV: 0, RECU: 1, EVAL: 2, EN_ATTENTE: 3, APPROUVE: 4, ON_BENCH: 5,
+  CTRL_QLTE: 6, FINI: 7, FACTURER: 8, FACTURE: 9, LIVRE: 10,
 };
+
+// État dérivé du workflow — texte affiché dans la colonne « État » V1.
+// Quand un mécano est assigné à l'étape courante, on l'affiche ; sinon on
+// affiche un message d'attente. V1 utilise massivement « Attente APPROBATION »
+// pour les BDT en RV/RECU/EVAL (en attente retour client sur l'éval).
+function getEtatText(
+  status: VeloStatus,
+  evalStatus: BdcEvalStatus,
+  cbEvalEnvoye: boolean,
+  ctrlMecano: string | null,
+  mecaMecano: string | null,
+): string {
+  if (status === 'RV')         return 'Attente RV';
+  if (status === 'RECU')       return 'Attente APPROBATION';
+  if (status === 'EVAL')       return cbEvalEnvoye ? 'Attente APPROBATION' : 'En évaluation';
+  if (status === 'EN_ATTENTE') return 'En attente client';
+  if (status === 'APPROUVE')   return 'Attente MÉCANIQUE';
+  if (status === 'ON_BENCH')   return ctrlMecano ?? mecaMecano ?? 'En cours';
+  if (status === 'CTRL_QLTE')  return ctrlMecano ?? 'Contrôle qualité';
+  if (status === 'FINI')       return 'Fini';
+  if (status === 'FACTURER')   return 'À facturer';
+  if (status === 'FACTURE')    return 'Facturé';
+  if (status === 'LIVRE')      return 'Livré';
+  return '';
+  // eval_status n'est utilisé qu'à titre indicatif pour départager EVAL —
+  // si plus tard on veut distinguer REDUX/ATTENTE/APPROUVE/INDECIS, il
+  // suffit de brancher ici.
+  // (paramètre conservé pour la future différenciation)
+  void evalStatus;
+}
 
 export default async function BdcsPage({ params, searchParams }: Props) {
   const { locale } = await params;
@@ -107,15 +115,15 @@ export default async function BdcsPage({ params, searchParams }: Props) {
     },
   });
 
+  // Tri V1 : par priorité de statut (RV en haut, LIVRE en bas), puis par
+  // date desc à l'intérieur de chaque tranche. UNE seule table continue.
+  bdcs.sort((a, b) => {
+    const ord = STATUS_ORDER[a.velo.status] - STATUS_ORDER[b.velo.status];
+    if (ord !== 0) return ord;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   const dateFmt = new Intl.DateTimeFormat('fr-CA', { year: 'numeric', month: '2-digit', day: '2-digit' });
-
-  const grouped = new Map<SectionKey, typeof bdcs>();
-  for (const sec of SECTIONS) grouped.set(sec.key, []);
-  for (const bdc of bdcs) {
-    const key = STATUS_TO_SECTION[bdc.velo.status];
-    grouped.get(key)?.push(bdc);
-  }
-
   const totalShown = bdcs.length;
 
   return (
@@ -145,88 +153,77 @@ export default async function BdcsPage({ params, searchParams }: Props) {
             Aucun BDT {trimmed ? `pour la recherche « ${trimmed} »` : ''}.
           </p>
         ) : (
-          <div className="space-y-6">
-            {SECTIONS.map((sec) => {
-              const items = grouped.get(sec.key) ?? [];
-              if (items.length === 0) return null;
-              return (
-                <section key={sec.key}>
-                  <h2 className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-secondary-60)]">
-                    {sec.label} <span className="ml-2 font-normal opacity-60">({items.length})</span>
-                  </h2>
-                  <div className="overflow-x-auto rounded-2xl shadow-sm">
-                    <table className="w-full border-separate border-spacing-y-0 text-sm">
-                      <thead className="bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
-                        <tr>
-                          <th className="px-3 py-2 text-left">Statut</th>
-                          <th className="px-3 py-2 text-left">BDT</th>
-                          <th className="px-3 py-2 text-left">Vélo</th>
-                          <th className="px-3 py-2 text-left">Description</th>
-                          <th className="px-3 py-2 text-left">Client</th>
-                          <th className="px-3 py-2 text-left">Éval</th>
-                          <th className="px-3 py-2 text-left">Méca</th>
-                          <th className="px-3 py-2 text-left">Contrôle</th>
-                          <th className="px-3 py-2 text-right">Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {items.map((b) => {
-                          const colors = VELO_STATUS_COLORS[b.velo.status];
-                          const pill = STATUS_TO_PILL[b.velo.status];
-                          const label = VELO_STATUS_LABELS[b.velo.status].fr;
-                          const eval_ = b.velo.evalMecano?.surnom;
-                          const meca  = b.velo.mecaMecano?.surnom;
-                          const ctrl  = b.velo.ctrlMecano?.surnom;
-                          const placeholder = (
-                            <span className="text-[var(--text-secondary-50)] italic">Sélection →</span>
-                          );
-                          return (
-                            <tr
-                              key={b.id}
-                              className="transition-opacity hover:opacity-90"
-                              style={{ backgroundColor: colors.bg, color: colors.fg }}
-                            >
-                              <td className="px-3 py-2">
-                                <Pill variant={pill} size="sm">{label}</Pill>
-                              </td>
-                              <td className="px-3 py-2 font-mono font-semibold">
-                                <Link href={`/${locale}/admin/bdcs/${b.id}`} className="hover:underline">
-                                  {String(b.numero).padStart(4, '0')}
-                                </Link>
-                              </td>
-                              <td className="px-3 py-2 font-mono text-xs opacity-80">
-                                {String(b.velo.veloNumero).padStart(4, '0')}
-                              </td>
-                              <td className="px-3 py-2 truncate max-w-[220px]">
-                                {[b.velo.marque?.nom, b.velo.modele, b.velo.couleur].filter(Boolean).join(', ') || '—'}
-                              </td>
-                              <td className="px-3 py-2">
-                                {b.velo.client ? (
-                                  <Link
-                                    href={`/${locale}/admin/clients/${b.velo.client.id ?? ''}`}
-                                    className="hover:underline"
-                                  >
-                                    {`${b.velo.client.prenom} ${b.velo.client.nom}`.trim()}
-                                  </Link>
-                                ) : (
-                                  '—'
-                                )}
-                              </td>
-                              <td className="px-3 py-2">{eval_ ?? placeholder}</td>
-                              <td className="px-3 py-2">{meca ?? placeholder}</td>
-                              <td className="px-3 py-2">{ctrl ?? placeholder}</td>
-                              <td className="px-3 py-2 text-right font-mono text-xs tabular-nums opacity-80">
-                                {b.velo.date2 ? dateFmt.format(b.velo.date2) : '—'}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-              );
-            })}
+          <div className="overflow-x-auto rounded-2xl shadow-sm">
+            <table className="w-full border-separate border-spacing-y-0 text-sm">
+              <thead className="bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+                <tr>
+                  <th className="px-3 py-2 text-left">Statut</th>
+                  <th className="px-3 py-2 text-left">BDT</th>
+                  <th className="px-3 py-2 text-left">Vélo</th>
+                  <th className="px-3 py-2 text-left">Client</th>
+                  <th className="px-3 py-2 text-left">Éval</th>
+                  <th className="px-3 py-2 text-left">Méca</th>
+                  <th className="px-3 py-2 text-left">État</th>
+                  <th className="px-3 py-2 text-right">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bdcs.map((b) => {
+                  const colors = VELO_STATUS_COLORS[b.velo.status];
+                  const pill = STATUS_TO_PILL[b.velo.status];
+                  const label = VELO_STATUS_LABELS[b.velo.status].fr;
+                  const eval_ = b.velo.evalMecano?.surnom;
+                  const meca  = b.velo.mecaMecano?.surnom;
+                  const placeholder = (
+                    <span className="text-[var(--text-secondary-50)] italic">Sélection →</span>
+                  );
+                  const etat = getEtatText(
+                    b.velo.status,
+                    b.evalStatus,
+                    b.cbEvalEnvoye,
+                    b.velo.ctrlMecano?.surnom ?? null,
+                    meca ?? null,
+                  );
+                  return (
+                    <tr
+                      key={b.id}
+                      className="transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: colors.bg, color: colors.fg }}
+                    >
+                      <td className="px-3 py-2">
+                        <Pill variant={pill} size="sm">{label}</Pill>
+                      </td>
+                      <td className="px-3 py-2 font-mono font-semibold">
+                        <Link href={`/${locale}/admin/bdcs/${b.id}`} className="hover:underline">
+                          {String(b.numero).padStart(4, '0')}
+                        </Link>
+                      </td>
+                      <td className="px-3 py-2 max-w-[280px] truncate">
+                        {[b.velo.marque?.nom, b.velo.modele, b.velo.couleur].filter(Boolean).join(', ') || '—'}
+                      </td>
+                      <td className="px-3 py-2">
+                        {b.velo.client ? (
+                          <Link
+                            href={`/${locale}/admin/clients/${b.velo.client.id ?? ''}`}
+                            className="hover:underline"
+                          >
+                            {`${b.velo.client.prenom} ${b.velo.client.nom}`.trim()}
+                          </Link>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="px-3 py-2">{eval_ ?? placeholder}</td>
+                      <td className="px-3 py-2">{meca ?? placeholder}</td>
+                      <td className="px-3 py-2 text-xs italic opacity-80">{etat}</td>
+                      <td className="px-3 py-2 text-right font-mono text-xs tabular-nums opacity-80">
+                        {b.velo.date2 ? dateFmt.format(b.velo.date2) : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
