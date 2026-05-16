@@ -1,11 +1,22 @@
 import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { VeloStatus } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
+import { Pill } from '@/components/ui/pill';
+import { VELO_STATUS_LABELS } from '@/lib/velo/status-labels';
 import { DeleteClientButton } from './delete-button';
 import { FactureStatutControls } from '../../factures/facture-statut-controls';
+
+type PillVariant = 'rv' | 'recu' | 'eval' | 'attente' | 'approuve' | 'on-bench' | 'ctrl-qlte' | 'fini' | 'facturer' | 'facture' | 'livre';
+
+const STATUS_TO_PILL: Record<VeloStatus, PillVariant> = {
+  RV: 'rv', RECU: 'recu', EVAL: 'eval', EN_ATTENTE: 'attente', APPROUVE: 'approuve',
+  ON_BENCH: 'on-bench', CTRL_QLTE: 'ctrl-qlte', FINI: 'fini', FACTURER: 'facturer',
+  FACTURE: 'facture', LIVRE: 'livre',
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -155,12 +166,16 @@ export default async function ClientDetailPage({ params }: Props) {
                 {client.velos.map((v) => (
                   <tr key={v.id} className="border-t border-[var(--gris-bord)]/30 hover:bg-[var(--gris-fond)]">
                     <td className="px-3 py-2">
-                      <Link href={`/${locale}/admin/velos/${v.id}`} className="font-mono text-blue-600 hover:underline">
+                      <Link href={`/${locale}/admin/velos/${v.id}`} className="font-mono text-[var(--jaune-h)] hover:underline">
                         {String(v.veloNumero).padStart(4, '0')}
                       </Link>
                     </td>
                     <td className="px-3 py-2">{[v.marque?.nom, v.modele, v.couleur].filter(Boolean).join(', ') || '—'}</td>
-                    <td className="px-3 py-2">{v.status}</td>
+                    <td className="px-3 py-2">
+                      <Pill variant={STATUS_TO_PILL[v.status]} size="sm">
+                        {VELO_STATUS_LABELS[v.status].fr}
+                      </Pill>
+                    </td>
                     <td className="px-3 py-2 text-right tabular-nums">{v.bdcs.length}</td>
                   </tr>
                 ))}
@@ -202,19 +217,19 @@ export default async function ClientDetailPage({ params }: Props) {
                       {Number(f.grandTotal).toFixed(2)} $
                     </td>
                     <td className="px-3 py-2 text-xs">
-                      <a href={`/api/admin/factures/${f.id}/pdf`} target="_blank" rel="noreferrer" className="font-mono text-blue-600 hover:underline">
+                      <a href={`/api/admin/factures/${f.id}/pdf`} target="_blank" rel="noreferrer" className="font-mono text-[var(--jaune-h)] hover:underline">
                         PDF
                       </a>
                       {f.bdcId ? (
                         <>
                           {' · '}
-                          <Link href={`/${locale}/admin/bdcs/${f.bdcId}`} className="font-mono text-blue-600 hover:underline">BDT</Link>
+                          <Link href={`/${locale}/admin/bdcs/${f.bdcId}`} className="font-mono text-[var(--jaune-h)] hover:underline">BDT</Link>
                         </>
                       ) : null}
                       {f.venteId ? (
                         <>
                           {' · '}
-                          <Link href={`/${locale}/admin/ventes/${f.venteId}`} className="font-mono text-blue-600 hover:underline">Vente</Link>
+                          <Link href={`/${locale}/admin/ventes/${f.venteId}`} className="font-mono text-[var(--jaune-h)] hover:underline">Vente</Link>
                         </>
                       ) : null}
                     </td>
@@ -231,7 +246,7 @@ export default async function ClientDetailPage({ params }: Props) {
             <ul className="list-disc pl-5">
               {ventes.map((v) => (
                 <li key={v.id} className="mb-1">
-                  <Link href={`/${locale}/admin/ventes/${v.id}`} className="text-blue-600 hover:underline">
+                  <Link href={`/${locale}/admin/ventes/${v.id}`} className="text-[var(--jaune-h)] hover:underline">
                     {v.date.toLocaleDateString('fr-CA')} — {Number(v.totalPieces).toFixed(2)} $
                   </Link>
                 </li>
