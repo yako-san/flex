@@ -100,28 +100,31 @@ function buildSecondary(locale: string): SecondaryGroup[] {
 }
 
 /**
- * Logo « FLEX REV » V1 — pill rouge-jaune avec texte 2 lignes.
- * Sert de déclencheur pour le popover secondaire.
+ * Logo Flex V1 — SVG rond complet `logo-FLEX:-jaune:brun-rond-yako.cyclo.svg`.
+ * C'est un cercle brun avec « FLEX:/REV » + « yako.cyclo / Montréal, Qc »
+ * en jaune. Sert de déclencheur pour le popover secondaire.
+ *
+ * Asset source : `public/logo/flex-rond-yako.svg` — variante 1-tenant
+ * yako-cyclo. Quand le multi-tenant exposera un `Workshop.logoUrl`, on
+ * substituera cet asset par celui du workshop courant.
  */
 function FlexLogo({ expanded }: { expanded: boolean }) {
+  const size = expanded ? 44 : 40;
   return (
-    <span
-      className={cn(
-        'inline-flex flex-col items-center justify-center rounded-2xl bg-black px-2 py-1.5 leading-none transition-all',
-        expanded ? 'h-12 w-[150px]' : 'h-12 w-12',
-      )}
-      style={{ color: 'var(--jaune)' }}
-    >
-      <span className="font-extrabold tracking-tight" style={{ fontSize: expanded ? '20px' : '16px' }}>
-        FLEX
-      </span>
-      <span
-        className="mt-0.5 font-bold tracking-[0.2em]"
-        style={{ fontSize: expanded ? '9px' : '7px', opacity: 0.85 }}
-      >
-        REV
-      </span>
-    </span>
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src="/logo/flex-rond-yako.svg"
+      alt="Flex"
+      width={size}
+      height={size}
+      aria-hidden
+      style={{
+        display: 'block',
+        // L'asset est déjà un cercle complet — pas besoin de wrapper.
+        boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+        borderRadius: '50%',
+      }}
+    />
   );
 }
 

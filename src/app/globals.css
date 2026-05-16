@@ -18,6 +18,8 @@
   --jaune-h:      #e6d84e;  /* hover */
   --rouge:        #d92020;
   --rouge-h:      #b81818;
+  --brun:         #806642;  /* logo brun yako-cyclo, accent secondaire V1 */
+  --brun-h:       #6b5536;
   --gris-bg:      #757575;  /* PageHeader */
   --gris-bord:    #e0e0e0;
   --gris-fond:    #fafafa;
@@ -93,6 +95,8 @@
   --color-jaune-h:  #e6d84e;
   --color-rouge:    #d92020;
   --color-rouge-h:  #b81818;
+  --color-brun:     #806642;
+  --color-brun-h:   #6b5536;
   --color-dark:     #1a1a1a;
   --color-gris-bg:  #757575;
   --color-gris-bord: #e0e0e0;
