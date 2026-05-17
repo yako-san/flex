@@ -177,22 +177,33 @@ export default async function VentesPage({ params, searchParams }: Props) {
                           </tr>
                         </thead>
                         <tbody>
-                          {v.items.map((it) => (
-                            <tr key={it.id} className="odd:bg-white/85 even:bg-white/70 border-t border-black/5">
-                              <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">
-                                {it.skuSnapshot ?? '—'}
-                              </td>
-                              <td className="px-3 py-1.5">{it.nomSnapshot}</td>
-                              <td className="px-3 py-1.5 text-right tabular-nums">{Number(it.qty)}</td>
-                              <td className="px-3 py-1.5 text-right font-mono tabular-nums">
-                                {Number(it.unitPriceSnapshot).toFixed(2)} $
-                              </td>
-                              <td className="px-3 py-1.5 text-center">{it.taxableSnapshot ? '✓' : '—'}</td>
-                              <td className="px-3 py-1.5 text-right font-mono tabular-nums font-semibold">
-                                {Number(it.total).toFixed(2)} $
-                              </td>
-                            </tr>
-                          ))}
+                          {v.items.map((it) => {
+                            const isInclus = Number(it.unitPriceSnapshot) === 0;
+                            return (
+                              <tr key={it.id} className="odd:bg-white/85 even:bg-white/70 border-t border-black/5">
+                                <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">
+                                  {it.skuSnapshot ?? '—'}
+                                </td>
+                                <td className="px-3 py-1.5">{it.nomSnapshot}</td>
+                                <td className="px-3 py-1.5 text-right tabular-nums">{Number(it.qty)}</td>
+                                <td className="px-3 py-1.5 text-right font-mono tabular-nums">
+                                  {isInclus ? (
+                                    <span className="italic text-[var(--text-secondary-60)]">inclus</span>
+                                  ) : (
+                                    <>{Number(it.unitPriceSnapshot).toFixed(2)} $</>
+                                  )}
+                                </td>
+                                <td className="px-3 py-1.5 text-center">{it.taxableSnapshot ? '✓' : '—'}</td>
+                                <td className="px-3 py-1.5 text-right font-mono tabular-nums font-semibold">
+                                  {isInclus ? (
+                                    <span className="italic text-[var(--text-secondary-60)]">inclus</span>
+                                  ) : (
+                                    <>{Number(it.total).toFixed(2)} $</>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
                           <tr className="border-t-2 border-black/10 bg-black/[0.03]">
                             <td colSpan={5} className="px-3 py-1.5 text-right text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-70)]">
                               Total
