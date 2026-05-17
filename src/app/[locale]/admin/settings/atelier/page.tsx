@@ -24,29 +24,24 @@ export default async function SettingsPage(props: Props) {
   }
 }
 
-/**
- * Affiche un dump verbose de l'erreur **uniquement en preview Vercel**
- * (VERCEL_ENV=preview). En prod, re-throw → boundary catch + message
- * minimal sans fuite d'info sensible.
- */
 function renderCrash(e: unknown): never | React.ReactElement {
   if (process.env['VERCEL_ENV'] !== 'preview') {
     throw e;
   }
   const err = e instanceof Error ? e : new Error(String(e));
   return (
-    <main style={{ padding: '2rem', maxWidth: 900, fontFamily: 'ui-monospace, monospace' }}>
-      <h2 style={{ color: '#c62828', marginTop: 0 }}>SettingsPage crash (preview only)</h2>
-      <p style={{ fontSize: '0.85rem', color: '#666' }}>
+    <main className="mx-auto max-w-[900px] p-8 font-mono">
+      <h2 className="mb-2 text-red-700">SettingsPage crash (preview only)</h2>
+      <p className="mb-4 text-xs text-[var(--text-secondary-60)]">
         Ce dump n&apos;apparaît qu&apos;en preview Vercel. En production, l&apos;erreur
         est masquée et capturée par l&apos;error boundary.
       </p>
       <h3>Message</h3>
-      <pre style={{ background: '#fff3cd', padding: '0.75rem 1rem', borderRadius: 6, whiteSpace: 'pre-wrap' }}>
+      <pre className="whitespace-pre-wrap rounded-xl border border-yellow-300 bg-yellow-50 p-3">
         {err.message || '(aucun message)'}
       </pre>
       <h3>Stack</h3>
-      <pre style={{ background: '#fafafa', border: '1px solid #e0e0e0', padding: '0.75rem 1rem', borderRadius: 6, fontSize: '0.78rem', whiteSpace: 'pre-wrap', overflow: 'auto' }}>
+      <pre className="overflow-auto whitespace-pre-wrap rounded-xl border border-[var(--gris-bord)] bg-white/60 p-3 text-xs">
         {err.stack ?? '(aucune stack)'}
       </pre>
       <h3>Cause probable</h3>
@@ -79,205 +74,165 @@ async function renderSettings({ params, searchParams }: Props) {
       />
 
       <div className="bloc-contenu mx-auto max-w-[800px] p-6">
+        <h2 className="mb-2 mt-6 text-lg font-semibold">Logo</h2>
+        <p className="mb-4 text-sm text-[var(--text-secondary-60)]">
+          Utilisé en haut des PDFs (évaluation, facture) et comme favicon (icône
+          de l&apos;onglet du navigateur).
+        </p>
+        {workshop ? <LogoForm currentLogoBase64={workshop.logoBase64} /> : null}
 
-      <h2 style={{ fontSize: '1.25rem', marginTop: '2rem', marginBottom: '0.5rem' }}>
-        Logo
-      </h2>
-      <p style={{ color: '#666', marginBottom: '1rem', fontSize: '0.9rem' }}>
-        Utilisé en haut des PDFs (évaluation, facture) et comme favicon (icône
-        de l&apos;onglet du navigateur).
-      </p>
-      {workshop ? <LogoForm currentLogoBase64={workshop.logoBase64} /> : null}
+        <h2 className="mb-2 mt-12 text-lg font-semibold">Identité fiscale</h2>
+        <p className="mb-4 text-sm text-[var(--text-secondary-60)]">
+          Ces infos apparaissent sur les évaluations et factures émises.
+          Les numéros TPS/TVQ sont obligatoires pour la facturation au Canada
+          (lois LTA/LTVQ) une fois ton seuil de revenu atteint.
+        </p>
+        {workshop ? <FiscalForm initial={fiscal} /> : <p>Aucun workshop actif.</p>}
 
-      <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
-        Identité fiscale
-      </h2>
-      <p style={{ color: '#666', marginBottom: '1rem', fontSize: '0.9rem' }}>
-        Ces infos apparaissent sur les évaluations et factures émises.
-        Les numéros TPS/TVQ sont obligatoires pour la facturation au Canada
-        (lois LTA/LTVQ) une fois ton seuil de revenu atteint.
-      </p>
-      {workshop ? <FiscalForm initial={fiscal} /> : <p>Aucun workshop actif.</p>}
-
-      <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
-        Notifications courriel
-      </h2>
-      <div
-        style={{
-          background: '#fafafa',
-          border: '1px solid #e0e0e0',
-          borderRadius: 6,
-          padding: '1rem 1.25rem',
-          fontSize: '0.9rem',
-          marginBottom: '2rem',
-        }}
-      >
-        <Row label="Provider actif">
-          {(() => {
-            const p = getEmailProvider();
-            if (p === 'GMAIL')
+        <h2 className="mb-2 mt-12 text-lg font-semibold">Notifications courriel</h2>
+        <div className="mb-8 rounded-xl border border-[var(--gris-bord)] bg-white/60 p-4 text-sm">
+          <Row label="Provider actif">
+            {(() => {
+              const p = getEmailProvider();
+              if (p === 'GMAIL')
+                return (
+                  <span className="text-green-700">
+                    ✓ Gmail SMTP — depuis <code>{process.env['GMAIL_USER']}</code>
+                  </span>
+                );
+              if (p === 'RESEND')
+                return (
+                  <span className="text-green-700">
+                    ✓ Resend — from{' '}
+                    <code>{process.env['EMAIL_FROM'] ?? 'onboarding@resend.dev'}</code>
+                  </span>
+                );
               return (
-                <span style={{ color: '#2e7d32' }}>
-                  ✓ Gmail SMTP — depuis <code>{process.env['GMAIL_USER']}</code>
+                <span className="text-red-700">
+                  ✕ Aucun provider configuré (GMAIL_USER+APP_PASSWORD ou
+                  RESEND_API_KEY manquants)
                 </span>
               );
-            if (p === 'RESEND')
-              return (
-                <span style={{ color: '#2e7d32' }}>
-                  ✓ Resend — from{' '}
-                  <code>{process.env['EMAIL_FROM'] ?? 'onboarding@resend.dev'}</code>
-                </span>
-              );
-            return (
-              <span style={{ color: '#c62828' }}>
-                ✕ Aucun provider configuré (GMAIL_USER+APP_PASSWORD ou
-                RESEND_API_KEY manquants)
-              </span>
-            );
-          })()}
-        </Row>
-        <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '0.75rem' }}>
-          <strong>Option 1 — Gmail (recommandée si tu utilises déjà Gmail) :</strong>
-          <br />
-          1. Active la 2FA sur le compte Google.{' '}
-          <br />
-          2. Crée un App Password sur{' '}
-          <a
-            href="https://myaccount.google.com/apppasswords"
-            target="_blank"
-            rel="noreferrer"
-          >
-            myaccount.google.com/apppasswords
-          </a>{' '}
-          (sélectionne « Mail » comme application).
-          <br />
-          3. Ajoute dans Vercel : <code>GMAIL_USER</code> = ton adresse Gmail, et{' '}
-          <code>GMAIL_APP_PASSWORD</code> = les 16 caractères générés.
+            })()}
+          </Row>
+          <p className="mt-3 text-xs text-[var(--text-secondary-60)]">
+            <strong>Option 1 — Gmail (recommandée si tu utilises déjà Gmail) :</strong>
+            <br />
+            1. Active la 2FA sur le compte Google.{' '}
+            <br />
+            2. Crée un App Password sur{' '}
+            <a
+              href="https://myaccount.google.com/apppasswords"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              myaccount.google.com/apppasswords
+            </a>{' '}
+            (sélectionne « Mail » comme application).
+            <br />
+            3. Ajoute dans Vercel : <code>GMAIL_USER</code> = ton adresse Gmail, et{' '}
+            <code>GMAIL_APP_PASSWORD</code> = les 16 caractères générés.
+          </p>
+          <p className="text-xs text-[var(--text-secondary-60)]">
+            <strong>Option 2 — Resend (multi-tenant futur) :</strong> compte sur{' '}
+            <a href="https://resend.com" target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">resend.com</a>,
+            API key, env <code>RESEND_API_KEY</code> + DNS du domaine.
+          </p>
+          <p className="mt-3">
+            <Link
+              href={`/${locale}/admin/settings/email-templates`}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              ✏️ Personnaliser les templates de courriels →
+            </Link>
+          </p>
+        </div>
+
+        <h2 className="mb-2 mt-12 text-lg font-semibold">Brouillons Gmail (mode hybride)</h2>
+        <p className="mb-4 text-sm text-[var(--text-secondary-60)]">
+          Connecte un compte Gmail pour créer des brouillons (au lieu d&apos;envoyer
+          directement). Pattern V1 — tu vérifies dans Gmail puis cliques Envoyer.
+          L&apos;envoi direct via SMTP/Resend reste disponible en bouton secondaire
+          sur chaque BDT.
         </p>
-        <p style={{ color: '#666', fontSize: '0.85rem' }}>
-          <strong>Option 2 — Resend (multi-tenant futur) :</strong> compte sur{' '}
-          <a href="https://resend.com" target="_blank" rel="noreferrer">resend.com</a>,
-          API key, env <code>RESEND_API_KEY</code> + DNS du domaine.
-        </p>
-        <p style={{ marginTop: '0.75rem', marginBottom: 0 }}>
-          <Link
-            href={`/${locale}/admin/settings/email-templates`}
-            style={{ color: '#1565c0', textDecoration: 'none', fontSize: '0.95rem' }}
-          >
-            ✏️ Personnaliser les templates de courriels →
-          </Link>
-        </p>
-      </div>
-
-      <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
-        Brouillons Gmail (mode hybride)
-      </h2>
-      <p style={{ color: '#666', marginBottom: '1rem', fontSize: '0.9rem' }}>
-        Connecte un compte Gmail pour créer des brouillons (au lieu d&apos;envoyer
-        directement). Pattern V1 — tu vérifies dans Gmail puis cliques Envoyer.
-        L&apos;envoi direct via SMTP/Resend reste disponible en bouton secondaire
-        sur chaque BDT.
-      </p>
-      <GmailConnectionPanel
-        connected={!!workshop?.googleRefreshToken}
-        email={workshop?.googleEmail ?? null}
-        successMessage={sp.gmail_ok ?? null}
-        errorMessage={sp.gmail_err ?? null}
-      />
-
-      <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
-        Workshop et organisation Clerk
-      </h2>
-      <p style={{ color: '#666', marginBottom: '1rem', fontSize: '0.9rem' }}>
-        En multi-tenant, chaque atelier est lié à une <strong>Clerk Organization</strong>.
-      </p>
-
-      <div
-        style={{
-          background: '#fafafa',
-          border: '1px solid #e0e0e0',
-          borderRadius: 6,
-          padding: '1rem 1.25rem',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <Row label="Workshop">
-          {workshop ? (
-            <code>
-              {workshop.name} <span style={{ color: '#888' }}>({workshop.id})</span>
-            </code>
-          ) : (
-            <em>aucun</em>
-          )}
-        </Row>
-        <Row label="Workshop · clerkOrgId">
-          {workshop?.clerkOrgId ? (
-            <code>{workshop.clerkOrgId}</code>
-          ) : (
-            <em style={{ color: '#c62828' }}>non lié</em>
-          )}
-        </Row>
-        <Row label="Clerk Organization active">
-          {orgId ? (
-            <code>
-              {orgSlug ?? '?'} <span style={{ color: '#888' }}>({orgId})</span>
-            </code>
-          ) : (
-            <em>aucune (sélectionne une org dans la sidebar)</em>
-          )}
-        </Row>
-      </div>
-
-      {workshop && !workshop.clerkOrgId && orgId ? (
-        <LinkWorkshopForm
-          workshopId={workshop.id}
-          workshopName={workshop.name}
-          clerkOrgId={orgId}
-          clerkOrgSlug={orgSlug ?? null}
+        <GmailConnectionPanel
+          connected={!!workshop?.googleRefreshToken}
+          email={workshop?.googleEmail ?? null}
+          successMessage={sp.gmail_ok ?? null}
+          errorMessage={sp.gmail_err ?? null}
         />
-      ) : null}
 
-      {workshop?.clerkOrgId && workshop.clerkOrgId === orgId ? (
-        <p style={{ color: '#2e7d32' }}>✓ Workshop correctement lié à l&apos;org active.</p>
-      ) : null}
-
-      {workshop?.clerkOrgId && workshop.clerkOrgId !== orgId ? (
-        <p style={{ color: '#888', fontSize: '0.9rem' }}>
-          Le workshop est lié à une autre org. Sélectionne-la dans la sidebar pour
-          gérer ce workshop.
+        <h2 className="mb-2 mt-12 text-lg font-semibold">Workshop et organisation Clerk</h2>
+        <p className="mb-4 text-sm text-[var(--text-secondary-60)]">
+          En multi-tenant, chaque atelier est lié à une <strong>Clerk Organization</strong>.
         </p>
-      ) : null}
 
-      {!workshop ? (
-        <p style={{ color: '#666' }}>
-          Aucun workshop. Va dans <strong>Import v1</strong> pour charger le dump.
+        <div className="mb-6 rounded-xl border border-[var(--gris-bord)] bg-white/60 p-4">
+          <Row label="Workshop">
+            {workshop ? (
+              <code>
+                {workshop.name} <span className="text-[var(--text-secondary-60)]">({workshop.id})</span>
+              </code>
+            ) : (
+              <em>aucun</em>
+            )}
+          </Row>
+          <Row label="Workshop · clerkOrgId">
+            {workshop?.clerkOrgId ? (
+              <code>{workshop.clerkOrgId}</code>
+            ) : (
+              <em className="text-red-700">non lié</em>
+            )}
+          </Row>
+          <Row label="Clerk Organization active">
+            {orgId ? (
+              <code>
+                {orgSlug ?? '?'} <span className="text-[var(--text-secondary-60)]">({orgId})</span>
+              </code>
+            ) : (
+              <em>aucune (sélectionne une org dans la sidebar)</em>
+            )}
+          </Row>
+        </div>
+
+        {workshop && !workshop.clerkOrgId && orgId ? (
+          <LinkWorkshopForm
+            workshopId={workshop.id}
+            workshopName={workshop.name}
+            clerkOrgId={orgId}
+            clerkOrgSlug={orgSlug ?? null}
+          />
+        ) : null}
+
+        {workshop?.clerkOrgId && workshop.clerkOrgId === orgId ? (
+          <p className="text-green-700">✓ Workshop correctement lié à l&apos;org active.</p>
+        ) : null}
+
+        {workshop?.clerkOrgId && workshop.clerkOrgId !== orgId ? (
+          <p className="text-sm text-[var(--text-secondary-60)]">
+            Le workshop est lié à une autre org. Sélectionne-la dans la sidebar pour
+            gérer ce workshop.
+          </p>
+        ) : null}
+
+        {!workshop ? (
+          <p className="text-sm text-[var(--text-secondary-60)]">
+            Aucun workshop. Va dans <strong>Import v1</strong> pour charger le dump.
+          </p>
+        ) : null}
+
+        <h2 className="mb-2 mt-12 text-lg font-semibold">Apparence</h2>
+        <p className="mb-4 text-sm text-[var(--text-secondary-60)]">
+          Vitrine des composants UI Flex V2 (Sprint 4 — port look &amp; feel V1).
+          Utile pour QA visuel et référence design.
         </p>
-      ) : null}
-
-      <h2 style={{ fontSize: '1.25rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
-        Apparence
-      </h2>
-      <p style={{ color: '#666', marginBottom: '1rem', fontSize: '0.9rem' }}>
-        Vitrine des composants UI Flex V2 (Sprint 4 — port look &amp; feel V1).
-        Utile pour QA visuel et référence design.
-      </p>
-      <Link
-        href={`/${locale}/admin/settings/ui-kit` as never}
-        style={{
-          display: 'inline-block',
-          padding: '0.5rem 1rem',
-          background: '#fff056',
-          color: '#000',
-          borderRadius: 30,
-          fontWeight: 700,
-          textDecoration: 'none',
-          fontSize: '0.85rem',
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-        }}
-      >
-        Ouvrir le UI Kit →
-      </Link>
+        <Link
+          href={`/${locale}/admin/settings/ui-kit` as never}
+          className="btn-primary"
+        >
+          Ouvrir le UI Kit →
+        </Link>
       </div>
     </div>
   );
@@ -285,9 +240,9 @@ async function renderSettings({ params, searchParams }: Props) {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', gap: '1rem', padding: '0.4rem 0' }}>
-      <span style={{ width: 220, color: '#666', fontSize: '0.9rem' }}>{label}</span>
-      <span style={{ fontSize: '0.95rem' }}>{children}</span>
+    <div className="flex gap-4 py-1.5">
+      <span className="w-[220px] shrink-0 text-sm text-[var(--text-secondary-60)]">{label}</span>
+      <span className="text-sm">{children}</span>
     </div>
   );
 }
