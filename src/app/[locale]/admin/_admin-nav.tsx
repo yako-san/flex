@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { OrganizationSwitcher, UserButton } from '@clerk/nextjs';
 import {
   Archive,
@@ -177,15 +178,34 @@ function SecondarySection({ group, onNavigate }: { group: SecondaryGroup; onNavi
   );
 }
 
-/** Sidebar desktop (≥ md). */
+/** Sidebar desktop (≥ md). Émet son propre wrapper relatif pour que le mode
+ *  Dashboard (expanded 200pt) prenne la place dans le flow flex de l'AppShell,
+ *  tandis que le hover-expand sur les autres pages reste un overlay absolute
+ *  (le wrapper garde sa largeur 100pt). */
 export function AdminSidebar({ locale, badges }: { locale: string; badges?: SidebarBadges }) {
   const navItems = buildPrimary(locale, badges);
   const secondary = buildSecondary(locale);
   const [open, setOpen] = React.useState(false);
+  // Dashboard /admin (sans suffixe) = sidebar expanded by default 200pt dans
+  // le flow. Toutes les autres pages : 100pt fermée + hover-expand 200pt en
+  // absolute (cf SIDEBAR-SPEC).
+  const pathname = usePathname() ?? '';
+  const adminRoot = `/${locale}/admin`;
+  const isDashboard = pathname === adminRoot || pathname === `${adminRoot}/`;
 
   return (
+    <div
+      className="relative hidden shrink-0 self-stretch md:block"
+      style={{
+        width: isDashboard
+          ? 'var(--sidebar-w-expanded)'
+          : 'var(--sidebar-w-collapsed)',
+        transition: 'width 300ms ease-in-out',
+      }}
+    >
     <Sidebar
       items={navItems}
+      expandedByDefault={isDashboard}
       header={
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
@@ -221,6 +241,7 @@ export function AdminSidebar({ locale, badges }: { locale: string; badges?: Side
         </div>
       }
     />
+    </div>
   );
 }
 

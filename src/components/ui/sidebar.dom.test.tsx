@@ -24,7 +24,7 @@ const ITEMS: SidebarItem[] = [
   },
 ];
 
-describe('Sidebar (layout vertical V1)', () => {
+describe('Sidebar V1 — 100pt fermée / 200pt expanded (hover ou Dashboard)', () => {
   it('rend <aside> avec aria-label "Navigation principale"', () => {
     render(<Sidebar items={ITEMS} />);
     expect(screen.getByLabelText('Navigation principale')).toBeTruthy();
@@ -35,10 +35,20 @@ describe('Sidebar (layout vertical V1)', () => {
     expect(screen.getAllByRole('link')).toHaveLength(2);
   });
 
-  it('le label de chaque item est rendu (visible en permanence en V1 vertical)', () => {
+  it('le label de chaque item est dans le DOM (rendu mais opacity contrôlée)', () => {
     render(<Sidebar items={ITEMS} />);
     expect(screen.getByText('Dashboard')).toBeTruthy();
     expect(screen.getByText('Clients')).toBeTruthy();
+  });
+
+  it("au repos (pas hover, pas expandedByDefault) : label opacity-0", () => {
+    render(<Sidebar items={ITEMS} />);
+    expect(screen.getByText('Clients').className).toContain('opacity-0');
+  });
+
+  it('expandedByDefault=true (Dashboard) : label opacity-100', () => {
+    render(<Sidebar items={ITEMS} expandedByDefault />);
+    expect(screen.getByText('Clients').className).toContain('opacity-100');
   });
 
   it("aria-current='page' sur l'item dont matchPrefix correspond", () => {
@@ -56,10 +66,20 @@ describe('Sidebar (layout vertical V1)', () => {
     expect(screen.getAllByRole('link')[1]!.getAttribute('aria-current')).toBe('page');
   });
 
-  it('largeur fixe sidebar (V1 = pas de hover-expand)', () => {
+  it('largeur collapsed par défaut (w-[var(--sidebar-w-collapsed)] = 100pt)', () => {
     render(<Sidebar items={ITEMS} />);
     const aside = screen.getByLabelText('Navigation principale');
     expect(aside.className).toContain('w-[var(--sidebar-w-collapsed)]');
+    expect(aside.getAttribute('data-expanded')).toBe('false');
+  });
+
+  it('largeur expanded avec expandedByDefault (200pt, dans le flow)', () => {
+    render(<Sidebar items={ITEMS} expandedByDefault />);
+    const aside = screen.getByLabelText('Navigation principale');
+    expect(aside.className).toContain('w-[var(--sidebar-w-expanded)]');
+    expect(aside.getAttribute('data-expanded')).toBe('true');
+    // expandedByDefault → reste relative (pas absolute)
+    expect(aside.className).toContain('relative');
   });
 
   it('header slot rendu', () => {
@@ -114,22 +134,24 @@ describe('Sidebar (layout vertical V1)', () => {
     expect(screen.queryByLabelText(/\d+ Dashboard/)).toBeNull();
   });
 
-  it('hidden md:flex rounded-[50px] (sidebar desktop pill V1)', () => {
+  it('hidden md:flex rounded-[50px] overflow-hidden (sidebar desktop pill V1)', () => {
     render(<Sidebar items={ITEMS} />);
     const aside = screen.getByLabelText('Navigation principale');
     const cls = aside.className;
     expect(cls).toContain('hidden');
     expect(cls).toContain('md:flex');
     expect(cls).toContain('rounded-[50px]');
+    // overflow-hidden coupe le label en mode collapsed
+    expect(cls).toContain('overflow-hidden');
   });
 
-  it('séparateurs <hr> entre items (V1 visual)', () => {
-    const { container } = render(<Sidebar items={ITEMS} />);
-    // 2 items → 1 séparateur entre eux
-    expect(container.querySelectorAll('hr')).toHaveLength(1);
+  it('items utilisent la hauteur de pastille 60pt', () => {
+    render(<Sidebar items={ITEMS} />);
+    const link = screen.getAllByRole('link')[0]!;
+    expect(link.className).toContain('h-[var(--sidebar-pastille)]');
   });
 
-  it('badge en overlay sur l\'icône (top-right, pas en ligne)', () => {
+  it('badge en overlay sur l\'icône (absolute top-right)', () => {
     const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 7, badgeVariant: 'vert' }];
     render(<Sidebar items={items} />);
     const badge = screen.getByLabelText('7 Dashboard');

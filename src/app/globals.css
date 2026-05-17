@@ -73,9 +73,12 @@
   --h6-size: 0.5rem;   --h6-weight: 600;
   --th-size: 11px;     --th-weight: 600;
 
-  /* Layout */
-  --sidebar-w-collapsed: 92px;
-  --sidebar-w-expanded:  92px;
+  /* Layout — sidebar V1 : 100pt fermée (pastilles 60pt seules) → 200pt ouverte
+     au hover (absolute, ne pousse pas le contenu) OU sur Dashboard (relative,
+     expanded by default). Voir docs/handoff/SIDEBAR-SPEC.md (à amender). */
+  --sidebar-w-collapsed: 100px;
+  --sidebar-w-expanded:  200px;
+  --sidebar-pastille:    60px;
   --header-h:            72px;
 
   /* Forms (V1 input-system) */

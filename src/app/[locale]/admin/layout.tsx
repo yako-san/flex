@@ -95,15 +95,10 @@ export default async function AdminLayout({ children, params }: Props) {
       {/* Top bar mobile (< md) — pill jaune comme V1 */}
       <AdminMobileTopBar locale={locale} badges={badges} />
 
-      {/* Wrapper sidebar desktop — maintient 60px dans le flux flex.
-          La sidebar elle-même se positionne en absolute lors du hover-expand
-          pour ne pas pousser le contenu. */}
-      <div
-        className="relative hidden shrink-0 self-stretch md:block"
-        style={{ width: 'var(--sidebar-w-collapsed)' }}
-      >
-        <AdminSidebar locale={locale} badges={badges} />
-      </div>
+      {/* Sidebar desktop — émet son propre wrapper relatif avec largeur
+          dynamique (100pt collapsed / 200pt Dashboard) ; le hover-expand
+          passe la sidebar en absolute pour overlay sans pousser le contenu. */}
+      <AdminSidebar locale={locale} badges={badges} />
 
       {/* Panneau principal — verre sombre V1 (rgba(0,0,0,0.20) sur #929292).
           data-admin-theme="dark" → CSS vars texte basculées en blanc-alpha. */}
