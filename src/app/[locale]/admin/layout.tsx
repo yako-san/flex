@@ -5,6 +5,31 @@ import { setRequestLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { AdminMobileTopBar, AdminSidebar, AdminWorkshopBar } from './_admin-nav';
 import { getActiveWorkshop } from '@/lib/workshop';
+import { prisma } from '@/lib/db';
+
+/** Compteurs sidebar V1 (badges numériques sur Inventaire/Ventes/Pièces). */
+async function getSidebarBadges(workshopId: string): Promise<{
+  inventaire: number;
+  ventes: number;
+  pieces: number;
+}> {
+  try {
+    const [bdtActifs, ventesAFacturer, piecesEpuisees] = await Promise.all([
+      prisma.bdc.count({
+        where: { workshopId, deletedAt: null, archiveStatus: 'ACTIF' },
+      }),
+      prisma.venteDirecte.count({
+        where: { workshopId, deletedAt: null, factureNumero: null },
+      }),
+      prisma.piece.count({
+        where: { workshopId, deletedAt: null, stockPhysique: { lte: 0 } },
+      }),
+    ]);
+    return { inventaire: bdtActifs, ventes: ventesAFacturer, pieces: piecesEpuisees };
+  } catch {
+    return { inventaire: 0, ventes: 0, pieces: 0 };
+  }
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -57,6 +82,9 @@ export default async function AdminLayout({ children, params }: Props) {
   if (!userId) redirect(`/${locale}/sign-in`);
 
   const { workshop, dbOk } = await safeWorkshop();
+  const badges = workshop
+    ? await getSidebarBadges(workshop.id)
+    : { inventaire: 0, ventes: 0, pieces: 0 };
 
   return (
     /* Fond global gris V1 (#929292). Layout flex row desktop, colonne mobile. */
@@ -65,7 +93,7 @@ export default async function AdminLayout({ children, params }: Props) {
       style={{ gap: '20px' }}
     >
       {/* Top bar mobile (< md) — pill jaune comme V1 */}
-      <AdminMobileTopBar locale={locale} />
+      <AdminMobileTopBar locale={locale} badges={badges} />
 
       {/* Wrapper sidebar desktop — maintient 60px dans le flux flex.
           La sidebar elle-même se positionne en absolute lors du hover-expand
@@ -74,7 +102,7 @@ export default async function AdminLayout({ children, params }: Props) {
         className="relative hidden shrink-0 self-stretch md:block"
         style={{ width: 'var(--sidebar-w-collapsed)' }}
       >
-        <AdminSidebar locale={locale} />
+        <AdminSidebar locale={locale} badges={badges} />
       </div>
 
       {/* Panneau principal — verre sombre V1 (rgba(0,0,0,0.20) sur #929292).
