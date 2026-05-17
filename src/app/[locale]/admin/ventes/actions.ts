@@ -52,11 +52,28 @@ export async function createVenteAction(
   redirect(`/fr-CA/admin/ventes/${id}`);
 }
 
-// Ajout d'un item PIECE à une vente directe (uniquement pièces, pas services).
+// Ajout d'un item à une vente directe. Accepte PIECE (catalogue, décrémente
+// stock à la facturation) ou SERVICE (pas de stock). Le `itemRef` au format
+// `kind:id` (ex `piece:pce_123`, `service:srv_456`) est parsé ici plutôt que
+// d'avoir 2 actions distinctes — V1 utilise le même picker pour les deux.
+// Cluster 4 item n (PR V1 #7).
+//
+// `prixOverride` (cluster 4 item o, PR V1 #8) : si fourni, écrase le prix
+// catalogue. Cas typique = 0 via bouton 🆓 « inclus » pour décrémenter
+// le stock d'une pièce sans la facturer (forfait flat fixed-price).
 const addItemSchema = z.object({
   venteId: z.string().trim().min(1),
-  pieceId: z.string().trim().min(1, 'Pièce requise'),
+  itemRef: z
+    .string()
+    .regex(/^(piece|service):.+$/, 'Format attendu : kind:id'),
   qty: z.coerce.number().positive().default(1),
+  prixOverride: z
+    .string()
+    .optional()
+    .transform((v) => (v === undefined || v === '' ? undefined : Number(v)))
+    .refine((v) => v === undefined || (Number.isFinite(v) && v >= 0), {
+      message: 'Prix invalide',
+    }),
 });
 
 export async function addVenteItemAction(
@@ -70,11 +87,14 @@ export async function addVenteItemAction(
 
   const parsed = addItemSchema.safeParse({
     venteId: formData.get('venteId') ?? '',
-    pieceId: formData.get('pieceId') ?? '',
+    itemRef: formData.get('itemRef') ?? '',
     qty: formData.get('qty') ?? 1,
+    prixOverride: formData.get('prixOverride') ?? undefined,
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Validation' };
-  const { venteId, pieceId, qty } = parsed.data;
+  const { venteId, itemRef, qty, prixOverride } = parsed.data;
+
+  const [kind, refId] = itemRef.split(':', 2) as ['piece' | 'service', string];
 
   await prisma.$transaction(async (tx) => {
     const vente = await tx.venteDirecte.findFirst({
@@ -85,10 +105,45 @@ export async function addVenteItemAction(
       throw new Error('Vente déjà facturée — items immutables');
     }
 
-    const piece = await tx.piece.findFirst({
-      where: { id: pieceId, workshopId: workshop.id, deletedAt: null },
-    });
-    if (!piece) throw new Error('Pièce introuvable');
+    // Snapshot dépend du kind. Pour SERVICE, pas de FK pieceId (null).
+    let snapshot: {
+      pieceId: string | null;
+      nom: string;
+      sku: string | null;
+      unitPrice: Decimal;
+      taxable: boolean;
+    };
+    if (kind === 'service') {
+      const service = await tx.service.findFirst({
+        where: { id: refId, workshopId: workshop.id, deletedAt: null },
+      });
+      if (!service) throw new Error('Service introuvable');
+      snapshot = {
+        pieceId: null,
+        nom: service.labelCanonical,
+        sku: service.legacyCode ?? null,
+        unitPrice: new Decimal(service.prix.toString()),
+        taxable: service.taxable,
+      };
+    } else {
+      const piece = await tx.piece.findFirst({
+        where: { id: refId, workshopId: workshop.id, deletedAt: null },
+      });
+      if (!piece) throw new Error('Pièce introuvable');
+      snapshot = {
+        pieceId: piece.id,
+        nom: piece.nomCanonical,
+        sku: piece.sku ?? null,
+        unitPrice: new Decimal(piece.prixVente.toString()),
+        taxable: piece.taxable,
+      };
+    }
+
+    // Override prix (bouton 🆓) — utilisé pour les pièces incluses dans
+    // un forfait fixe. Compatible aussi sur services si jamais utile.
+    const unitPrice =
+      prixOverride !== undefined ? new Decimal(prixOverride) : snapshot.unitPrice;
+    const total = unitPrice.times(qty);
 
     const last = await tx.venteDirecteItem.findFirst({
       where: { venteId },
@@ -96,20 +151,18 @@ export async function addVenteItemAction(
       select: { position: true },
     });
     const position = (last?.position ?? 0) + 1;
-    const unitPrice = new Decimal(piece.prixVente.toString());
-    const total = unitPrice.times(qty);
 
     await tx.venteDirecteItem.create({
       data: {
         id: generateId('vdi'),
         venteId,
-        pieceId,
+        pieceId: snapshot.pieceId,
         position,
-        skuSnapshot: piece.sku ?? null,
-        nomSnapshot: piece.nomCanonical,
+        skuSnapshot: snapshot.sku,
+        nomSnapshot: snapshot.nom,
         qty: new Prisma.Decimal(qty),
         unitPriceSnapshot: new Prisma.Decimal(unitPrice.toString()),
-        taxableSnapshot: piece.taxable,
+        taxableSnapshot: snapshot.taxable,
         total: new Prisma.Decimal(total.toString()),
       },
     });

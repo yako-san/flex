@@ -39,6 +39,34 @@ export default async function VenteDetailPage({ params }: Props) {
         select: { id: true, nomCanonical: true, sku: true, prixVente: true, taxable: true },
       });
 
+  const services = vente.factureNumero
+    ? []
+    : await prisma.service.findMany({
+        where: { workshopId: workshop.id, deletedAt: null },
+        orderBy: [{ labelCanonical: 'asc' }],
+        select: { id: true, labelCanonical: true, legacyCode: true, prix: true, taxable: true },
+      });
+
+  // Picker unifié pièces + services (cluster 4 item n). Ordre : services
+  // puis pièces (les services sont moins nombreux, faciles à repérer en
+  // haut). Préfixes visuels injectés côté form.
+  const pickerEntries = [
+    ...services.map((s) => ({
+      kind: 'service' as const,
+      id: s.id,
+      sku: s.legacyCode,
+      nom: s.labelCanonical,
+      prix: Number(s.prix),
+    })),
+    ...pieces.map((p) => ({
+      kind: 'piece' as const,
+      id: p.id,
+      sku: p.sku,
+      nom: p.nomCanonical,
+      prix: Number(p.prixVente),
+    })),
+  ];
+
   const taxLines = vente.items.map((it) => ({
     amount: new Decimal(it.total.toString()),
     taxable: it.taxableSnapshot,
@@ -121,20 +149,36 @@ export default async function VenteDetailPage({ params }: Props) {
                   </td>
                 </tr>
               ) : (
-                vente.items.map((it) => (
-                  <tr key={it.id} className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
-                    <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{it.position}</td>
-                    <td className="px-3 py-1.5 font-mono text-[10px]">{it.skuSnapshot ?? '—'}</td>
-                    <td className="px-3 py-1.5">{it.nomSnapshot}</td>
-                    <td className="px-3 py-1.5 text-right font-mono tabular-nums">{Number(it.qty)}</td>
-                    <td className="px-3 py-1.5 text-right font-mono tabular-nums">{Number(it.unitPriceSnapshot).toFixed(2)} $</td>
-                    <td className="px-3 py-1.5 text-center">{it.taxableSnapshot ? '✓' : '—'}</td>
-                    <td className="px-3 py-1.5 text-right font-mono font-semibold tabular-nums">{Number(it.total).toFixed(2)} $</td>
-                    <td className="px-3 py-1.5 text-right">
-                      {!facturee ? <RemoveItemButton itemId={it.id} /> : null}
-                    </td>
-                  </tr>
-                ))
+                vente.items.map((it) => {
+                  // Cluster 4 item o : item à 0 = "inclus" italique grisé.
+                  const isInclus = Number(it.unitPriceSnapshot) === 0;
+                  return (
+                    <tr key={it.id} className="border-t border-black/5 hover:bg-[var(--gris-fond)]">
+                      <td className="px-3 py-1.5 font-mono text-[10px] text-[var(--text-secondary-60)]">{it.position}</td>
+                      <td className="px-3 py-1.5 font-mono text-[10px]">{it.skuSnapshot ?? '—'}</td>
+                      <td className="px-3 py-1.5">{it.nomSnapshot}</td>
+                      <td className="px-3 py-1.5 text-right font-mono tabular-nums">{Number(it.qty)}</td>
+                      <td className="px-3 py-1.5 text-right font-mono tabular-nums">
+                        {isInclus ? (
+                          <span className="italic text-[var(--text-secondary-60)]">inclus</span>
+                        ) : (
+                          <>{Number(it.unitPriceSnapshot).toFixed(2)} $</>
+                        )}
+                      </td>
+                      <td className="px-3 py-1.5 text-center">{it.taxableSnapshot ? '✓' : '—'}</td>
+                      <td className="px-3 py-1.5 text-right font-mono font-semibold tabular-nums">
+                        {isInclus ? (
+                          <span className="italic text-[var(--text-secondary-60)]">inclus</span>
+                        ) : (
+                          <>{Number(it.total).toFixed(2)} $</>
+                        )}
+                      </td>
+                      <td className="px-3 py-1.5 text-right">
+                        {!facturee ? <RemoveItemButton itemId={it.id} /> : null}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
             <tfoot>
@@ -165,12 +209,9 @@ export default async function VenteDetailPage({ params }: Props) {
         {!facturee ? (
           <section className="rounded-2xl bg-white/85 p-4 shadow-sm">
             <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
-              Ajouter une pièce
+              Ajouter une pièce ou un service
             </h2>
-            <AddItemForm venteId={vente.id} pieces={pieces.map((p) => ({
-              id: p.id,
-              label: `${p.sku ? `[${p.sku}] ` : ''}${p.nomCanonical} — ${Number(p.prixVente).toFixed(2)} $`,
-            }))} />
+            <AddItemForm venteId={vente.id} entries={pickerEntries} />
           </section>
         ) : null}
       </div>
