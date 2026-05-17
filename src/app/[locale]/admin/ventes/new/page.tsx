@@ -28,7 +28,7 @@ export default async function NewVentePage({ params }: Props) {
         title="Nouvelle vente comptoir"
         subline="Crée la vente vide, puis ajoute des pièces au prix catalogue. Émets la facture quand prêt."
       />
-      <div className="mx-auto max-w-[720px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[720px] p-6">
         <Link
           href={`/${locale}/admin/ventes`}
           className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"

@@ -28,7 +28,7 @@ export default async function EditForfaitPage({ params }: Props) {
         eyebrow="catalogue · modifier forfait"
         title={`Modifier ${f.labelCanonical}`}
       />
-      <div className="mx-auto max-w-[800px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[800px] p-6">
         <Link href={`/${locale}/admin/forfaits`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Tous les forfaits</Link>
         <ForfaitForm initial={f} initialTasks={f.taskTemplates.map((t) => ({ labelCanonical: t.labelCanonical }))} />
       </div>

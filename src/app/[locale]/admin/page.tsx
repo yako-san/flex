@@ -205,7 +205,7 @@ export default async function AdminDashboardPage({ params }: Props) {
         }
       />
 
-      <div className="space-y-6 p-6">
+      <div className="bloc-contenu space-y-6 p-6">
         {/* 4 KPI cards */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard

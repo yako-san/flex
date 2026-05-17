@@ -104,7 +104,7 @@ export default async function ClientsPage({ params, searchParams }: Props) {
         }
       />
 
-      <div className="p-6">
+      <div className="bloc-contenu p-6">
         {clients.length === 0 ? (
           <p className="rounded-xl border border-dashed border-[var(--gris-bord)] p-8 text-center text-sm text-[var(--text-secondary-60)]">
             Aucun client {trimmed ? `pour « ${trimmed} »` : ''}.

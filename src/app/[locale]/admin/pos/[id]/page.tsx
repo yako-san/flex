@@ -63,7 +63,7 @@ export default async function PoDetailPage({ params }: Props) {
         actions={po.status !== 'RECU' ? <ReceivePoButton poId={po.id} poNumero={po.poNumero} /> : null}
       />
 
-      <div className="mx-auto max-w-[1100px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[1100px] p-6">
         <Link
           href={`/${locale}/admin/pos`}
           className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"

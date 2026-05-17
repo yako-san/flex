@@ -39,7 +39,7 @@ export default async function NewAdhocPoPage({ params }: Props) {
         title="Réception ADHOC"
         subline="PO pré-marqué REÇU pour pièces achetées sans commande préalable. Le stock physique est incrémenté immédiatement."
       />
-      <div className="mx-auto max-w-[920px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[920px] p-6">
         <Link
           href={`/${locale}/admin/pos`}
           className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"

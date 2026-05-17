@@ -80,7 +80,7 @@ export default async function VentesPage({ params, searchParams }: Props) {
         }
       />
 
-      <div className="p-6">
+      <div className="bloc-contenu p-6">
         {ventes.length === 0 ? (
           <p className="rounded-xl border border-dashed border-[var(--gris-bord)] p-8 text-center text-sm text-[var(--text-secondary-60)]">
             Aucune vente {trimmed ? `pour « ${trimmed} »` : ''}.

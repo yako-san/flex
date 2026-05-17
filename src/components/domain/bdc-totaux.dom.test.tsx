@@ -18,38 +18,41 @@ describe('BDCTotaux', () => {
     expect(screen.getByLabelText('Totaux du BDT')).toBeTruthy();
   });
 
-  it('affiche les 5 lignes : services, pièces, TPS, TVQ, grand total', () => {
-    render(<BDCTotaux {...BASE} />);
-    expect(screen.getByText('Sous-total services')).toBeTruthy();
-    expect(screen.getByText('Sous-total pièces')).toBeTruthy();
-    expect(screen.getByText('TPS')).toBeTruthy();
-    expect(screen.getByText('TVQ')).toBeTruthy();
-    expect(screen.getByText('Grand total')).toBeTruthy();
-  });
-
-  it('format français avec virgule décimale + suffixe $', () => {
+  it('rendu compact V1 — sous-totaux services + pièces + grand total visibles', () => {
     const { container } = render(<BDCTotaux {...BASE} />);
+    expect(screen.getByText('Services')).toBeTruthy();
+    expect(screen.getByText('Pièces')).toBeTruthy();
+    // Sous-totaux nets (après remises) affichés dans la pill noire.
     expect(container.textContent).toContain('100,00 $');
     expect(container.textContent).toContain('50,00 $');
-    expect(container.textContent).toContain('7,50 $');
-    expect(container.textContent).toContain('14,96 $');
+    // Grand total affiché à droite.
     expect(container.textContent).toContain('172,46 $');
   });
 
-  it('remises services > 0 → ligne Remise services en rouge avec −', () => {
-    render(<BDCTotaux {...BASE} remiseServicesMontant={10} />);
-    expect(screen.getByText('Remise services')).toBeTruthy();
-    // La ligne contient "−10,00 $" (le préfixe − vient du component)
+  it('TPS/TVQ exposés via le title de la pill (lecture comptable détaillée)', () => {
+    render(<BDCTotaux {...BASE} />);
+    const aside = screen.getByLabelText('Totaux du BDT');
+    expect(aside.getAttribute('title') ?? '').toContain('TPS 7,50 $');
+    expect(aside.getAttribute('title') ?? '').toContain('TVQ 14,96 $');
   });
 
-  it("pas de ligne Remise services si remiseServicesMontant = 0", () => {
+  it('remises services > 0 → sous-total services net affiché (100 - 10 = 90)', () => {
+    const { container } = render(<BDCTotaux {...BASE} remiseServicesMontant={10} />);
+    expect(container.textContent).toContain('90,00 $');
+    // Détail de la remise dispo dans le title
+    const aside = screen.getByLabelText('Totaux du BDT');
+    expect(aside.getAttribute('title') ?? '').toContain('remise svc -10,00 $');
+  });
+
+  it("pas de mention de remise services si remiseServicesMontant = 0", () => {
     render(<BDCTotaux {...BASE} remiseServicesMontant={0} />);
-    expect(screen.queryByText('Remise services')).toBeNull();
+    const aside = screen.getByLabelText('Totaux du BDT');
+    expect(aside.getAttribute('title') ?? '').not.toContain('remise svc');
   });
 
-  it('remises pièces > 0 → ligne Remise pièces', () => {
-    render(<BDCTotaux {...BASE} remisePiecesMontant={5} />);
-    expect(screen.getByText('Remise pièces')).toBeTruthy();
+  it('remises pièces > 0 → sous-total pièces net affiché (50 - 5 = 45)', () => {
+    const { container } = render(<BDCTotaux {...BASE} remisePiecesMontant={5} />);
+    expect(container.textContent).toContain('45,00 $');
   });
 
   it("avance null → pill 'avance ?' (pas de detail)", () => {
@@ -70,34 +73,36 @@ describe('BDCTotaux', () => {
     expect(screen.getByText(/42,50 \$/)).toBeTruthy();
   });
 
-  it('avance saisie → Reste à payer affiché', () => {
-    render(
+  it('avance saisie → grand total barré + reste à payer en jaune', () => {
+    const { container } = render(
       <BDCTotaux
         {...BASE}
         avance={{ montant: 50, mode: 'COMPTANT', note: null }}
       />,
     );
-    expect(screen.getByText(/Reste à payer/i)).toBeTruthy();
     // 172.46 - 50 = 122.46
-    const container = screen.getByText(/Reste à payer/i).parentElement!;
     expect(container.textContent).toContain('122,46 $');
+    // Grand total barré toujours visible
+    expect(container.textContent).toContain('172,46 $');
+    // Le grand total barré doit avoir la classe line-through
+    const strikeSpan = container.querySelector('.line-through');
+    expect(strikeSpan?.textContent).toContain('172,46 $');
   });
 
-  it("avance > grand total → Reste à payer = 0 (Math.max)", () => {
-    render(
+  it("avance > grand total → reste à payer = 0 (Math.max)", () => {
+    const { container } = render(
       <BDCTotaux
         {...BASE}
         avance={{ montant: 500, mode: 'COMPTANT', note: null }}
       />,
     );
-    expect(screen.getByText(/Reste à payer/i).parentElement!.textContent).toContain(
-      '0,00 $',
-    );
+    expect(container.textContent).toContain('0,00 $');
   });
 
-  it('pas de Reste à payer si pas d\'avance', () => {
-    render(<BDCTotaux {...BASE} avance={null} />);
-    expect(screen.queryByText(/Reste à payer/i)).toBeNull();
+  it("pas de grand total barré si pas d'avance", () => {
+    const { container } = render(<BDCTotaux {...BASE} avance={null} />);
+    const strikeSpan = container.querySelector('.line-through');
+    expect(strikeSpan).toBeNull();
   });
 
   it("clic pill 'avance' ouvre le modal (Radix Dialog)", () => {

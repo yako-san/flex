@@ -65,7 +65,7 @@ export default async function LegacyV1Page({ params }: Props) {
         title="Données v1 brutes"
         subline="Dump v1 complet stocké en JSONB sur Workshop. Sert à retrouver les paramètres et textes v1 non encore portés."
       />
-      <div className="mx-auto max-w-[1100px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[1100px] p-6">
       <div style={statsBox}>
         <Stat label="Clés top-level" value={allKeys.length} />
         <Stat label="App version v1" value={String(dump['appVersion'] ?? '?')} />

@@ -21,7 +21,7 @@ export default async function AdminImportPage({ params }: Props) {
         subline="Refresh partiel (hydrate nouveaux champs) ou import complet (crée un workshop)."
       />
 
-      <div className="mx-auto max-w-[720px] space-y-6 p-6">
+      <div className="bloc-contenu mx-auto max-w-[720px] space-y-6 p-6">
         <section className="rounded-2xl bg-white/85 p-4 shadow-sm">
           <h2 className="mb-2 text-base font-semibold">Refresh partiel</h2>
           <p className="mb-3 text-sm text-[var(--text-secondary-70)]">

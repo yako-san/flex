@@ -16,7 +16,7 @@ export default async function NewEquipePage({ params }: Props) {
         eyebrow="paramètres · nouveau membre d'équipe"
         title="Nouveau membre"
       />
-      <div className="mx-auto max-w-[720px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[720px] p-6">
         <Link href={`/${locale}/admin/equipe`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Toute l&apos;équipe</Link>
         <EquipeForm />
       </div>

@@ -157,7 +157,7 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
         }
       />
 
-      <div className="mx-auto flex max-w-[1400px] flex-col gap-4 p-4">
+      <div className="bloc-contenu mx-auto flex max-w-[1400px] flex-col gap-4 p-4">
       {/* 3 colonnes principales : carte gauche unifiée + Services + Pièces */}
       <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)_minmax(0,1fr)]">
         <BdtSidecard

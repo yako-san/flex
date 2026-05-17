@@ -27,7 +27,7 @@ export default async function EditServicePage({ params }: Props) {
         eyebrow="catalogue à la carte · modifier service"
         title={`Modifier ${s.labelCanonical}`}
       />
-      <div className="mx-auto max-w-[800px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[800px] p-6">
         <Link href={`/${locale}/admin/services`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Tous les services</Link>
         <ServiceForm initial={s} />
       </div>

@@ -78,7 +78,7 @@ async function renderSettings({ params, searchParams }: Props) {
         title="Infos atelier"
       />
 
-      <div className="mx-auto max-w-[800px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[800px] p-6">
 
       <h2 style={{ fontSize: '1.25rem', marginTop: '2rem', marginBottom: '0.5rem' }}>
         Logo

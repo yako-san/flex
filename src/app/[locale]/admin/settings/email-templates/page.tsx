@@ -27,7 +27,7 @@ export default async function EmailTemplatesPage({ params }: Props) {
         title="Templates de courriels et SMS"
         subline="FR et EN séparés. Le client reçoit la version correspondant à Client.lang. Fragments granulaires V1 (greeting / intro / cta / outro) en fallback."
       />
-      <div className="mx-auto max-w-[880px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[880px] p-6">
         <Link
           href={`/${locale}/admin/settings`}
           className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"

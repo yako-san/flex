@@ -39,14 +39,54 @@ import { cn } from '@/lib/utils';
 // matcher V1. Le popover utilise Radix Popover (déjà installé) avec
 // déclencheur au click ET au hover via openDelay 100ms.
 
-function buildPrimary(locale: string): SidebarItem[] {
+type SidebarBadges = {
+  inventaire: number;
+  ventes: number;
+  pieces: number;
+};
+
+function buildPrimary(locale: string, badges?: SidebarBadges): SidebarItem[] {
   // 5 entrées V1, dans l'ordre exact de la capture (Inventaire en tête).
+  // V1 (capture 00c-menu-ouvert-v1.png) montre des badges numériques sur
+  // INVENTAIRE (vert = BDT actifs), VENTES (rouge = à facturer) et
+  // PIÈCES (rouge = stock épuisé). Les compteurs viennent du layout.
   return [
-    { href: `/${locale}/admin/bdcs`,     matchPrefix: `/${locale}/admin/inventaire`, icon: Wrench,       label: 'Inventaire' },
-    { href: `/${locale}/admin/ventes`,   matchPrefix: `/${locale}/admin/ventes`,     icon: ShoppingCart, label: 'Ventes' },
-    { href: `/${locale}/admin/services`, matchPrefix: `/${locale}/admin/services`,   icon: Layers,       label: 'Services' },
-    { href: `/${locale}/admin/pieces`,   matchPrefix: `/${locale}/admin/pieces`,     icon: Package,      label: 'Pièces' },
-    { href: `/${locale}/admin/clients`,  matchPrefix: `/${locale}/admin/clients`,    icon: Users,        label: 'Clients' },
+    {
+      href: `/${locale}/admin/bdcs`,
+      matchPrefix: `/${locale}/admin/inventaire`,
+      icon: Wrench,
+      label: 'Inventaire',
+      badge: badges?.inventaire ?? null,
+      badgeVariant: 'vert',
+    },
+    {
+      href: `/${locale}/admin/ventes`,
+      matchPrefix: `/${locale}/admin/ventes`,
+      icon: ShoppingCart,
+      label: 'Ventes',
+      badge: badges?.ventes ?? null,
+      badgeVariant: 'rouge',
+    },
+    {
+      href: `/${locale}/admin/services`,
+      matchPrefix: `/${locale}/admin/services`,
+      icon: Layers,
+      label: 'Services',
+    },
+    {
+      href: `/${locale}/admin/pieces`,
+      matchPrefix: `/${locale}/admin/pieces`,
+      icon: Package,
+      label: 'Pièces',
+      badge: badges?.pieces ?? null,
+      badgeVariant: 'rouge',
+    },
+    {
+      href: `/${locale}/admin/clients`,
+      matchPrefix: `/${locale}/admin/clients`,
+      icon: Users,
+      label: 'Clients',
+    },
   ];
 }
 
@@ -157,8 +197,8 @@ function SecondarySection({ group, onNavigate }: { group: SecondaryGroup; onNavi
 }
 
 /** Sidebar desktop (≥ md). */
-export function AdminSidebar({ locale }: { locale: string }) {
-  const navItems = buildPrimary(locale);
+export function AdminSidebar({ locale, badges }: { locale: string; badges?: SidebarBadges }) {
+  const navItems = buildPrimary(locale, badges);
   const secondary = buildSecondary(locale);
   const [open, setOpen] = React.useState(false);
 
@@ -204,10 +244,10 @@ export function AdminSidebar({ locale }: { locale: string }) {
 }
 
 /** Barre top mobile (< md) avec hamburger + logo + UserButton. */
-export function AdminMobileTopBar({ locale }: { locale: string }) {
+export function AdminMobileTopBar({ locale, badges }: { locale: string; badges?: SidebarBadges }) {
   // Sur mobile, on garde tous les items à plat dans le drawer (pas de popover).
   // L'utilisateur scrolle plutôt que de naviguer à 2 niveaux.
-  const primary = buildPrimary(locale);
+  const primary = buildPrimary(locale, badges);
   const secondary = buildSecondary(locale).flatMap((g) =>
     g.items.map((it) => ({
       href: it.href,

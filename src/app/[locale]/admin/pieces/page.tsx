@@ -164,7 +164,7 @@ export default async function PiecesPage({ params, searchParams }: Props) {
         }
       />
 
-      <div className="p-6">
+      <div className="bloc-contenu p-6">
         {/* Pills toggle 4 onglets */}
         <nav className="mb-4 inline-flex gap-1 rounded-full bg-[rgba(0,0,0,0.20)] p-1">
           {tabs.map((t) => {

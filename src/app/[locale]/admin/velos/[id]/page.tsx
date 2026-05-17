@@ -119,7 +119,7 @@ export default async function VeloDetailPage({ params }: Props) {
         }
       />
 
-      <div className="mx-auto max-w-[960px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[960px] p-6">
         <Link
           href={`/${locale}/admin/velos`}
           className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"

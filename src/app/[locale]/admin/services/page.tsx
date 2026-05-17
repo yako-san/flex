@@ -68,7 +68,7 @@ export default async function ServicesPage({ params, searchParams }: Props) {
         }
       />
 
-      <div className="space-y-4 p-6">
+      <div className="bloc-contenu space-y-4 p-6">
         {/* Section Forfaits */}
         <details open className="overflow-hidden rounded-2xl shadow-sm">
           <summary className="flex cursor-pointer items-center justify-between bg-[var(--jaune)] px-4 py-2 text-sm font-semibold text-black">

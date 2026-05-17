@@ -44,7 +44,7 @@ export default async function NewVeloPage({ params, searchParams }: Props) {
         eyebrow="catalogue · nouveau vélo"
         title="Nouveau vélo"
       />
-      <div className="mx-auto max-w-[800px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[800px] p-6">
         <Link
           href={`/${locale}/admin/velos`}
           className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"

@@ -157,83 +157,87 @@ export default async function BdcsPage({ params, searchParams }: Props) {
         }
       />
 
-      <div className="px-6 py-4">
+      <div className="bloc-contenu px-6 py-4">
         {totalShown === 0 ? (
           <p className="rounded-xl border border-dashed border-[var(--gris-bord)] p-8 text-center text-sm text-[var(--text-secondary-60)]">
             Aucun BDT {trimmed ? `pour la recherche « ${trimmed} »` : ''}.
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-2xl shadow-sm">
-            <table className="w-full border-separate border-spacing-y-0 text-sm">
-              <thead className="bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
-                <tr>
-                  <th className="px-3 py-2 text-left">Statut</th>
-                  <th className="px-3 py-2 text-left">BDT</th>
-                  <th className="px-3 py-2 text-left">Vélo</th>
-                  <th className="px-3 py-2 text-left">Client</th>
-                  <th className="px-3 py-2 text-left">Éval</th>
-                  <th className="px-3 py-2 text-left">Méca</th>
-                  <th className="px-3 py-2 text-left">État</th>
-                  <th className="px-3 py-2 text-right">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bdcs.map((b) => {
-                  const colors = VELO_STATUS_COLORS[b.velo.status];
-                  const pill = STATUS_TO_PILL[b.velo.status];
-                  const label = VELO_STATUS_LABELS[b.velo.status].fr;
-                  const eval_ = b.velo.evalMecano?.surnom;
-                  const meca  = b.velo.mecaMecano?.surnom;
-                  const placeholder = (
-                    <span className="text-[var(--text-secondary-50)] italic">Sélection →</span>
-                  );
-                  const etat = getEtatText(
-                    b.velo.status,
-                    b.evalStatus,
-                    b.cbEvalEnvoye,
-                    b.velo.ctrlMecano?.surnom ?? null,
-                    meca ?? null,
-                  );
-                  return (
-                    <tr
-                      key={b.id}
-                      className="transition-opacity hover:opacity-90"
-                      style={{ backgroundColor: colors.bg, color: colors.fg }}
-                    >
-                      <td className="px-3 py-2">
-                        <Pill variant={pill} size="sm">{label}</Pill>
-                      </td>
-                      <td className="px-3 py-2 font-mono font-semibold">
-                        <Link href={`/${locale}/admin/bdcs/${b.id}`} className="hover:underline">
-                          {String(b.numero).padStart(4, '0')}
-                        </Link>
-                      </td>
-                      <td className="px-3 py-2 max-w-[280px] truncate">
-                        {[b.velo.marque?.nom, b.velo.modele, b.velo.couleur].filter(Boolean).join(', ') || '—'}
-                      </td>
-                      <td className="px-3 py-2">
-                        {b.velo.client ? (
-                          <Link
-                            href={`/${locale}/admin/clients/${b.velo.client.id ?? ''}`}
-                            className="hover:underline"
-                          >
-                            {`${b.velo.client.prenom} ${b.velo.client.nom}`.trim()}
-                          </Link>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                      <td className="px-3 py-2">{eval_ ?? placeholder}</td>
-                      <td className="px-3 py-2">{meca ?? placeholder}</td>
-                      <td className="px-3 py-2 text-xs italic opacity-80">{etat}</td>
-                      <td className="px-3 py-2 text-right font-mono text-xs tabular-nums opacity-80">
-                        {b.velo.date2 ? dateFmt.format(b.velo.date2) : '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="space-y-1.5">
+            {/* Header colonnes — aligné sur la grille des pills ci-dessous */}
+            <div
+              className="grid items-center gap-3 px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/60"
+              style={{ gridTemplateColumns: '92px 60px minmax(0,2fr) minmax(0,1.6fr) 88px 88px minmax(0,1.4fr) 96px' }}
+            >
+              <span>Statut</span>
+              <span>BDT</span>
+              <span>Vélo</span>
+              <span>Client</span>
+              <span>Éval</span>
+              <span>Méca</span>
+              <span>État</span>
+              <span className="text-right">Date</span>
+            </div>
+
+            {/* Pills lignes V1 — chaque BDT = pill arrondi séparé, coloré
+                selon statut. Espace 6px entre pills (space-y-1.5). */}
+            {bdcs.map((b) => {
+              const colors = VELO_STATUS_COLORS[b.velo.status];
+              const pill = STATUS_TO_PILL[b.velo.status];
+              const label = VELO_STATUS_LABELS[b.velo.status].fr;
+              const eval_ = b.velo.evalMecano?.surnom;
+              const meca = b.velo.mecaMecano?.surnom;
+              const placeholder = (
+                <span className="text-[var(--text-secondary-50)] italic">Sélection →</span>
+              );
+              const etat = getEtatText(
+                b.velo.status,
+                b.evalStatus,
+                b.cbEvalEnvoye,
+                b.velo.ctrlMecano?.surnom ?? null,
+                meca ?? null,
+              );
+              return (
+                <div
+                  key={b.id}
+                  className="grid items-center gap-3 rounded-full px-4 py-2 text-sm shadow-sm transition-opacity hover:opacity-90"
+                  style={{
+                    backgroundColor: colors.bg,
+                    color: colors.fg,
+                    gridTemplateColumns: '92px 60px minmax(0,2fr) minmax(0,1.6fr) 88px 88px minmax(0,1.4fr) 96px',
+                  }}
+                >
+                  <Pill variant={pill} size="sm">{label}</Pill>
+                  <Link
+                    href={`/${locale}/admin/bdcs/${b.id}`}
+                    className="font-mono font-semibold hover:underline"
+                  >
+                    {String(b.numero).padStart(4, '0')}
+                  </Link>
+                  <span className="truncate">
+                    {[b.velo.marque?.nom, b.velo.modele, b.velo.couleur].filter(Boolean).join(', ') || '—'}
+                  </span>
+                  <span className="truncate">
+                    {b.velo.client ? (
+                      <Link
+                        href={`/${locale}/admin/clients/${b.velo.client.id ?? ''}`}
+                        className="hover:underline"
+                      >
+                        {`${b.velo.client.prenom} ${b.velo.client.nom}`.trim()}
+                      </Link>
+                    ) : (
+                      '—'
+                    )}
+                  </span>
+                  <span className="truncate text-xs">{eval_ ?? placeholder}</span>
+                  <span className="truncate text-xs">{meca ?? placeholder}</span>
+                  <span className="truncate text-xs italic opacity-80">{etat}</span>
+                  <span className="text-right font-mono text-xs tabular-nums opacity-80">
+                    {b.velo.date2 ? dateFmt.format(b.velo.date2) : '—'}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

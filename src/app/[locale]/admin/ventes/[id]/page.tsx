@@ -79,7 +79,7 @@ export default async function VenteDetailPage({ params }: Props) {
         }
       />
 
-      <div className="mx-auto max-w-[960px] space-y-4 p-6">
+      <div className="bloc-contenu mx-auto max-w-[960px] space-y-4 p-6">
         <Link
           href={`/${locale}/admin/ventes`}
           className="inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"

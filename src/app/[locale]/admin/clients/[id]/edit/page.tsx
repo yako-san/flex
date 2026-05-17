@@ -30,7 +30,7 @@ export default async function EditClientPage({ params }: Props) {
         eyebrow="atelier · modifier client"
         title={`Modifier ${client.prenom} ${client.nom}`}
       />
-      <div className="mx-auto max-w-[720px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[720px] p-6">
         <Link
           href={`/${locale}/admin/clients/${id}`}
           className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"
