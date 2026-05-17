@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { Bike, Users } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './sidebar';
 
@@ -24,7 +24,7 @@ const ITEMS: SidebarItem[] = [
   },
 ];
 
-describe('Sidebar', () => {
+describe('Sidebar (layout vertical V1)', () => {
   it('rend <aside> avec aria-label "Navigation principale"', () => {
     render(<Sidebar items={ITEMS} />);
     expect(screen.getByLabelText('Navigation principale')).toBeTruthy();
@@ -35,7 +35,7 @@ describe('Sidebar', () => {
     expect(screen.getAllByRole('link')).toHaveLength(2);
   });
 
-  it('le label de chaque item est rendu (hidden via opacity-0 si collapsed)', () => {
+  it('le label de chaque item est rendu (visible en permanence en V1 vertical)', () => {
     render(<Sidebar items={ITEMS} />);
     expect(screen.getByText('Dashboard')).toBeTruthy();
     expect(screen.getByText('Clients')).toBeTruthy();
@@ -46,12 +46,7 @@ describe('Sidebar', () => {
     render(<Sidebar items={ITEMS} />);
     const links = screen.getAllByRole('link');
     expect(links[1]!.getAttribute('aria-current')).toBe('page');
-    // Note : l'item Dashboard sera AUSSI actif si son matchPrefix est un
-    // préfixe (cas du layout admin réel) — comportement startsWith de la
-    // logique active. Ici Dashboard n'a pas de matchPrefix donc utilise
-    // href, et '/fr-CA/admin/clients' commence bien par '/fr-CA/admin/'
-    // — comportement attendu côté composant (sous-route considérée
-    // active).
+    // Dashboard a startsWith '/fr-CA/admin' qui matche aussi '/fr-CA/admin/clients'
     expect(links[0]!.getAttribute('aria-current')).toBe('page');
   });
 
@@ -61,27 +56,10 @@ describe('Sidebar', () => {
     expect(screen.getAllByRole('link')[1]!.getAttribute('aria-current')).toBe('page');
   });
 
-  it("expandedByDefault=true → w-[var(--sidebar-w-expanded)]", () => {
-    render(<Sidebar items={ITEMS} expandedByDefault />);
-    const aside = screen.getByLabelText('Navigation principale');
-    expect(aside.className).toContain('w-[var(--sidebar-w-expanded)]');
-    expect(aside.getAttribute('data-expanded')).toBe('true');
-  });
-
-  it('expandedByDefault=false → w-[var(--sidebar-w-collapsed)]', () => {
+  it('largeur fixe sidebar (V1 = pas de hover-expand)', () => {
     render(<Sidebar items={ITEMS} />);
     const aside = screen.getByLabelText('Navigation principale');
     expect(aside.className).toContain('w-[var(--sidebar-w-collapsed)]');
-    expect(aside.getAttribute('data-expanded')).toBe('false');
-  });
-
-  it('hover sur aside → data-expanded passe à true', () => {
-    render(<Sidebar items={ITEMS} />);
-    const aside = screen.getByLabelText('Navigation principale');
-    fireEvent.mouseEnter(aside);
-    expect(aside.getAttribute('data-expanded')).toBe('true');
-    fireEvent.mouseLeave(aside);
-    expect(aside.getAttribute('data-expanded')).toBe('false');
   });
 
   it('header slot rendu', () => {
@@ -95,9 +73,7 @@ describe('Sidebar', () => {
   });
 
   it('badge.variant jaune (default) → bg-black text-jaune', () => {
-    const items: SidebarItem[] = [
-      { ...ITEMS[0]!, badge: 5 },
-    ];
+    const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 5 }];
     render(<Sidebar items={items} />);
     const badge = screen.getByLabelText('5 Dashboard');
     expect(badge.className).toContain('bg-black');
@@ -105,9 +81,7 @@ describe('Sidebar', () => {
   });
 
   it('badge.variant vert → bg --st-on-bench-bg', () => {
-    const items: SidebarItem[] = [
-      { ...ITEMS[0]!, badge: 3, badgeVariant: 'vert' },
-    ];
+    const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 3, badgeVariant: 'vert' }];
     render(<Sidebar items={items} />);
     expect(screen.getByLabelText('3 Dashboard').className).toContain(
       'bg-[var(--st-on-bench-bg)]',
@@ -115,9 +89,7 @@ describe('Sidebar', () => {
   });
 
   it('badge.variant rouge → bg --rouge text-white', () => {
-    const items: SidebarItem[] = [
-      { ...ITEMS[0]!, badge: 2, badgeVariant: 'rouge' },
-    ];
+    const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 2, badgeVariant: 'rouge' }];
     render(<Sidebar items={items} />);
     const cls = screen.getByLabelText('2 Dashboard').className;
     expect(cls).toContain('bg-[var(--rouge)]');
@@ -125,17 +97,13 @@ describe('Sidebar', () => {
   });
 
   it("badge >= 100 affiché '99+'", () => {
-    const items: SidebarItem[] = [
-      { ...ITEMS[0]!, badge: 234 },
-    ];
+    const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 234 }];
     render(<Sidebar items={items} />);
     expect(screen.getByText('99+')).toBeTruthy();
   });
 
   it('badge = 0 → pas de badge affiché', () => {
-    const items: SidebarItem[] = [
-      { ...ITEMS[0]!, badge: 0 },
-    ];
+    const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 0 }];
     render(<Sidebar items={items} />);
     expect(screen.queryByLabelText('0 Dashboard')).toBeNull();
   });
@@ -143,11 +111,10 @@ describe('Sidebar', () => {
   it('badge null → pas de badge', () => {
     const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: null }];
     render(<Sidebar items={items} />);
-    // Aucun aria-label avec un nombre devant Dashboard
     expect(screen.queryByLabelText(/\d+ Dashboard/)).toBeNull();
   });
 
-  it("hidden md:flex rounded-[50px] (sidebar desktop pill V1)", () => {
+  it('hidden md:flex rounded-[50px] (sidebar desktop pill V1)', () => {
     render(<Sidebar items={ITEMS} />);
     const aside = screen.getByLabelText('Navigation principale');
     const cls = aside.className;
@@ -156,13 +123,17 @@ describe('Sidebar', () => {
     expect(cls).toContain('rounded-[50px]');
   });
 
-  it("title attribute sur lien si sidebar collapsed (tooltip)", () => {
-    render(<Sidebar items={ITEMS} />);
-    expect(screen.getAllByRole('link')[0]!.getAttribute('title')).toBe('Dashboard');
+  it('séparateurs <hr> entre items (V1 visual)', () => {
+    const { container } = render(<Sidebar items={ITEMS} />);
+    // 2 items → 1 séparateur entre eux
+    expect(container.querySelectorAll('hr')).toHaveLength(1);
   });
 
-  it("pas de title si sidebar expanded (label visible)", () => {
-    render(<Sidebar items={ITEMS} expandedByDefault />);
-    expect(screen.getAllByRole('link')[0]!.getAttribute('title')).toBeNull();
+  it('badge en overlay sur l\'icône (top-right, pas en ligne)', () => {
+    const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 7, badgeVariant: 'vert' }];
+    render(<Sidebar items={items} />);
+    const badge = screen.getByLabelText('7 Dashboard');
+    // Position absolute pour overlay
+    expect(badge.className).toContain('absolute');
   });
 });
