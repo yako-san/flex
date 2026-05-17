@@ -31,7 +31,7 @@ export const VELO_STATUS_LABELS: Record<VeloStatus, Label> = {
 export const VELO_STATUS_COLORS: Record<VeloStatus, { bg: string; fg: string }> = {
   RV:         { bg: '#fff056', fg: '#000000' },
   RECU:       { bg: '#fff056', fg: '#000000' },
-  EVAL:       { bg: '#88fa4e', fg: '#000000' },
+  EVAL:       { bg: '#fff056', fg: '#000000' },
   EN_ATTENTE: { bg: '#fb923c', fg: '#000000' },
   APPROUVE:   { bg: '#62e335', fg: '#000000' },
   ON_BENCH:   { bg: '#5cd62b', fg: '#000000' },
