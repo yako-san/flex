@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { Bike, Users } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './sidebar';
 
@@ -56,10 +56,28 @@ describe('Sidebar (layout vertical V1)', () => {
     expect(screen.getAllByRole('link')[1]!.getAttribute('aria-current')).toBe('page');
   });
 
-  it('largeur fixe sidebar (V1 = pas de hover-expand)', () => {
+  it('largeur 100px par défaut (collapsed)', () => {
     render(<Sidebar items={ITEMS} />);
     const aside = screen.getByLabelText('Navigation principale');
     expect(aside.className).toContain('w-[var(--sidebar-w-collapsed)]');
+    expect(aside.getAttribute('data-expanded')).toBe('false');
+  });
+
+  it('expandedByDefault=true → 200px expanded (pattern Dashboard V1)', () => {
+    render(<Sidebar items={ITEMS} expandedByDefault />);
+    const aside = screen.getByLabelText('Navigation principale');
+    expect(aside.className).toContain('w-[var(--sidebar-w-expanded)]');
+    expect(aside.getAttribute('data-expanded')).toBe('true');
+  });
+
+  it('hover sur aside → data-expanded passe à true (overlay 200px)', () => {
+    render(<Sidebar items={ITEMS} />);
+    const aside = screen.getByLabelText('Navigation principale');
+    fireEvent.mouseEnter(aside);
+    expect(aside.getAttribute('data-expanded')).toBe('true');
+    expect(aside.className).toContain('absolute');
+    fireEvent.mouseLeave(aside);
+    expect(aside.getAttribute('data-expanded')).toBe('false');
   });
 
   it('header slot rendu', () => {

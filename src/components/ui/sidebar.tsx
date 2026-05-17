@@ -24,8 +24,8 @@ export type SidebarItem = {
 type Props = {
   items: SidebarItem[];
   /**
-   * Garde la prop pour compat — la sidebar V1 n'a pas de hover-expand,
-   * elle est en largeur fixe avec icône+label vertical centré.
+   * Si true, sidebar reste expanded (200px) en permanence — pattern
+   * V1 sur `/dashboard`. Sinon, collapsed (100px) avec hover-expand.
    */
   expandedByDefault?: boolean;
   /** Branding header haut (ex: logo + version). */
@@ -35,27 +35,44 @@ type Props = {
 };
 
 /**
- * Sidebar latérale jaune V1 — pill shape (border-radius 50px), 92px de
- * large fixe. Items en **colonne** (icône au-dessus, label CAPS dessous)
- * avec séparateurs `<hr>` entre items. Badges en overlay top-right de
- * l'icône.
+ * Sidebar latérale jaune V1 — pill shape (border-radius 50px).
  *
- * Différence V1 vs V2 historique :
- * - V1 : layout vertical compact, label TOUJOURS visible
- * - V2 historique : layout horizontal + hover-expand pour révéler le label
+ * Dimensions confirmées par yako-san 2026-05-17 (cf. docs/handoff/SIDEBAR-SPEC.md
+ * + note PR #80) :
+ * - Fermée (collapsed) = **100px** (par défaut sur toutes les pages sauf
+ *   Dashboard)
+ * - Ouverte (expanded) = **200px** (hover OU `expandedByDefault` pour
+ *   Dashboard)
+ * - Pastilles internes = **60px** de diamètre (icônes, logo, avatar)
  *
- * Conformité capture 00c-menu-ouvert-v1.png.
+ * Hover-expand : la sidebar passe en `position: absolute` au hover pour
+ * NE PAS pousser le contenu de la page (overlay avec ombre approfondie).
+ * Quand la souris part, retour à `relative` dans le flow.
+ *
+ * Items en mode collapsed = pastille brune 60px centrée + label CAPS
+ * petit dessous (vertical). En mode expanded = pastille + label CAPS
+ * normal à droite (horizontal).
  */
-export function Sidebar({ items, header, footer }: Props) {
+export function Sidebar({ items, expandedByDefault = false, header, footer }: Props) {
   const pathname = usePathname() ?? '';
+  const [hovered, setHovered] = React.useState(false);
+  const expanded = expandedByDefault || hovered;
+  const overlay = hovered && !expandedByDefault;
 
   return (
     <aside
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      data-expanded={expanded}
       className={cn(
-        'hidden h-full flex-col items-stretch bg-[var(--jaune)] py-3 text-black md:flex',
-        'rounded-[50px] shadow-[0_6px_12px_rgba(0,0,0,0.23)]',
-        'w-[var(--sidebar-w-collapsed)]',
+        'hidden flex-col items-stretch bg-[var(--jaune)] py-3 text-black transition-[width,box-shadow] duration-300 ease-in-out md:flex',
+        'rounded-[50px]',
+        overlay
+          ? 'absolute inset-y-0 left-0 z-40 shadow-[0_12px_32px_rgba(0,0,0,0.40)]'
+          : 'h-full shadow-[0_6px_12px_rgba(0,0,0,0.23)]',
+        expanded ? 'w-[var(--sidebar-w-expanded)]' : 'w-[var(--sidebar-w-collapsed)]',
       )}
+      style={{ overflow: 'hidden' }}
       aria-label="Navigation principale"
     >
       {header ? <div className="px-2 pb-3 text-center">{header}</div> : null}
@@ -80,20 +97,32 @@ export function Sidebar({ items, header, footer }: Props) {
               <Link
                 href={it.href as never}
                 className={cn(
-                  'group relative flex flex-col items-center justify-center gap-1 rounded-2xl py-2.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40',
+                  'group relative flex rounded-2xl py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40',
+                  // Mode collapsed = colonne (pastille au-dessus, label dessous).
+                  // Mode expanded = ligne (pastille à gauche, label à droite).
+                  expanded
+                    ? 'flex-row items-center gap-3 px-2'
+                    : 'flex-col items-center justify-center gap-1',
                   active
                     ? 'bg-[#9a7b4f] text-[var(--jaune)]'
                     : 'text-[#9a7b4f] hover:bg-black/10',
                 )}
                 aria-current={active ? 'page' : undefined}
+                title={!expanded ? it.label : undefined}
               >
-                {/* Container icône + badge overlay (top-right) */}
-                <span className="relative inline-flex">
-                  <Icon size={22} className="shrink-0" aria-hidden />
+                {/* Pastille 60px ronde contenant l'icône + badge en overlay. */}
+                <span
+                  className="relative inline-flex shrink-0 items-center justify-center rounded-full"
+                  style={{
+                    width: 'var(--sidebar-pastille)',
+                    height: 'var(--sidebar-pastille)',
+                  }}
+                >
+                  <Icon size={26} className="shrink-0" aria-hidden />
                   {it.badge != null && it.badge > 0 ? (
                     <span
                       className={cn(
-                        'absolute -right-2 -top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none ring-2 ring-[var(--jaune)]',
+                        'absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ring-2 ring-[var(--jaune)]',
                         it.badgeVariant === 'vert' &&
                           'bg-[var(--st-on-bench-bg)] text-black',
                         it.badgeVariant === 'rouge' &&
@@ -108,8 +137,15 @@ export function Sidebar({ items, header, footer }: Props) {
                   ) : null}
                 </span>
 
-                {/* Label CAPS sous l'icône */}
-                <span className="truncate text-[9px] font-bold uppercase tracking-[0.05em]">
+                {/* Label CAPS — petit sous la pastille en mode collapsed,
+                    plus grand à droite en mode expanded. */}
+                <span
+                  className={cn(
+                    'truncate font-bold uppercase tracking-[0.05em] transition-opacity',
+                    expanded ? 'text-sm' : 'text-[9px]',
+                    expanded && overlay ? 'opacity-100' : '',
+                  )}
+                >
                   {it.label}
                 </span>
               </Link>

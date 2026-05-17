@@ -74,8 +74,9 @@
   --th-size: 11px;     --th-weight: 600;
 
   /* Layout */
-  --sidebar-w-collapsed: 92px;
-  --sidebar-w-expanded:  92px;
+  --sidebar-w-collapsed: 100px;
+  --sidebar-w-expanded:  200px;
+  --sidebar-pastille:    60px;     /* diamètre pastille interne icône/logo/avatar */
   --header-h:            72px;
 
   /* Forms (V1 input-system) */
