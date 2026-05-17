@@ -74,8 +74,8 @@
   --th-size: 11px;     --th-weight: 600;
 
   /* Layout */
-  --sidebar-w-collapsed: 60px;
-  --sidebar-w-expanded:  200px;
+  --sidebar-w-collapsed: 92px;
+  --sidebar-w-expanded:  92px;
   --header-h:            72px;
 
   /* Forms (V1 input-system) */

@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { OrganizationSwitcher, UserButton } from '@clerk/nextjs';
 import {
   Archive,
-  Bike,
-  Boxes,
   Database,
   Hammer,
   HelpCircle,
@@ -16,17 +14,13 @@ import {
   Settings,
   ShoppingCart,
   Sparkles,
-  Tag,
-  Truck,
   Upload,
-  UserCog,
   Users,
   Wrench,
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sidebar, type SidebarItem } from '@/components/ui/sidebar';
 import { SidebarMobileDrawer } from '@/components/ui/sidebar-mobile-drawer';
-import { cn } from '@/lib/utils';
 
 // Le menu V1 (capture 0b-menu.png) montre :
 //   - 1 logo « FLEX REV » au sommet, cliquable
@@ -98,38 +92,25 @@ type SecondaryGroup = {
 };
 
 function buildSecondary(locale: string): SecondaryGroup[] {
+  // V1 popover (capture 00d-menu-modal-v1.png) montre seulement 5 items
+  // simples : Dashboard / Archives / Dépenses / Paramètres / Aide. Pas de
+  // sous-arbre Équipe/Marques/Forfaits/Vélos/Commandes — ces sous-sections
+  // sont accessibles depuis /admin/settings (page hub) où les 9 cartes
+  // pointent vers chaque sous-section. Garde le popover compact.
   return [
     {
-      label: 'Tableau de bord',
+      label: 'Navigation',
       items: [
-        { href: `/${locale}/admin`,                 label: 'Dashboard',  icon: LayoutDashboard },
+        { href: `/${locale}/admin`,                label: 'Dashboard',    icon: LayoutDashboard },
+        { href: `/${locale}/admin/bdcs?archive=1`, label: 'Archives',     icon: Archive },
+        { href: `/${locale}/admin/bdcs?refuse=1`,  label: 'BDT refusés',  icon: Archive },
+        { href: `/${locale}/admin/settings`,       label: 'Paramètres',   icon: Settings },
+        { href: `/${locale}/admin/aide`,           label: 'Aide',         icon: HelpCircle },
       ],
     },
     {
-      label: 'Archives',
+      label: 'Outils dev & ops',
       items: [
-        // Pages absentes en V2 — placeholders pointant sur /bdcs avec filtres
-        // hypothétiques. À câbler dans un Sprint dédié (voir commit f179ac7).
-        { href: `/${locale}/admin/bdcs?archive=1`,  label: 'BDT archivés',  icon: Archive },
-        { href: `/${locale}/admin/bdcs?refuse=1`,   label: 'BDT refusés',   icon: Archive },
-      ],
-    },
-    {
-      label: 'Paramètres',
-      items: [
-        { href: `/${locale}/admin/settings`,        label: 'Paramètres',    icon: Settings },
-        { href: `/${locale}/admin/settings/atelier`, label: 'Infos atelier', icon: Settings },
-        { href: `/${locale}/admin/equipe`,          label: 'Équipe',        icon: UserCog },
-        { href: `/${locale}/admin/marques`,         label: 'Marques',       icon: Tag },
-        { href: `/${locale}/admin/forfaits`,        label: 'Forfaits',      icon: Boxes },
-        { href: `/${locale}/admin/velos`,           label: 'Vélos',         icon: Bike },
-        { href: `/${locale}/admin/pos`,             label: 'Commandes',     icon: Truck },
-      ],
-    },
-    {
-      label: 'Aide & Outils',
-      items: [
-        { href: `/${locale}/admin/aide`,            label: 'Aide',         icon: HelpCircle },
         { href: `/${locale}/admin/import`,          label: 'Import v1',    icon: Upload },
         { href: `/${locale}/admin/legacy-v1`,       label: 'Dump v1',      icon: Database },
         { href: `/${locale}/admin/maintenance`,     label: 'Maintenance',  icon: Hammer },

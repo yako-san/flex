@@ -89,8 +89,12 @@ export default async function VentesPage({ params, searchParams }: Props) {
           <div className="space-y-2">
             {ventes.map((v) => {
               const facture = !!v.factureNumero;
+              // V1 : cards facturées = fond gris neutre (cohérent avec
+              // « état archivé »), cards brouillon « à facturer » = jaune
+              // saillant (attention utilisateur). V2 historique mettait du
+              // rose pâle saturé partout — perte de hiérarchie visuelle.
               const cardBg = facture
-                ? 'bg-[var(--st-facture-bg)]/40'
+                ? 'bg-white/85'
                 : 'bg-[var(--jaune)] ring-2 ring-[var(--jaune-h)]';
               const clientLabel = v.client ? `${v.client.prenom} ${v.client.nom}`.trim() : 'walk-in';
               return (
