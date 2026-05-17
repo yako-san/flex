@@ -755,6 +755,11 @@ model VenteDirecte {
   factureNumero String?       @map("facture_numero") // numéro facture émise (si facturée)
   factureDate   DateTime?     @map("facture_date")
   factureUrl    String?       @map("facture_url")
+  // Date à laquelle la vente a été marquée comme payée (Server Action
+  // `markVentePayeeAction`). null = pas encore payée. Combiné avec
+  // factureNumero, donne l'état 3-niveaux (brouillon / facturée pas payée
+  // / payée) côté UI. Cf CHANGES-CLUSTER cluster 4 item m (V1 col P).
+  paidAt        DateTime?     @map("paid_at")
   modePaiement  ModePaiement?
 
   remiseType  RemiseType? @map("remise_type")
