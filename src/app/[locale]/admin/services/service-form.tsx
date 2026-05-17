@@ -91,7 +91,7 @@ export function ServiceForm({ initial }: Props) {
 }
 
 function Err({ msg }: { msg: string }) {
-  return <div style={{ color: '#c62828', fontSize: '0.85rem', marginTop: '-0.6rem', marginBottom: '0.5rem' }}>{msg}</div>;
+  return <div className="mt-[-0.6rem] mb-2 text-xs text-red-600">{msg}</div>;
 }
 
 const twoCol: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' };

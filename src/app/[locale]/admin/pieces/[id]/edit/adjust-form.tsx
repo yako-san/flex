@@ -54,10 +54,10 @@ export function AdjustStockForm({ pieceId, currentStock }: Props) {
         </p>
       ) : null}
       {state?.error ? (
-        <div style={{ color: '#c62828', fontSize: '0.85rem', marginTop: '0.5rem' }}>{state.error}</div>
+        <div className="mt-2 text-xs text-red-600">{state.error}</div>
       ) : null}
       {state?.success ? (
-        <div style={{ color: '#2e7d32', fontSize: '0.85rem', marginTop: '0.5rem' }}>✓ Mouvement enregistré</div>
+        <div className="mt-2 text-xs text-green-700">✓ Mouvement enregistré</div>
       ) : null}
     </form>
   );

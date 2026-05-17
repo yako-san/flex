@@ -21,7 +21,7 @@ export function PieceForm({ initial }: Props) {
 
   return (
     <form action={formAction} style={{ maxWidth: 800 }}>
-      <h3 style={h3}>Identification</h3>
+      <h3 className="mb-3 mt-6 text-base font-semibold">Identification</h3>
       <label className="label-system">Nom canonique *</label>
       <input
         name="nomCanonical"
@@ -69,7 +69,7 @@ export function PieceForm({ initial }: Props) {
         </div>
       </div>
 
-      <h3 style={h3}>Prix</h3>
+      <h3 className="mb-3 mt-6 text-base font-semibold">Prix</h3>
       <p className="text-xs text-[var(--text-secondary-60)]" style={{ marginTop: 0, marginBottom: '0.75rem' }}>
         Prix vente HT est utilisé sur les BDT et ventes. Les autres champs sont
         informationnels (analyse marges, achats, etc.).
@@ -113,7 +113,7 @@ export function PieceForm({ initial }: Props) {
         <span>Taxable (TPS + TVQ appliquées en facturation)</span>
       </label>
 
-      <h3 style={h3}>Stock</h3>
+      <h3 className="mb-3 mt-6 text-base font-semibold">Stock</h3>
       <div style={twoCol}>
         <div>
           <label className="label-system">Stock physique</label>
@@ -151,9 +151,8 @@ export function PieceForm({ initial }: Props) {
 }
 
 function Err({ msg }: { msg: string }) {
-  return <div style={{ color: '#c62828', fontSize: '0.85rem', marginTop: '-0.6rem', marginBottom: '0.5rem' }}>{msg}</div>;
+  return <div className="mt-[-0.6rem] mb-2 text-xs text-red-600">{msg}</div>;
 }
 
-const h3: React.CSSProperties = { fontSize: '1rem', marginTop: '1.5rem', marginBottom: '0.75rem', color: '#333' };
 const twoCol: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' };
 const threeCol: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' };

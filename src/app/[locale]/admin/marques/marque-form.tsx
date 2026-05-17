@@ -18,7 +18,7 @@ export function MarqueForm({ initial }: Props) {
     <form action={formAction} style={{ maxWidth: 560 }}>
       <label className="label-system">Nom *</label>
       <input name="nom" defaultValue={initial?.nom ?? ''} required className="input-system" />
-      {fe.nom ? <div style={err}>{fe.nom}</div> : null}
+      {fe.nom ? <div className="mt-[-0.5rem] mb-2 text-xs text-red-600">{fe.nom}</div> : null}
 
       <label className="label-system">
         Tailles disponibles (séparées par virgule)
@@ -42,4 +42,3 @@ export function MarqueForm({ initial }: Props) {
   );
 }
 
-const err: React.CSSProperties = { color: '#c62828', fontSize: '0.85rem', marginTop: '-0.5rem', marginBottom: '0.5rem' };
