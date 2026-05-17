@@ -16,11 +16,12 @@ describe('PageHeader', () => {
     expect(screen.getByRole('heading', { level: 1 }).querySelector('span')).toBeTruthy();
   });
 
-  it("eyebrow rendu en uppercase tracking-widest", () => {
+  it("eyebrow rendu en slug italique pâle V1 (pas uppercase tracking)", () => {
     render(<PageHeader title="x" eyebrow="vélos en atelier" />);
     const p = screen.getByText('vélos en atelier');
-    expect(p.className).toContain('uppercase');
-    expect(p.className).toContain('tracking-widest');
+    expect(p.className).toContain('italic');
+    expect(p.className).not.toContain('uppercase');
+    expect(p.className).not.toContain('tracking-widest');
   });
 
   it("pas d'eyebrow si non fourni", () => {

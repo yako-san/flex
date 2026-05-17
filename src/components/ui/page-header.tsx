@@ -38,7 +38,10 @@ export function PageHeader({
     >
       <div className="min-w-0 flex-1">
         {eyebrow ? (
-          <p className="mb-1 text-xs font-bold uppercase tracking-widest" style={{ color: '#fff' }}>
+          // V1 : eyebrow = "slug" italique pâle (pas uppercase tracking),
+          // affiché juste au-dessus du titre. Donne un ton "sous-titre éditorial"
+          // au lieu du tag CAPS technique V2 historique.
+          <p className="mb-0.5 text-sm italic" style={{ color: 'rgba(255,255,255,0.65)' }}>
             {eyebrow}
           </p>
         ) : null}
