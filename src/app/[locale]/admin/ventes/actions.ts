@@ -293,6 +293,70 @@ export async function deleteVenteAction(venteId: string): Promise<{ error?: stri
   redirect('/fr-CA/admin/ventes');
 }
 
+/**
+ * Marque ou démarque une vente facturée comme payée (cluster 4 item m).
+ * Refuse si la vente n'est pas facturée ; toggle binaire (paidAt = NOW()
+ * ou null). Optimiste côté UI via React 19 useOptimistic.
+ */
+export async function markVentePayeeAction(
+  venteId: string,
+  paid: boolean,
+): Promise<{ error?: string; paidAt?: string | null }> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+
+  const v = await prisma.venteDirecte.findFirst({
+    where: { id: venteId, workshopId: workshop.id, deletedAt: null },
+    select: { id: true, factureNumero: true },
+  });
+  if (!v) return { error: 'Vente introuvable' };
+  if (!v.factureNumero) {
+    return { error: 'Vente non facturée — marque-la facturée d\'abord' };
+  }
+
+  const paidAt = paid ? new Date() : null;
+  await prisma.venteDirecte.update({
+    where: { id: venteId },
+    data: { paidAt },
+  });
+  revalidatePath('/[locale]/admin/ventes', 'page');
+  revalidatePath(`/[locale]/admin/ventes/${venteId}`, 'page');
+  return { paidAt: paidAt ? paidAt.toISOString() : null };
+}
+
+/**
+ * Archive une vente directe (soft-delete) — autorisée uniquement si la
+ * vente est facturée ET payée. Préserve les mouvements de stock liés.
+ * Pour les ventes non facturées, utiliser `deleteVenteAction`.
+ */
+export async function archiveVenteAction(venteId: string): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { error: 'Aucun workshop actif' };
+
+  const v = await prisma.venteDirecte.findFirst({
+    where: { id: venteId, workshopId: workshop.id, deletedAt: null },
+    select: { id: true, factureNumero: true, paidAt: true },
+  });
+  if (!v) return { error: 'Vente introuvable' };
+  if (!v.factureNumero) {
+    return { error: 'Vente non facturée — utilise « Supprimer » à la place' };
+  }
+  if (!v.paidAt) {
+    return { error: 'Marque la vente comme payée avant d\'archiver' };
+  }
+
+  await prisma.venteDirecte.update({
+    where: { id: venteId },
+    data: { deletedAt: new Date() },
+  });
+  revalidatePath('/[locale]/admin/ventes', 'page');
+  return {};
+}
+
 // === Helpers ===
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 

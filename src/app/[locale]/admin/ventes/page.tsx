@@ -1,6 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { Prisma } from '@prisma/client';
-import { Eye, FileText, RefreshCw, Archive } from 'lucide-react';
+import { Eye, FileText } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
@@ -8,6 +8,8 @@ import { Pill } from '@/components/ui/pill';
 import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
 import { ActionIcon } from './_action-icon';
+import { PayeeToggleButton } from './_payee-toggle-button';
+import { ArchiveVenteButton } from './_archive-vente-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,13 +91,16 @@ export default async function VentesPage({ params, searchParams }: Props) {
           <div className="space-y-2">
             {ventes.map((v) => {
               const facture = !!v.factureNumero;
-              // V1 : cards facturées = fond gris neutre (cohérent avec
-              // « état archivé »), cards brouillon « à facturer » = jaune
-              // saillant (attention utilisateur). V2 historique mettait du
-              // rose pâle saturé partout — perte de hiérarchie visuelle.
-              const cardBg = facture
-                ? 'bg-white/85'
-                : 'bg-[var(--jaune)] ring-2 ring-[var(--jaune-h)]';
+              const paid = facture && !!v.paidAt;
+              // V1 : 3 états visuels selon (facture, paid). Brouillon = jaune
+              // saillant (action requise), facturée pas payée = blanc neutre
+              // (livré, en attente paiement), payée = gris archivable (cycle
+              // terminé).
+              const cardBg = !facture
+                ? 'bg-[var(--jaune)] ring-2 ring-[var(--jaune-h)]'
+                : paid
+                  ? 'bg-[#e0e0e0]/85'
+                  : 'bg-white/85';
               const clientLabel = v.client ? `${v.client.prenom} ${v.client.nom}`.trim() : 'walk-in';
               return (
                 <details
@@ -110,10 +115,19 @@ export default async function VentesPage({ params, searchParams }: Props) {
                       <span className="text-xs text-[var(--text-secondary-60)]">
                         {dateFmt.format(v.date)}
                       </span>
-                      {facture ? (
-                        <Pill variant="facture" size="sm">facturée</Pill>
+                      {/* Pill 3-états (cluster 4 item m) */}
+                      {!facture ? (
+                        <Pill variant="rv" size="sm">à facturer</Pill>
+                      ) : !paid ? (
+                        <Pill
+                          variant="neutral"
+                          size="sm"
+                          className="bg-[var(--overlay-light-50)] text-[var(--dark)]"
+                        >
+                          facture envoyée
+                        </Pill>
                       ) : (
-                        <Pill variant="facturer" size="sm">à facturer</Pill>
+                        <Pill variant="livre" size="sm">payée</Pill>
                       )}
                       <span className="truncate text-xs text-[var(--text-secondary-70)]">
                         {clientLabel}
@@ -126,7 +140,7 @@ export default async function VentesPage({ params, searchParams }: Props) {
                       <span className="font-mono text-sm font-semibold tabular-nums">
                         {Number(v.totalPieces).toFixed(2)} $
                       </span>
-                      {/* 4 boutons icône V1 — aperçu / PDF / sync / archive */}
+                      {/* 4 boutons icône V1 — ouvrir / PDF / payée / archiver */}
                       <ActionIcon
                         href={`/${locale}/admin/ventes/${v.id}`}
                         title="Ouvrir la vente"
@@ -139,16 +153,8 @@ export default async function VentesPage({ params, searchParams }: Props) {
                         disabled={!facture}
                         target="_blank"
                       />
-                      <ActionIcon
-                        title="Resync (à venir)"
-                        icon={<RefreshCw size={14} />}
-                        disabled
-                      />
-                      <ActionIcon
-                        title="Archiver (à venir)"
-                        icon={<Archive size={14} />}
-                        disabled
-                      />
+                      <PayeeToggleButton venteId={v.id} initialPaid={paid} facture={facture} />
+                      <ArchiveVenteButton venteId={v.id} facture={facture} paid={paid} />
                     </span>
                   </summary>
 
