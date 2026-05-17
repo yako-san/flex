@@ -31,15 +31,21 @@ describe('DemoRemiseInput', () => {
 });
 
 describe('DemoBDCTotaux', () => {
-  it("affiche les totaux (sous-totaux, taxes, grand total)", () => {
-    render(<DemoBDCTotaux />);
-    // Cherche un montant TPS ou TVQ
-    expect(screen.getByText(/9.78|9,78/)).toBeTruthy();
+  it("affiche les sous-totaux services et pièces (rendu pill compact V1)", () => {
+    const { container } = render(<DemoBDCTotaux />);
+    // Le pill noir compact affiche Services + Pièces (pas TPS/TVQ directement,
+    // qui sont exposées via le title pour rester lisible).
+    expect(screen.getByText('Services')).toBeTruthy();
+    expect(screen.getByText('Pièces')).toBeTruthy();
+    // TPS/TVQ accessibles via le title attribute de la pill
+    const aside = screen.getByLabelText('Totaux du BDT');
+    expect(aside.getAttribute('title') ?? '').toMatch(/TPS|TVQ/);
+    void container;
   });
 
-  it("grand total 224.79 visible", () => {
-    render(<DemoBDCTotaux />);
-    expect(screen.getByText(/224/)).toBeTruthy();
+  it("grand total 224.79 visible (jaune à droite)", () => {
+    const { container } = render(<DemoBDCTotaux />);
+    expect(container.textContent).toContain('224,79');
   });
 });
 

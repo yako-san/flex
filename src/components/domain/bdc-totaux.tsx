@@ -73,69 +73,67 @@ export function BDCTotaux({
 }: Props) {
   const [modalOpen, setModalOpen] = React.useState(false);
   const reste = avance ? Math.max(0, grandTotal - avance.montant) : null;
+  const affiche = reste ?? grandTotal;
+  const detailTitle =
+    `Sous-totaux : services ${fmt(sousTotalServices)} · pièces ${fmt(sousTotalPieces)}` +
+    (remiseServicesMontant > 0 ? ` · remise svc -${fmt(remiseServicesMontant)}` : '') +
+    (remisePiecesMontant > 0 ? ` · remise pcs -${fmt(remisePiecesMontant)}` : '') +
+    ` · TPS ${fmt(tps)} · TVQ ${fmt(tvq)}`;
 
   return (
     <aside
       className={cn(
-        'flex flex-col gap-2 rounded-xl border border-[var(--gris-bord)] bg-white p-4 shadow-sm',
+        // Pill noir compact V1 — horizontal, fond `--dark` (#1a1a1a),
+        // texte blanc semi, total en gros jaune à droite. Cliquable au
+        // milieu pour la modale avance.
+        'flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-full px-5 py-2.5 text-sm shadow-md',
         className,
       )}
+      style={{ backgroundColor: 'var(--dark)', color: '#fff' }}
       aria-label="Totaux du BDT"
+      title={detailTitle}
     >
-      <Line label="Sous-total services" value={sousTotalServices} />
-      {remiseServicesMontant > 0 ? (
-        <Line label="Remise services" value={-remiseServicesMontant} muted negative />
-      ) : null}
-      <Line label="Sous-total pièces" value={sousTotalPieces} />
-      {remisePiecesMontant > 0 ? (
-        <Line label="Remise pièces" value={-remisePiecesMontant} muted negative />
-      ) : null}
-      <Divider />
-      <Line label="TPS" value={tps} muted />
-      <Line label="TVQ" value={tvq} muted />
-      <Divider />
-      <Line
-        label="Grand total"
-        value={grandTotal}
-        bold
-        strike={!!avance}
-      />
-
-      {/* Pill « avance ? » — version compacte intégrée */}
-      <div className="mt-2">
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className={cn(
-            'inline-flex w-full items-center justify-between gap-2 rounded-full bg-[var(--overlay-dark-20)] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-black/40',
-          )}
-        >
-          {avance ? (
-            <span className="flex items-center gap-2">
-              <span>avance :</span>
-              <span className="font-mono">{fmt(avance.montant)}</span>
-              <span className="opacity-70">· {modeLabel[avance.mode]}</span>
-            </span>
-          ) : (
-            <span className="underline underline-offset-2">avance&nbsp;?</span>
-          )}
-          <span aria-hidden>›</span>
-        </button>
+      {/* Sous-totaux services + pièces côte à côte */}
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs">
+        <span className="opacity-70">Services</span>
+        <span className="font-mono tabular-nums">{fmt(sousTotalServices - remiseServicesMontant)}</span>
+        <span className="opacity-40">·</span>
+        <span className="opacity-70">Pièces</span>
+        <span className="font-mono tabular-nums">{fmt(sousTotalPieces - remisePiecesMontant)}</span>
       </div>
 
-      {/* Reste à payer (gros jaune) si avance saisie */}
-      {reste !== null ? (
-        <div
-          className={cn(
-            'mt-3 rounded-xl bg-[var(--jaune)] p-3 text-right',
-          )}
+      {/* Pill avance? au centre */}
+      <button
+        type="button"
+        onClick={() => setModalOpen(true)}
+        className={cn(
+          'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-colors',
+          'bg-white/10 hover:bg-white/20',
+        )}
+      >
+        {avance ? (
+          <>
+            <span className="opacity-70">avance :</span>
+            <span className="font-mono">{fmt(avance.montant)}</span>
+            <span className="opacity-50">· {modeLabel[avance.mode]}</span>
+          </>
+        ) : (
+          <span className="underline underline-offset-2 opacity-80">avance&nbsp;?</span>
+        )}
+      </button>
+
+      {/* Grand total / reste à payer — gros jaune à droite */}
+      <div className="flex items-baseline gap-2">
+        {avance ? (
+          <span className="font-mono text-xs line-through opacity-50">{fmt(grandTotal)}</span>
+        ) : null}
+        <span
+          className="font-mono text-xl font-extrabold tabular-nums"
+          style={{ color: 'var(--jaune)' }}
         >
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
-            Reste à payer
-          </div>
-          <div className="font-mono text-2xl font-extrabold text-black">{fmt(reste)}</div>
-        </div>
-      ) : null}
+          {fmt(affiche)}
+        </span>
+      </div>
 
       <AvanceModal
         open={modalOpen}
