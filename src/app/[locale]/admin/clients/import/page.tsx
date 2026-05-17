@@ -18,7 +18,7 @@ export default async function ImportClientsRoute({ params }: Props) {
         title="Import CSV de clients"
         subline="Détection auto des colonnes, ajustement manuel, anti-doublons sur (prénom + nom) ou courriel."
       />
-      <div className="mx-auto max-w-[960px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[960px] p-6">
         <Link
           href={`/${locale}/admin/clients`}
           className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"

@@ -155,6 +155,25 @@ input, textarea, select {
   outline-offset: 2px;
 }
 
+/* --- « Bloc contenu » V1 ----------------------------------------- */
+/* Wrapper noir 20% supplémentaire sous le PageHeader qui encadre
+   TOUT le contenu fonctionnel d'une page admin (cartes, tables,
+   accordéons). Présent dans toutes les pages V1 — perdu en V2 pendant
+   le port initial. Se superpose au panneau principal qui est aussi
+   `bg-black/20` (cf. layout admin), créant un contraste subtil qui
+   structure la page : panneau → header → bloc contenu → cards. */
+.bloc-contenu {
+  background-color: var(--overlay-dark-20);
+  border-radius: 30px;
+  margin: 16px 20px 20px;
+}
+@media (max-width: 767px) {
+  .bloc-contenu {
+    margin: 8px 8px 12px;
+    border-radius: 20px;
+  }
+}
+
 /* --- Override gris bleuté Tailwind (v4 OKLCH) → noirs purs alpha --
    Tailwind v3/v4 gris ont une teinte bleutée en OKLCH ; V1 préfère
    des noirs semi-transparents. On garde les classes Tailwind comme

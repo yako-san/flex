@@ -16,7 +16,7 @@ export default async function NewForfaitPage({ params }: Props) {
         eyebrow="catalogue · nouveau forfait"
         title="Nouveau forfait"
       />
-      <div className="mx-auto max-w-[800px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[800px] p-6">
         <Link href={`/${locale}/admin/forfaits`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Tous les forfaits</Link>
         <ForfaitForm />
       </div>

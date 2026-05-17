@@ -48,7 +48,7 @@ export default async function MaintenancePage({ params }: Props) {
         title="Maintenance"
         subline={`Workshop : ${workshop.name}`}
       />
-      <div className="mx-auto max-w-[800px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[800px] p-6">
         <p className="mb-6 text-sm text-[var(--text-secondary-60)]">
           ⚠️ Ces opérations affectent les données du workshop {workshop.name}. Pas de
           bouton « annuler » — vérifie deux fois avant de cliquer.

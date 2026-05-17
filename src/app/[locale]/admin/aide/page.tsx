@@ -126,7 +126,7 @@ export default async function AidePage({ params }: Props) {
         subline="Tutoriels pas-à-pas pour les flux essentiels de l'atelier."
       />
 
-      <div className="mx-auto max-w-[1200px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[1200px] p-6">
         <div className="grid gap-6 lg:grid-cols-3">
           {SECTIONS.map((sec) => (
             <section key={sec.label}>

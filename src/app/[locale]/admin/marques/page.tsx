@@ -34,7 +34,7 @@ export default async function MarquesPage({ params }: Props) {
         }
       />
 
-      <div className="p-6">
+      <div className="bloc-contenu p-6">
         {marques.length === 0 ? (
           <p className="rounded-xl border border-dashed border-[var(--gris-bord)] p-8 text-center text-sm text-[var(--text-secondary-60)]">
             Aucune marque. Ajoute-en une avec le bouton + en haut à droite.

@@ -53,7 +53,7 @@ export default async function EditPiecePage({ params }: Props) {
         eyebrow="catalogue · modifier pièce"
         title={p.nomCanonical}
       />
-      <div className="mx-auto max-w-[900px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[900px] p-6">
         <Link href={`/${locale}/admin/pieces`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Toutes les pièces</Link>
         <p className="mb-6 text-sm text-[var(--text-secondary-70)]">
           Stock physique : <strong>{p.stockPhysique}</strong> · Réservé sur BDT : <strong>{p.stockReserve}</strong> · Disponible : <strong>{p.stockPhysique - p.stockReserve}</strong>

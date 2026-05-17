@@ -38,7 +38,7 @@ export default async function ForfaitsPage({ params }: Props) {
         }
       />
 
-      <div className="p-6">
+      <div className="bloc-contenu p-6">
         {forfaits.length === 0 ? (
           <p className="rounded-xl border border-dashed border-[var(--gris-bord)] p-8 text-center text-sm text-[var(--text-secondary-60)]">
             Aucun forfait. Crée-en un avec le bouton + en haut à droite.

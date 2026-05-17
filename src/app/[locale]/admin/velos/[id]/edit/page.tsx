@@ -48,7 +48,7 @@ export default async function EditVeloPage({ params }: Props) {
         eyebrow="catalogue · modifier vélo"
         title={`Modifier vélo ${String(velo.veloNumero).padStart(4, '0')}`}
       />
-      <div className="mx-auto max-w-[800px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[800px] p-6">
         <Link
           href={`/${locale}/admin/velos/${id}`}
           className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]"

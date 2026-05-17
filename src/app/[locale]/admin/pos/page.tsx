@@ -18,15 +18,24 @@ const STATUS_INFO: Record<string, { bg: string; fg: string; label: string }> = {
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; vue?: string }>;
 };
 
 export default async function PosPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { q } = await searchParams;
+  const { q, vue } = await searchParams;
   setRequestLocale(locale);
   const workshop = await getActiveWorkshop();
   if (!workshop) return <p className="p-6 text-[var(--text-secondary-60)]">Aucun workshop actif.</p>;
+
+  // V1 distingue Commande (cards par fournisseur, sliders qty, bouton « TRANSFÉRER EN
+  // RÉCEPTION ») vs Réception (cards par PO, items à scanner, bouton « FINALISER »).
+  // V2 expose les deux via le même `/admin/pos` mais avec un searchParam `vue`
+  // qui pilote le titre, l'onglet actif et le filtre des statuts affichés.
+  // - vue=commandes (défaut) : PO en EN_ATTENTE (pas encore parties chez le fournisseur)
+  // - vue=reception          : PO en PARTIEL/RECU (livraisons en cours ou historique)
+  const isReception = vue === 'reception';
+  const vueActuelle: 'commandes' | 'reception' = isReception ? 'reception' : 'commandes';
 
   const trimmed = q?.trim() ?? '';
   const where: Prisma.PoWhereInput = {
@@ -62,8 +71,13 @@ export default async function PosPage({ params, searchParams }: Props) {
     },
   });
 
-  const actifs = pos.filter((p) => p.status === 'EN_ATTENTE' || p.status === 'PARTIEL');
-  const archives = pos.filter((p) => p.status === 'RECU' || p.status === 'ANNULE');
+  // Filtrage selon la vue
+  const enAttente = pos.filter((p) => p.status === 'EN_ATTENTE');
+  const partiels = pos.filter((p) => p.status === 'PARTIEL');
+  const recus = pos.filter((p) => p.status === 'RECU' || p.status === 'ANNULE');
+
+  const actifs = vueActuelle === 'commandes' ? enAttente : partiels;
+  const archives = vueActuelle === 'commandes' ? [] : recus;
 
   return (
     <div>
@@ -72,10 +86,12 @@ export default async function PosPage({ params, searchParams }: Props) {
         title={
           <>
             Pièces{' '}
-            <span className="opacity-70" style={{ fontSize: '0.6em' }}>: réception</span>
+            <span className="opacity-70" style={{ fontSize: '0.6em' }}>
+              : {vueActuelle === 'commandes' ? 'commandes' : 'réception'}
+            </span>
           </>
         }
-        subline={`${pos.length} PO${pos.length === 1 ? '' : 's'} · ${actifs.length} actif${actifs.length === 1 ? '' : 's'}${trimmed ? ` · filtré sur « ${trimmed} »` : ''}`}
+        subline={`${pos.length} PO${pos.length === 1 ? '' : 's'} · ${actifs.length} ${vueActuelle === 'commandes' ? 'en attente' : 'à recevoir'}${trimmed ? ` · filtré sur « ${trimmed} »` : ''}`}
         actions={
           <ToolbarBlock>
             <SearchBar placeholder="N° PO, fournisseur, notes…" />
@@ -94,14 +110,14 @@ export default async function PosPage({ params, searchParams }: Props) {
         }
       />
 
-      <div className="p-6">
+      <div className="bloc-contenu p-6">
         {/* Pills toggle 4 onglets V1 — partagés avec /admin/pieces */}
         <nav className="mb-4 inline-flex gap-1 rounded-full bg-[rgba(0,0,0,0.20)] p-1">
           {[
             { label: 'Catalogue',    href: `/${locale}/admin/pieces?onglet=catalogue`,    active: false },
             { label: 'Fournisseurs', href: `/${locale}/admin/pieces?onglet=fournisseurs`, active: false },
-            { label: 'Commandes',    href: `/${locale}/admin/pos`,                        active: false },
-            { label: 'Réception',    href: `/${locale}/admin/pos`,                        active: true  },
+            { label: 'Commandes',    href: `/${locale}/admin/pos?vue=commandes`,          active: vueActuelle === 'commandes' },
+            { label: 'Réception',    href: `/${locale}/admin/pos?vue=reception`,          active: vueActuelle === 'reception' },
           ].map((t) => (
             <Link
               key={t.label}

@@ -16,7 +16,7 @@ export default async function NewPiecePage({ params }: Props) {
         eyebrow="catalogue · nouvelle pièce"
         title="Nouvelle pièce"
       />
-      <div className="mx-auto max-w-[900px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[900px] p-6">
         <Link href={`/${locale}/admin/pieces`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Toutes les pièces</Link>
         <PieceForm />
       </div>

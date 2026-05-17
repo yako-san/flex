@@ -44,7 +44,7 @@ export default async function NewBdtPage({ params, searchParams }: Props) {
         subline="Crée un BDT rattaché à un vélo existant."
       />
 
-      <div className="mx-auto max-w-[720px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[720px] p-6">
         <Link
           href={`/${locale}/admin/bdcs`}
           className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] no-underline hover:text-[var(--dark)]"

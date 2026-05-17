@@ -97,7 +97,7 @@ export default async function SettingsHubPage({ params }: Props) {
     <div>
       <PageHeader eyebrow="configuration de l'atelier" title="Paramètres" />
 
-      <div className="mx-auto max-w-[1100px] p-6">
+      <div className="bloc-contenu mx-auto max-w-[1100px] p-6">
         <div className="grid gap-3 sm:grid-cols-2">
           {cards.map((c) => (
             <SettingCard key={c.title} card={c} />
