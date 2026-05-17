@@ -41,74 +41,46 @@ export function GmailConnectionPanel({
   };
 
   return (
-    <div
-      style={{
-        background: '#fafafa',
-        border: '1px solid #e0e0e0',
-        borderRadius: 6,
-        padding: '1rem 1.25rem',
-        marginBottom: '2rem',
-      }}
-    >
+    <div className="mb-8 rounded-xl border border-[var(--gris-bord)] bg-white/60 p-4">
       {successMessage ? (
-        <div
-          style={{
-            background: '#e8f5e9',
-            border: '1px solid #2e7d32',
-            color: '#1b5e20',
-            padding: '0.6rem',
-            borderRadius: 4,
-            marginBottom: '0.75rem',
-            fontSize: '0.9rem',
-          }}
-        >
+        <div className="mb-3 rounded-xl border border-green-300 bg-green-50 p-3 text-sm text-green-800">
           ✓ {successMessage}
         </div>
       ) : null}
       {errorMessage ? (
-        <div
-          style={{
-            background: '#ffebee',
-            border: '1px solid #f44336',
-            color: '#c62828',
-            padding: '0.6rem',
-            borderRadius: 4,
-            marginBottom: '0.75rem',
-            fontSize: '0.9rem',
-          }}
-        >
+        <div className="mb-3 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">
           ✕ {errorMessage}
         </div>
       ) : null}
 
       {connected ? (
         <>
-          <p style={{ margin: 0, marginBottom: '0.75rem' }}>
-            <span style={{ color: '#2e7d32', fontWeight: 600 }}>✓ Gmail connecté</span>
+          <p className="mb-3">
+            <span className="font-semibold text-green-700">✓ Gmail connecté</span>
             {' — '}
             <code>{email}</code>
           </p>
-          <p style={{ color: '#666', fontSize: '0.8rem', marginTop: 0, marginBottom: '0.75rem' }}>
+          <p className="mb-3 text-xs text-[var(--text-secondary-60)]">
             Le mode <strong>Brouillon</strong> sera proposé par défaut sur les
             courriels d&apos;évaluation, facture, suivi. Tu pourras toujours
             choisir <strong>Envoyer maintenant</strong> au cas par cas.
           </p>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <a href="/api/auth/google/start" style={btnSecondary}>
+          <div className="flex flex-wrap gap-2">
+            <a href="/api/auth/google/start" className="btn-secondary">
               🔄 Reconnecter (changer de compte)
             </a>
-            <button type="button" onClick={disconnect} disabled={pending} style={btnDanger(pending)}>
+            <button type="button" onClick={disconnect} disabled={pending} className="btn-danger">
               {pending ? 'Déconnexion…' : 'Déconnecter Gmail'}
             </button>
           </div>
         </>
       ) : (
         <>
-          <p style={{ margin: 0, marginBottom: '0.75rem', fontSize: '0.9rem', color: '#666' }}>
+          <p className="mb-3 text-sm text-[var(--text-secondary-60)]">
             ⓘ Aucun compte Gmail connecté. Sans connexion, les courriels seront
             envoyés en direct (SMTP/Resend) sans étape de relecture.
           </p>
-          <a href="/api/auth/google/start" style={btnPrimary}>
+          <a href="/api/auth/google/start" className="btn-primary">
             🔗 Connecter un compte Gmail
           </a>
         </>
@@ -116,34 +88,3 @@ export function GmailConnectionPanel({
     </div>
   );
 }
-
-const btnPrimary: React.CSSProperties = {
-  display: 'inline-block',
-  padding: '0.6rem 1.2rem',
-  background: '#1565c0',
-  color: 'white',
-  border: 0,
-  borderRadius: 4,
-  textDecoration: 'none',
-  fontSize: '0.95rem',
-  fontWeight: 600,
-};
-const btnSecondary: React.CSSProperties = {
-  display: 'inline-block',
-  padding: '0.5rem 1rem',
-  background: 'white',
-  color: '#1565c0',
-  border: '1px solid #1565c0',
-  borderRadius: 4,
-  textDecoration: 'none',
-  fontSize: '0.85rem',
-};
-const btnDanger = (pending: boolean): React.CSSProperties => ({
-  padding: '0.5rem 1rem',
-  background: 'transparent',
-  color: '#c62828',
-  border: '1px solid #ef9a9a',
-  borderRadius: 4,
-  cursor: pending ? 'wait' : 'pointer',
-  fontSize: '0.85rem',
-});

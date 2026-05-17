@@ -20,13 +20,13 @@ const TYPE_LABEL: Record<string, string> = {
   RELEASE: 'Libération réservation',
 };
 
-const TYPE_COLOR: Record<string, { bg: string; fg: string }> = {
-  PO_RECEIVED: { bg: '#e8f5e9', fg: '#2e7d32' },
-  BDC_INVOICED: { bg: '#ffebee', fg: '#c62828' },
-  SALE_INVOICED: { bg: '#fce4ec', fg: '#ad1457' },
-  MANUAL_ADJUSTMENT: { bg: '#fff8e1', fg: '#f57f17' },
-  RESERVATION: { bg: '#e3f2fd', fg: '#1565c0' },
-  RELEASE: { bg: '#eceff1', fg: '#455a64' },
+const TYPE_BADGE: Record<string, string> = {
+  PO_RECEIVED: 'bg-green-100 text-green-800',
+  BDC_INVOICED: 'bg-red-100 text-red-800',
+  SALE_INVOICED: 'bg-pink-100 text-pink-800',
+  MANUAL_ADJUSTMENT: 'bg-yellow-100 text-yellow-800',
+  RESERVATION: 'bg-blue-100 text-blue-800',
+  RELEASE: 'bg-slate-100 text-slate-700',
 };
 
 export default async function EditPiecePage({ params }: Props) {
@@ -55,63 +55,60 @@ export default async function EditPiecePage({ params }: Props) {
       />
       <div className="mx-auto max-w-[900px] p-6">
         <Link href={`/${locale}/admin/pieces`} className="mb-4 inline-block text-sm text-[var(--text-secondary-60)] hover:text-[var(--dark)]">← Toutes les pièces</Link>
-      <p style={{ color: '#666', marginBottom: '1.5rem' }}>
-        Stock physique : <strong>{p.stockPhysique}</strong> · Réservé sur BDT : <strong>{p.stockReserve}</strong> · Disponible : <strong>{p.stockPhysique - p.stockReserve}</strong>
-      </p>
+        <p className="mb-6 text-sm text-[var(--text-secondary-70)]">
+          Stock physique : <strong>{p.stockPhysique}</strong> · Réservé sur BDT : <strong>{p.stockReserve}</strong> · Disponible : <strong>{p.stockPhysique - p.stockReserve}</strong>
+        </p>
 
-      <h2 style={h2}>Ajustement manuel</h2>
-      <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.75rem' }}>
-        Pour inventaire physique, perte, retour, etc. Crée un mouvement{' '}
-        <code>MANUAL_ADJUSTMENT</code> dans l&apos;audit trail.
-      </p>
-      <AdjustStockForm pieceId={p.id} currentStock={p.stockPhysique} />
+        <h2 className="mb-2 mt-4 text-base font-semibold">Ajustement manuel</h2>
+        <p className="mb-3 text-sm text-[var(--text-secondary-60)]">
+          Pour inventaire physique, perte, retour, etc. Crée un mouvement{' '}
+          <code>MANUAL_ADJUSTMENT</code> dans l&apos;audit trail.
+        </p>
+        <AdjustStockForm pieceId={p.id} currentStock={p.stockPhysique} />
 
-      <h2 style={{ ...h2, marginTop: '2rem' }}>Historique des mouvements ({movements.length})</h2>
-      {movements.length === 0 ? (
-        <p style={{ color: '#888' }}>Aucun mouvement enregistré.</p>
-      ) : (
-        <table style={tbl}>
-          <thead>
-            <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
-              <th style={th}>Date</th>
-              <th style={th}>Type</th>
-              <th style={{ ...th, textAlign: 'right' }}>Delta</th>
-              <th style={th}>Raison</th>
-            </tr>
-          </thead>
-          <tbody>
-            {movements.map((m) => {
-              const color = TYPE_COLOR[m.type] ?? { bg: '#f5f5f5', fg: '#666' };
-              const delta = Number(m.delta);
-              return (
-                <tr key={m.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                  <td style={{ ...td, fontSize: '0.85rem', color: '#666' }}>
-                    {m.createdAt.toLocaleString('fr-CA', { dateStyle: 'short', timeStyle: 'short' })}
-                  </td>
-                  <td style={td}>
-                    <span style={{ background: color.bg, color: color.fg, padding: '0.15rem 0.45rem', borderRadius: 3, fontSize: '0.78rem', fontWeight: 500 }}>
-                      {TYPE_LABEL[m.type] ?? m.type}
-                    </span>
-                  </td>
-                  <td style={{ ...td, textAlign: 'right', fontFamily: 'monospace', color: delta < 0 ? '#c62828' : '#2e7d32' }}>
-                    {delta > 0 ? '+' : ''}{delta}
-                  </td>
-                  <td style={{ ...td, fontSize: '0.85rem' }}>{m.reason ?? '—'}</td>
+        <h2 className="mb-2 mt-8 text-base font-semibold">Historique des mouvements ({movements.length})</h2>
+        {movements.length === 0 ? (
+          <p className="text-sm text-[var(--text-secondary-60)]">Aucun mouvement enregistré.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl bg-white/85 shadow-sm">
+            <table className="w-full text-sm">
+              <thead className="border-b border-[var(--gris-bord)] bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+                <tr>
+                  <th className="px-3 py-2 text-left">Date</th>
+                  <th className="px-3 py-2 text-left">Type</th>
+                  <th className="px-3 py-2 text-right">Delta</th>
+                  <th className="px-3 py-2 text-left">Raison</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
+              </thead>
+              <tbody>
+                {movements.map((m) => {
+                  const badgeCls = TYPE_BADGE[m.type] ?? 'bg-slate-100 text-slate-700';
+                  const delta = Number(m.delta);
+                  return (
+                    <tr key={m.id} className="border-t border-[var(--gris-bord)]/30">
+                      <td className="px-3 py-2 text-xs text-[var(--text-secondary-60)]">
+                        {m.createdAt.toLocaleString('fr-CA', { dateStyle: 'short', timeStyle: 'short' })}
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-medium ${badgeCls}`}>
+                          {TYPE_LABEL[m.type] ?? m.type}
+                        </span>
+                      </td>
+                      <td className={`px-3 py-2 text-right font-mono ${delta < 0 ? 'text-red-700' : 'text-green-700'}`}>
+                        {delta > 0 ? '+' : ''}{delta}
+                      </td>
+                      <td className="px-3 py-2 text-xs">{m.reason ?? '—'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-      <h2 style={{ ...h2, marginTop: '2rem' }}>Modifier la pièce</h2>
-      <PieceForm initial={p} />
+        <h2 className="mb-2 mt-8 text-base font-semibold">Modifier la pièce</h2>
+        <PieceForm initial={p} />
       </div>
     </div>
   );
 }
-
-const h2: React.CSSProperties = { fontSize: '1.15rem', marginBottom: '0.5rem' };
-const tbl: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' };
-const th: React.CSSProperties = { textAlign: 'left', padding: '0.5rem 0.6rem', fontWeight: 600, color: '#666', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
-const td: React.CSSProperties = { padding: '0.5rem 0.6rem' };
