@@ -36,6 +36,22 @@ type Props = {
 };
 
 type LocaleTab = 'fr' | 'en';
+type TemplateTab = 'eval' | 'facture' | 'vente' | 'courrielSuivi' | 'smsRappel' | 'smsSuivi' | 'outroSignatures';
+
+// V1 a un menu top qui permet de switcher entre templates en 1 clic
+// (Évaluation / Facture / Vente / Suivi / SMS Rappel / SMS Suivi / Outro+Signatures).
+// V2 historique empilait tous les blocs verticalement → scroll obligatoire.
+// On affiche tous les inputs en parallèle (display:none sur les inactifs) pour
+// préserver les valeurs entre changements d'onglet et soumettre tout d'un coup.
+const TEMPLATE_TABS: { value: TemplateTab; label: string }[] = [
+  { value: 'eval',            label: 'Évaluation' },
+  { value: 'facture',         label: 'Facture' },
+  { value: 'vente',           label: 'Vente' },
+  { value: 'courrielSuivi',   label: 'Suivi' },
+  { value: 'smsRappel',       label: 'SMS Rappel' },
+  { value: 'smsSuivi',        label: 'SMS Suivi' },
+  { value: 'outroSignatures', label: 'Outro & Signatures' },
+];
 
 export function EmailTemplatesForm({ initial, unmapped }: Props) {
   const [state, formAction, pending] = useActionState<EmailTemplatesState | null, FormData>(
@@ -43,9 +59,31 @@ export function EmailTemplatesForm({ initial, unmapped }: Props) {
     null,
   );
   const [tab, setTab] = useState<LocaleTab>('fr');
+  const [activeTpl, setActiveTpl] = useState<TemplateTab>('eval');
 
   return (
     <form action={formAction} style={{ maxWidth: 880 }}>
+      {/* Nav TOP V1 — pills toggle 1-clic entre templates */}
+      <nav
+        aria-label="Sélection du template"
+        className="mb-4 inline-flex flex-wrap gap-1 rounded-full bg-[var(--overlay-dark-20)] p-1"
+      >
+        {TEMPLATE_TABS.map((t) => (
+          <button
+            key={t.value}
+            type="button"
+            onClick={() => setActiveTpl(t.value)}
+            className={`inline-flex h-8 items-center rounded-full px-4 text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+              activeTpl === t.value
+                ? 'bg-[var(--jaune)] text-black'
+                : 'text-white/70 hover:bg-white/10'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', borderBottom: '1px solid #e0e0e0' }}>
         <TabBtn active={tab === 'fr'} onClick={() => setTab('fr')}>
           🇫🇷 Français
@@ -64,104 +102,120 @@ export function EmailTemplatesForm({ initial, unmapped }: Props) {
         ))}
       </p>
 
-      <Block
-        title="Évaluation BDT (courriel)"
-        prefix="eval"
-        tab={tab}
-        initial={initial.eval}
-        defaults={{
-          subject_fr: DEFAULT_EVAL_SUBJECT_FR, subject_en: DEFAULT_EVAL_SUBJECT_EN,
-          body_fr: DEFAULT_EVAL_BODY_FR, body_en: DEFAULT_EVAL_BODY_EN,
-        }}
-      />
-      <Block
-        title="Facture BDT (courriel)"
-        prefix="facture"
-        tab={tab}
-        initial={initial.facture}
-        defaults={{
-          subject_fr: DEFAULT_FACTURE_SUBJECT_FR, subject_en: DEFAULT_FACTURE_SUBJECT_EN,
-          body_fr: DEFAULT_FACTURE_BODY_FR, body_en: DEFAULT_FACTURE_BODY_EN,
-        }}
-      />
-      <Block
-        title="Vente directe (courriel)"
-        prefix="vente"
-        tab={tab}
-        initial={initial.vente}
-        defaults={{
-          subject_fr: DEFAULT_VENTE_SUBJECT_FR, subject_en: DEFAULT_VENTE_SUBJECT_EN,
-          body_fr: DEFAULT_VENTE_BODY_FR, body_en: DEFAULT_VENTE_BODY_EN,
-        }}
-      />
-      <Block
-        title="Courriel de suivi (post-livraison)"
-        prefix="courrielSuivi"
-        tab={tab}
-        initial={initial.courrielSuivi}
-        defaults={{
-          subject_fr: DEFAULT_SUIVI_SUBJECT_FR, subject_en: DEFAULT_SUIVI_SUBJECT_EN,
-          body_fr: DEFAULT_SUIVI_BODY_FR, body_en: DEFAULT_SUIVI_BODY_EN,
-        }}
-      />
+      {/* Tous les blocs rendus en parallèle ; seul `activeTpl` est visible.
+          Préserve les valeurs des inputs lors du switch (pas de remount). */}
+      <div style={{ display: activeTpl === 'eval' ? 'block' : 'none' }}>
+        <Block
+          title="Évaluation BDT (courriel)"
+          prefix="eval"
+          tab={tab}
+          initial={initial.eval}
+          defaults={{
+            subject_fr: DEFAULT_EVAL_SUBJECT_FR, subject_en: DEFAULT_EVAL_SUBJECT_EN,
+            body_fr: DEFAULT_EVAL_BODY_FR, body_en: DEFAULT_EVAL_BODY_EN,
+          }}
+        />
+      </div>
+      <div style={{ display: activeTpl === 'facture' ? 'block' : 'none' }}>
+        <Block
+          title="Facture BDT (courriel)"
+          prefix="facture"
+          tab={tab}
+          initial={initial.facture}
+          defaults={{
+            subject_fr: DEFAULT_FACTURE_SUBJECT_FR, subject_en: DEFAULT_FACTURE_SUBJECT_EN,
+            body_fr: DEFAULT_FACTURE_BODY_FR, body_en: DEFAULT_FACTURE_BODY_EN,
+          }}
+        />
+      </div>
+      <div style={{ display: activeTpl === 'vente' ? 'block' : 'none' }}>
+        <Block
+          title="Vente directe (courriel)"
+          prefix="vente"
+          tab={tab}
+          initial={initial.vente}
+          defaults={{
+            subject_fr: DEFAULT_VENTE_SUBJECT_FR, subject_en: DEFAULT_VENTE_SUBJECT_EN,
+            body_fr: DEFAULT_VENTE_BODY_FR, body_en: DEFAULT_VENTE_BODY_EN,
+          }}
+        />
+      </div>
+      <div style={{ display: activeTpl === 'courrielSuivi' ? 'block' : 'none' }}>
+        <Block
+          title="Courriel de suivi (post-livraison)"
+          prefix="courrielSuivi"
+          tab={tab}
+          initial={initial.courrielSuivi}
+          defaults={{
+            subject_fr: DEFAULT_SUIVI_SUBJECT_FR, subject_en: DEFAULT_SUIVI_SUBJECT_EN,
+            body_fr: DEFAULT_SUIVI_BODY_FR, body_en: DEFAULT_SUIVI_BODY_EN,
+          }}
+        />
+      </div>
 
-      <h3 style={h3}>SMS rappel (vélo prêt)</h3>
-      <p style={subtitleStyle}>Texte court, pas de HTML. Branché à Twilio en Sprint 3.</p>
-      <Row label={`Corps SMS (${tab.toUpperCase()})`}>
-        <textarea
-          name={`smsRappel_body_${tab}`}
-          defaultValue={initial.smsRappel?.body?.[tab] ?? ''}
-          placeholder={tab === 'fr' ? DEFAULT_SMS_RAPPEL_FR : DEFAULT_SMS_RAPPEL_EN}
-          rows={3}
-          className="input-system font-mono text-sm"
-        />
-      </Row>
+      <div style={{ display: activeTpl === 'smsRappel' ? 'block' : 'none' }}>
+        <h3 style={h3}>SMS rappel (vélo prêt)</h3>
+        <p style={subtitleStyle}>Texte court, pas de HTML. Branché à Twilio en Sprint 3.</p>
+        <Row label={`Corps SMS (${tab.toUpperCase()})`}>
+          <textarea
+            name={`smsRappel_body_${tab}`}
+            defaultValue={initial.smsRappel?.body?.[tab] ?? ''}
+            placeholder={tab === 'fr' ? DEFAULT_SMS_RAPPEL_FR : DEFAULT_SMS_RAPPEL_EN}
+            rows={3}
+            className="input-system font-mono text-sm"
+          />
+        </Row>
+      </div>
 
-      <h3 style={h3}>SMS suivi</h3>
-      <Row label={`Corps SMS (${tab.toUpperCase()})`}>
-        <textarea
-          name={`smsSuivi_body_${tab}`}
-          defaultValue={initial.smsSuivi?.body?.[tab] ?? ''}
-          placeholder={tab === 'fr' ? DEFAULT_SMS_SUIVI_FR : DEFAULT_SMS_SUIVI_EN}
-          rows={3}
-          className="input-system font-mono text-sm"
-        />
-      </Row>
+      <div style={{ display: activeTpl === 'smsSuivi' ? 'block' : 'none' }}>
+        <h3 style={h3}>SMS suivi</h3>
+        <Row label={`Corps SMS (${tab.toUpperCase()})`}>
+          <textarea
+            name={`smsSuivi_body_${tab}`}
+            defaultValue={initial.smsSuivi?.body?.[tab] ?? ''}
+            placeholder={tab === 'fr' ? DEFAULT_SMS_SUIVI_FR : DEFAULT_SMS_SUIVI_EN}
+            rows={3}
+            className="input-system font-mono text-sm"
+          />
+        </Row>
+      </div>
 
-      <h3 style={h3}>Outro global (toutes templates) — {tab.toUpperCase()}</h3>
-      <p style={subtitleStyle}>
-        Ajouté en bas de chaque courriel sauf si la template a son propre outro.
-      </p>
-      <Row label={`Outro (${tab.toUpperCase()})`}>
-        <textarea
-          name={`outro_${tab}`}
-          defaultValue={initial.outro?.[tab] ?? ''}
-          rows={2}
-          className="input-system font-mono text-sm"
-        />
-      </Row>
+      <div style={{ display: activeTpl === 'outroSignatures' ? 'block' : 'none' }}>
+        <h3 style={h3}>Outro global (toutes templates) — {tab.toUpperCase()}</h3>
+        <p style={subtitleStyle}>
+          Ajouté en bas de chaque courriel sauf si la template a son propre outro.
+        </p>
+        <Row label={`Outro (${tab.toUpperCase()})`}>
+          <textarea
+            name={`outro_${tab}`}
+            defaultValue={initial.outro?.[tab] ?? ''}
+            rows={2}
+            className="input-system font-mono text-sm"
+          />
+        </Row>
 
-      <h3 style={h3}>Signatures par lead</h3>
-      <p style={subtitleStyle}>
-        Workshop multi-marque (V1 yako-cyclo / cyclo-flex). Affichées au pied
-        des courriels selon le lead du client.
-      </p>
-      <Row label="Signature yako-cyclo">
-        <textarea
-          name="signatures_yako"
-          defaultValue={initial.signatures?.yako ?? ''}
-          rows={2}
-          className="input-system font-mono text-sm"
-        />
-      </Row>
-      <Row label="Signature cyclo-flex">
-        <textarea
-          name="signatures_cf"
-          defaultValue={initial.signatures?.cf ?? ''}
-          rows={2}
-          className="input-system font-mono text-sm"
-        />
-      </Row>
+        <h3 style={h3}>Signatures par lead</h3>
+        <p style={subtitleStyle}>
+          Workshop multi-marque (V1 yako-cyclo / cyclo-flex). Affichées au pied
+          des courriels selon le lead du client.
+        </p>
+        <Row label="Signature yako-cyclo">
+          <textarea
+            name="signatures_yako"
+            defaultValue={initial.signatures?.yako ?? ''}
+            rows={2}
+            className="input-system font-mono text-sm"
+          />
+        </Row>
+        <Row label="Signature cyclo-flex">
+          <textarea
+            name="signatures_cf"
+            defaultValue={initial.signatures?.cf ?? ''}
+            rows={2}
+            className="input-system font-mono text-sm"
+          />
+        </Row>
+      </div>
 
       {Object.keys(unmapped).length > 0 ? (
         <details style={{ marginTop: '1.5rem', background: '#fafafa', padding: '0.75rem 1rem', borderRadius: 6 }}>
