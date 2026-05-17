@@ -24,16 +24,12 @@ export function AddItemForm({ bdcId, services, pieces, forfaits }: Props) {
   return (
     <form
       action={formAction}
+      className="mb-4 rounded-xl border border-[var(--gris-bord)] bg-white/60 p-3"
       style={{
         display: 'grid',
         gridTemplateColumns: '120px 1fr 80px auto',
         gap: '0.5rem',
         alignItems: 'end',
-        background: '#fafafa',
-        padding: '0.75rem',
-        borderRadius: 4,
-        border: '1px solid #e0e0e0',
-        marginBottom: '1rem',
       }}
     >
       <input type="hidden" name="bdcId" value={bdcId} />

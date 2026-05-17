@@ -33,16 +33,15 @@ export function ImportClientsPage() {
 
   return (
     <div>
-      <h2 style={h2}>1. Téléverse ton fichier CSV</h2>
+      <h2 className="mb-3 mt-6 text-base font-semibold">1. Téléverse ton fichier CSV</h2>
       <form action={previewAction} className="mb-8">
         <input
           type="file"
           name="csvFile"
           accept=".csv,text/csv"
           required
-          className="mb-3"
+          className="input-system mb-3"
         />
-        <br />
         <button type="submit" disabled={previewPending} className="btn-primary">
           {previewPending ? 'Analyse…' : 'Analyser le CSV'}
         </button>
@@ -75,64 +74,66 @@ function PreviewAndImport({
 
   return (
     <>
-      <h2 style={h2}>2. Mappe les colonnes ({preview.totalRows} lignes détectées)</h2>
-      <p className="text-sm text-[var(--text-secondary-60)]">
+      <h2 className="mb-3 mt-6 text-base font-semibold">2. Mappe les colonnes ({preview.totalRows} lignes détectées)</h2>
+      <p className="mb-3 text-sm text-[var(--text-secondary-60)]">
         Détection automatique faite. Ajuste si nécessaire. Champs marqués * obligatoires.
       </p>
 
       <form action={importAction}>
         <input type="hidden" name="csvContent" value={preview.csvContent ?? ''} />
 
-        <table style={tbl}>
-          <thead>
-            <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
-              <th style={th}>Champ flex</th>
-              <th style={th}>Colonne CSV</th>
-            </tr>
-          </thead>
-          <tbody>
-            {TARGET_FIELDS.map((f) => (
-              <tr key={f.key} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={td}>
-                  {f.label}
-                  {f.required ? <span style={{ color: '#c62828', marginLeft: 2 }}>*</span> : null}
-                </td>
-                <td style={td}>
-                  <select
-                    name={`map_${f.key}`}
-                    value={mapping[f.key] ?? ''}
-                    onChange={(e) => setMapping({ ...mapping, [f.key]: e.target.value })}
-                    className="input-system"
-                  >
-                    <option value="">— ignorer —</option>
-                    {headers.map((h) => (
-                      <option key={h} value={h}>{h}</option>
-                    ))}
-                  </select>
-                </td>
+        <div className="overflow-x-auto rounded-2xl bg-white/85 shadow-sm">
+          <table className="w-full text-sm">
+            <thead className="border-b border-[var(--gris-bord)] bg-white/50 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+              <tr>
+                <th className="px-3 py-2 text-left">Champ flex</th>
+                <th className="px-3 py-2 text-left">Colonne CSV</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {TARGET_FIELDS.map((f) => (
+                <tr key={f.key} className="border-t border-[var(--gris-bord)]/30">
+                  <td className="px-3 py-2">
+                    {f.label}
+                    {f.required ? <span className="ml-0.5 text-red-600">*</span> : null}
+                  </td>
+                  <td className="px-3 py-2">
+                    <select
+                      name={`map_${f.key}`}
+                      value={mapping[f.key] ?? ''}
+                      onChange={(e) => setMapping({ ...mapping, [f.key]: e.target.value })}
+                      className="input-system"
+                    >
+                      <option value="">— ignorer —</option>
+                      {headers.map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-        <h3 style={{ ...h2, fontSize: '1rem', marginTop: '1.5rem' }}>Aperçu (5 premières lignes)</h3>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ ...tbl, fontSize: '0.8rem' }}>
-            <thead>
-              <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
+        <h3 className="mb-3 mt-6 text-sm font-semibold">Aperçu (5 premières lignes)</h3>
+        <div className="overflow-x-auto rounded-2xl bg-white/85 shadow-sm">
+          <table className="w-full text-xs">
+            <thead className="border-b border-[var(--gris-bord)] bg-white/50 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
+              <tr>
                 {TARGET_FIELDS.map((f) => (
-                  <th key={f.key} style={th}>{f.label}</th>
+                  <th key={f.key} className="px-3 py-2 text-left">{f.label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {sample.map((row, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                <tr key={i} className="border-t border-[var(--gris-bord)]/30">
                   {TARGET_FIELDS.map((f) => {
                     const csvHeader = mapping[f.key];
                     const v = csvHeader ? row[csvHeader] : '';
                     return (
-                      <td key={f.key} style={{ ...td, color: v ? '#1a1a1a' : '#bbb' }}>
+                      <td key={f.key} className={`px-3 py-2 ${v ? '' : 'text-[var(--text-secondary-50)]'}`}>
                         {v || '—'}
                       </td>
                     );
@@ -143,19 +144,18 @@ function PreviewAndImport({
           </table>
         </div>
 
-        <h2 style={h2}>3. Lance l&apos;import</h2>
-        <p className="text-sm text-[var(--text-secondary-60)]">
+        <h2 className="mb-3 mt-6 text-base font-semibold">3. Lance l&apos;import</h2>
+        <p className="mb-3 text-sm text-[var(--text-secondary-60)]">
           Doublons détectés sur (prénom + nom) ou courriel — ignorés sans modification.
           Fais un dry-run d&apos;abord pour vérifier les chiffres.
         </p>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="submit"
             name="dryRun"
             value="1"
             disabled={importPending}
-            className="btn-primary"
-            style={{ background: importPending ? '#999' : '#1565c0' }}
+            className="btn-secondary"
           >
             {importPending ? 'Test…' : '🧪 Dry-run (compter sans insérer)'}
           </button>
@@ -177,11 +177,11 @@ function PreviewAndImport({
           <div className="mt-4 rounded-xl border border-green-400 bg-green-50 p-3 text-sm text-green-800">
             ✓ {importState.inserted ?? 0} ajoutés · {importState.skipped ?? 0} ignorés (doublons){importState.errors && importState.errors.length > 0 ? ` · ${importState.errors.length} erreurs` : ''}
             {importState.errors && importState.errors.length > 0 ? (
-              <details style={{ marginTop: '0.5rem' }}>
-                <summary style={{ cursor: 'pointer' }}>Voir les erreurs</summary>
-                <ul style={{ marginTop: '0.5rem' }}>
+              <details className="mt-2">
+                <summary className="cursor-pointer">Voir les erreurs</summary>
+                <ul className="mt-2 list-disc pl-5 text-xs">
                   {importState.errors.slice(0, 50).map((e, i) => (
-                    <li key={i} style={{ fontSize: '0.85rem' }}>{e}</li>
+                    <li key={i}>{e}</li>
                   ))}
                 </ul>
               </details>
@@ -192,8 +192,3 @@ function PreviewAndImport({
     </>
   );
 }
-
-const h2: React.CSSProperties = { fontSize: '1.15rem', marginTop: '1.5rem', marginBottom: '0.75rem' };
-const tbl: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' };
-const th: React.CSSProperties = { textAlign: 'left', padding: '0.5rem 0.6rem', fontWeight: 600, color: '#666', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
-const td: React.CSSProperties = { padding: '0.4rem 0.6rem' };
