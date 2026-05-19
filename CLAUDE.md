@@ -202,22 +202,42 @@ ajoutée/retirée sans MAJ du doc).
 
 ## Base de données — IMPORTANT
 
-L'utilisateur a 2 projets Neon :
-- **`flex-v2`** — branche `production` — projet de **dev/test** non utilisé par
-  Vercel. Ne PAS y appliquer de migrations.
-- **`flex-prod`** — branche **`main`** — la **VRAIE prod**, branchée à
-  Vercel via l'intégration native Vercel-Neon. **TOUTES** les migrations
-  SQL doivent être appliquées ici.
+⚠️ **État incertain au 2026-05-19** : le `DATABASE_URL` Vercel (Production +
+Preview) pointe sur l'hostname `ep-round-hill-amsvsl6u-pooler.c-5.us-east-1.aws.neon.tech`
+mais yako-san ne voit PAS ce projet dans son dashboard Neon courant. Le
+projet `flex-v2` qu'il voit (endpoint `ep-broad-queen-anac9vrl-pooler.c-6`)
+n'est PAS branché à Vercel. Tant que la propriété du compte Neon
+`round-hill` n'est pas retrouvée (cf. PR #99 incident), toute migration
+SQL appliquée via l'UI Neon **risque de partir sur la mauvaise DB**.
 
-L'hostname prod actuel : `ep-broad-queen-anac9vrl-pooler.c-6.us-east-1.aws.neon.tech`
+Avant d'envoyer du SQL à yako, **toujours** lui demander de confirmer
+l'hostname affiché en haut du SQL Editor Neon avant exécution.
 
-Quand on fournit du SQL à yako-san pour une migration, **toujours rappeler**
-qu'il doit être sur `flex-prod` / `main`, sans quoi la migration tourne sur
-le mauvais projet et l'app prod plante avec `column does not exist`.
+### Avant l'incident — supposé valide
 
-`DATABASE_URL` Vercel est gérée par l'intégration Vercel-Neon et ne peut
-pas être éditée directement (juste « Manage Connection » / « Rotate »
-dans l'UI Vercel).
+- `flex-v2` (visible par yako) — branche `Production` — endpoint
+  `ep-broad-queen-anac9vrl-pooler.c-6.us-east-1.aws.neon.tech`. **Pas
+  branché à Vercel.** Peut servir de dev/test.
+- `flex-prod` (l'ancien doc disait que c'était ça la vraie prod) —
+  hostname et accès **inconnus** actuellement.
+- La vraie DB de prod est sur l'endpoint `ep-round-hill-amsvsl6u-pooler.c-5`
+  côté un compte Neon que yako tente de retrouver (peut-être Google vs
+  GitHub login différent, ou intégration Vercel-Neon créée avec un autre
+  email).
+
+### Plan B si le compte Neon `round-hill` reste introuvable
+
+- Créer un nouveau projet Neon `flex-prod-v2` dans le compte de yako
+- `pg_dump` depuis l'URL Vercel actuelle vers le nouveau projet
+- Swap `DATABASE_URL` côté Vercel (Settings → Environment Variables)
+- Pousser une PR `chore(db): bascule sur DB sous contrôle yako-san`
+
+### Note technique sur le build Vercel
+
+`package.json` build script = `prisma generate && next build`. **Pas de
+`prisma migrate deploy` automatique**. Toute migration doit être passée
+manuellement côté Neon (SQL Editor ou CLI). Erreur fréquente : croire
+qu'un build vert = migration appliquée. Faux.
 
 ## Conventions git
 
