@@ -1,0 +1,72 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #929292; font-family: var(--font-sans); }
+  .stage {
+    min-height: 480px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+  }
+  /* Yellow card centered on the grey app-bg. */
+  .login-card {
+    background: #fff056;
+    border-radius: 30px;
+    padding: 40px 50px;
+    width: 320px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.22);
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 32px;
+  }
+  .logo {
+    width: 160px; height: 160px; border-radius: 50%;
+    background-image: url("../assets/logo-FLEX-rond-fr.svg");
+    background-size: cover; background-position: center;
+  }
+  .google-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 10px;
+    padding: 0 22px; height: 44px;
+    border-radius: 999px;
+    background: #806642;
+    color: #fff;
+    font-family: var(--font-sans); font-weight: 700;
+    font-size: 13px; letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 0; cursor: pointer;
+    transition: background 150ms;
+  }
+  .google-btn:hover { background: #6b5536; }
+  /* The Google "G" — multi-coloured circle in a white plate. */
+  .google-g {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .google-g svg { width: 14px; height: 14px; }
+  .caption {
+    font-size: 11px; color: rgba(0,0,0,0.5);
+    margin-top: -16px;
+  }
+</style></head>
+<body>
+<div class="stage">
+  <div class="login-card">
+    <div class="logo" role="img" aria-label="FLEX/REV — yako.cyclo"></div>
+    <button class="google-btn" type="button">
+      <span class="google-g" aria-hidden>
+        <!-- Google G — official 4-colour glyph -->
+        <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18Z"/>
+          <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17Z"/>
+          <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07Z"/>
+          <path fill="#EA4335" d="M8.98 4.72c1.16 0 2.23.4 3.06 1.2l2.31-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-2.77Z"/>
+        </svg>
+      </span>
+      Google Connect
+    </button>
+    <p class="caption">Accès restreint aux membres de l'atelier.</p>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; font-family: var(--font-sans); }
+  body { background: #5E5E5E; transition: background 220ms ease; min-height: 100vh; }
+  body.light-mode { background: #BFBFBF; }
+  .card { padding: 20px 24px; color: var(--dark); transition: color 220ms ease; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+         padding: 12px; border-radius: 14px;
+         background: transparent; }
+
+  /* ============================================================
+     PillsToggle — strict geometry
+     ------------------------------------------------------------
+     Grey container:  60pt tall, 10pt padding all sides
+     Yellow pill:     40pt tall (10pt vert pad inside grey)
+                      same width as one button column
+                      always 10pt from container edge at extremes
+     Buttons:         display: grid with 1fr columns → ALL buttons
+                      get equal width = max-content of widest text
+                      + 10pt horizontal padding each side
+     Word:            centered in its column (and therefore in the
+                      yellow pill when its column is active)
+     ============================================================ */
+  .pt {
+    position: relative; box-sizing: border-box;
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: center;
+    background: rgba(0,0,0,0.30); border-radius: 999px;
+    transition: background 220ms ease;
+    height: 60px; padding: 10px;
+    isolation: isolate;
+  }
+  .pt .indicator {
+    position: absolute; top: 10px; bottom: 10px;
+    background: #fff056; border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+                width 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 0;
+    will-change: transform, width;
+    pointer-events: none;
+  }
+  .pt button {
+    position: relative; z-index: 1;
+    box-sizing: border-box;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px;
+    border: 0; cursor: pointer;
+    background: transparent;
+    padding: 0 10px;
+    height: 40px;
+    border-radius: 999px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+    line-height: 1;
+    text-align: center;
+    color: rgba(255,255,255,0.85);
+    transition: color 220ms ease;
+  }
+  .pt.mini { padding: 5px; height: 30px; }
+  .pt.mini .indicator { top: 5px; bottom: 5px; }
+  .pt.mini button { height: 20px; padding: 0 5px; font-size: 11px; }
+  .pt.mini button svg { width: 12px; height: 12px; }
+  body.light-mode .pt { background: rgba(255,255,255,0.30); }
+  body.light-mode .pt button { color: rgba(0,0,0,0.65); }
+  .pt button.active { color: #000; font-weight: 600; }
+  body.light-mode .pt button.active { color: #000; }
+  .pt button.active { color: #000; font-weight: 600; }
+  .pt button:hover:not(.active) { color: #fff; }
+  .label { font-family: var(--font-mono); font-size: 10px;
+           color: rgba(255,255,255,0.85); text-transform: lowercase;
+           margin-right: 6px; transition: color 220ms ease; }
+  body.light-mode .label { color: rgba(0,0,0,0.65); }
+</style></head>
+<body>
+<div class="card">
+  <div class="row">
+    <span class="label">client/vélo</span>
+    <div class="pt" data-pt>
+      <span class="indicator"></span>
+      <button data-i="0" class="active">Client</button>
+      <button data-i="1">Vélo</button>
+    </div>
+
+    <span class="label">éval/facture</span>
+    <div class="pt" data-pt>
+      <span class="indicator"></span>
+      <button data-i="0">Éval</button>
+      <button data-i="1" class="active">Facture</button>
+    </div>
+
+    <span class="label">paiement</span>
+    <div class="pt" data-pt>
+      <span class="indicator"></span>
+      <button data-i="0" class="active">Comptant</button>
+      <button data-i="1">Interac</button>
+      <button data-i="2">Carte</button>
+    </div>
+
+    <span class="label">thème</span>
+    <div class="pt" data-pt data-theme="true">
+      <span class="indicator"></span>
+      <button data-i="0" aria-label="Clair">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        Light
+      </button>
+      <button data-i="1" class="active" aria-label="Sombre">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        Dark
+      </button>
+    </div>
+    <span class="label">thème mini</span>
+    <div class="pt mini" data-pt data-theme="true">
+      <span class="indicator"></span>
+      <button data-i="0" aria-label="Light">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </button>
+      <button data-i="1" class="active" aria-label="Dark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+function syncIndicator(root, instant = false) {
+  const indicator = root.querySelector('.indicator');
+  const active = root.querySelector('button.active');
+  if (!active) return;
+  const rRoot = root.getBoundingClientRect();
+  const rBtn = active.getBoundingClientRect();
+  const offset = rBtn.left - rRoot.left;
+  const width = rBtn.width;
+  if (instant) {
+    const prev = indicator.style.transition;
+    indicator.style.transition = 'none';
+    indicator.style.transform = `translateX(${offset}px)`;
+    indicator.style.width = `${width}px`;
+    void indicator.offsetWidth;
+    indicator.style.transition = prev;
+  } else {
+    indicator.style.transform = `translateX(${offset}px)`;
+    indicator.style.width = `${width}px`;
+  }
+}
+
+document.querySelectorAll('[data-pt]').forEach(root => {
+  requestAnimationFrame(() => syncIndicator(root, true));
+  root.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      root.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      syncIndicator(root);
+
+      // Theme toggle — last toggle (Light/Dark) drives body class.
+      if (btn.closest('[data-pt]').dataset.theme === 'true') {
+        const labelText = (btn.getAttribute('aria-label') || btn.textContent || '').trim().toLowerCase();
+        if (labelText.startsWith('light') || labelText === 'clair') {
+          document.body.classList.add('light-mode');
+        } else {
+          document.body.classList.remove('light-mode');
+        }
+        // After theme switch, recompute indicators (background change may
+        // affect computed widths because of color transitions).
+        document.querySelectorAll('[data-pt]').forEach(r => syncIndicator(r, true));
+      }
+    });
+  });
+});
+
+// Auto-demo: cycle the first toggle to show the slide animation.
+const demo = document.querySelector('[data-pt]');
+if (demo) {
+  let cur = 0;
+  const buttons = [...demo.querySelectorAll('button')];
+  setInterval(() => {
+    cur = (cur + 1) % buttons.length;
+    buttons.forEach(b => b.classList.remove('active'));
+    buttons[cur].classList.add('active');
+    syncIndicator(demo);
+  }, 1800);
+}
+
+window.addEventListener('resize', () => {
+  document.querySelectorAll('[data-pt]').forEach(r => syncIndicator(r, true));
+});
+</script>
+</body></html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: var(--app-bg); font-family: var(--font-sans); }
+  .card { padding: 20px; min-height: 110px; box-sizing: border-box; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 8px; }
+  .swatch { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .swatch .chip { width: 100%; height: 56px; border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
+  .swatch .name { font-size: 11px; font-weight: 600; color: var(--dark); text-transform: lowercase; }
+  .swatch .val { font-size: 10px; color: var(--text-secondary-60); font-family: var(--font-mono); }
+</style></head>
+<body>
+<div class="card">
+  <div class="row" style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+    <div class="swatch">
+      <div class="chip" style="background: #fff056;"></div>
+      <div class="name">jaune</div><div class="val">#FFF056</div>
+    </div>
+    <div class="swatch">
+      <div class="chip" style="background: #806642;"></div>
+      <div class="name">brun</div><div class="val">#806642</div>
+    </div>
+    <div class="swatch">
+      <div class="chip" style="background: #62e335;"></div>
+      <div class="name">vert</div><div class="val">#62E335</div>
+    </div>
+    <div class="swatch">
+      <div class="chip" style="background: #1a1a1a;"></div>
+      <div class="name">dark</div><div class="val">#1A1A1A</div>
+    </div>
+  </div>
+</div>
+</body></html>

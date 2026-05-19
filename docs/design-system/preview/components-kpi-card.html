@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #929292; font-family: var(--font-sans); }
+  .card { padding: 18px; display:flex; gap: 14px; }
+  .kpi { background: rgba(0,0,0,0.2); border-radius: 16px; padding: 16px; color: #fff; flex: 1; min-width: 0; }
+  .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .icon-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.7); }
+  .value { font-family: var(--font-sans); font-size: 32px; font-weight: 700; color: #fff056; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .sub { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+  .pills { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+  .p { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.06em; }
+</style></head>
+<body>
+<div class="card">
+  <div class="kpi">
+    <div class="head">
+      <div class="icon-circle" style="background:#5cd62b;color:#000;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="15" r="4"/><circle cx="18" cy="15" r="4"/><path d="m6 15 6-7h4l-4 9"/></svg>
+      </div>
+      <span class="label">BDT actifs</span>
+    </div>
+    <div class="value">9</div>
+    <div class="pills">
+      <span class="p" style="background:#fff056;color:#000;">3 RV</span>
+      <span class="p" style="background:#88fa4e;color:#000;">1 ÉVAL.</span>
+      <span class="p" style="background:#62e335;color:#000;">3 APPROUVÉ</span>
+    </div>
+  </div>
+  <div class="kpi">
+    <div class="head">
+      <div class="icon-circle" style="background:#d92020;color:#fff;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12.83 2.18 8.32 4.16a2 2 0 0 1 1.1 1.79V16a2 2 0 0 1-1.1 1.78l-8.32 4.18a2 2 0 0 1-1.66 0L2.85 17.78A2 2 0 0 1 1.75 16V8.13a2 2 0 0 1 1.1-1.79l8.32-4.16a2 2 0 0 1 1.66 0Z"/></svg>
+      </div>
+      <span class="label">Stock à commander</span>
+    </div>
+    <div class="value">129</div>
+    <div class="sub">114 unités au total</div>
+  </div>
+</div>
+</body></html>

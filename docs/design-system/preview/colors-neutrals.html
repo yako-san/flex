@@ -1,0 +1,70 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #fafafa; font-family: var(--font-sans); }
+  .card { padding: 18px 22px; }
+  .lede { font-size: 11px; color: var(--text-secondary-60); margin: 0 0 12px; line-height: 1.45; }
+  .lede b { color: var(--dark); }
+  .lede .mono { font-family: var(--font-mono); }
+
+  .row {
+    display: grid; grid-template-columns: 70px repeat(5, 1fr);
+    gap: 0; align-items: stretch; border-radius: 12px; overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .row.light { background: #BFBFBF; }
+  .row.dark  { background: #5E5E5E; }
+
+  .lab {
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 9px; padding: 8px;
+    text-transform: lowercase;
+  }
+  .row.light .lab { color: rgba(0,0,0,0.55); }
+  .row.dark .lab  { color: rgba(255,255,255,0.7); }
+
+  .cell {
+    height: 48px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px;
+    font-family: var(--font-mono); font-size: 9px;
+  }
+  .pct { font-weight: 700; font-size: 10px; }
+  .formula { font-size: 8px; opacity: 0.75; }
+
+  /* Light mode rail: base mid-grey → progressively lighter
+     Text starts dark-ish, gets darker as background brightens */
+  .row.light .cell { color: rgba(0,0,0,0.65); }
+
+  /* Dark mode rail: base mid-grey → progressively darker
+     Text starts light, then we flip to white once dark enough */
+  .row.dark .cell { color: rgba(255,255,255,0.85); }
+</style></head>
+<body>
+<div class="card">
+  <p class="lede">
+    Système additif à 5 niveaux, increments de 20 % d'alpha.
+    <b>Light :</b> base <span class="mono">#BFBFBF</span> + couches blanches.
+    <b>Dark :</b> base <span class="mono">#5E5E5E</span> + couches noires.
+  </p>
+
+  <div class="row light">
+    <div class="lab">light</div>
+    <div class="cell"><span class="pct">base</span><span class="formula">#BFBFBF</span></div>
+    <div class="cell" style="background: rgba(255,255,255,0.20);"><span class="pct">+20 %</span><span class="formula">×1 blanc</span></div>
+    <div class="cell" style="background: rgba(255,255,255,0.40);"><span class="pct">+40 %</span><span class="formula">×2 blanc</span></div>
+    <div class="cell" style="background: rgba(255,255,255,0.60);"><span class="pct">+60 %</span><span class="formula">×3 blanc</span></div>
+    <div class="cell" style="background: rgba(255,255,255,0.80);"><span class="pct">+80 %</span><span class="formula">×4 blanc</span></div>
+  </div>
+
+  <div class="row dark">
+    <div class="lab">dark</div>
+    <div class="cell"><span class="pct">base</span><span class="formula">#5E5E5E</span></div>
+    <div class="cell" style="background: rgba(0,0,0,0.20);"><span class="pct">+20 %</span><span class="formula">×1 noir</span></div>
+    <div class="cell" style="background: rgba(0,0,0,0.40);"><span class="pct">+40 %</span><span class="formula">×2 noir</span></div>
+    <div class="cell" style="background: rgba(0,0,0,0.60);"><span class="pct">+60 %</span><span class="formula">×3 noir</span></div>
+    <div class="cell" style="background: rgba(0,0,0,0.80);"><span class="pct">+80 %</span><span class="formula">×4 noir</span></div>
+  </div>
+</div>
+</body></html>

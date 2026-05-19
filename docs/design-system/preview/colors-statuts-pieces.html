@@ -1,0 +1,35 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: var(--app-bg); font-family: var(--font-sans); }
+  .card { padding: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 12px; }
+  .pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 5px 12px 3px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; line-height: 1;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  h4 { color: var(--text-secondary-60); margin-bottom: 10px; font-size: 10px; }
+</style></head>
+<body>
+<div class="card">
+  <h4>statuts pièces / commandes (cmd-*)</h4>
+  <div class="grid">
+    <span class="pill" style="background:#fff;color:#000;border:1px solid #e0e0e0;">LISTÉE</span>
+    <span class="pill" style="background:#ffcfc9;color:#b10202;">ESTIMÉE</span>
+    <span class="pill" style="background:#d4edbc;color:#11734b;">À CMDER</span>
+    <span class="pill" style="background:#ffff00;color:#473821;">EN CMDE</span>
+    <span class="pill" style="background:#ffe0b2;color:#e65100;">REÇU PART.</span>
+    <span class="pill" style="background:#00ff00;color:#000;">REÇUE</span>
+  </div>
+  <h4 style="margin-top:16px;">étapes mécaniciens</h4>
+  <div class="grid">
+    <span class="pill" style="background:#d9ead3;color:#38761d;">ÉVAL</span>
+    <span class="pill" style="background:#b6d7a8;color:#38761d;">MÉCA</span>
+    <span class="pill" style="background:#93c47d;color:#274e13;">CTRL</span>
+  </div>
+</div>
+</body></html>

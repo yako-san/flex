@@ -1,0 +1,36 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #fafafa; font-family: var(--font-sans); }
+  .card { padding: 20px 24px; color: var(--dark); display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-end; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px;
+    /* Asymmetric vertical pad — pushes uppercase glyphs (no descenders)
+       toward the optical centre of the pill. line-height: 1 strips the
+       intrinsic glyph leading. */
+    padding: 0 20px; height: 38px;
+    border-radius: 30px;
+    font-size: 0.9rem; font-weight: 900; line-height: 1;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    border: 0; cursor: pointer;
+    text-align: center;
+  }
+  .btn.primary { background: #fff056; color: #000; padding-top: 2px; }
+  .btn.secondary { background: transparent; color: #000; border: 2px solid rgba(0,0,0,0.5); padding-top: 2px; }
+  .btn.danger { background: #d92020; color: #fff; padding-top: 2px; }
+  .btn.dark { background: #1a1a1a; color: #fff; padding-top: 2px; }
+  .btn.ghost { background: transparent; color: #1a1a1a; text-transform: none; letter-spacing: normal; font-weight: 500; }
+  .label { font-family: var(--font-mono); font-size: 9px; color: var(--text-secondary-50); text-transform: lowercase; margin-bottom: 6px; display:block; }
+  .stack { display: flex; flex-direction: column; }
+</style></head>
+<body>
+<div class="card">
+  <div class="stack"><span class="label">primary</span><button class="btn primary">Ajouter BDT</button></div>
+  <div class="stack"><span class="label">secondary</span><button class="btn secondary">Annuler</button></div>
+  <div class="stack"><span class="label">danger</span><button class="btn danger">Supprimer</button></div>
+  <div class="stack"><span class="label">dark</span><button class="btn dark">Transférer</button></div>
+  <div class="stack"><span class="label">ghost</span><button class="btn ghost">Voir détails</button></div>
+</div>
+</body></html>

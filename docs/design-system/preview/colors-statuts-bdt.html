@@ -1,0 +1,45 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: var(--app-bg); font-family: var(--font-sans); }
+  .card { padding: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 12px; }
+  .row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .chip { width: 26px; height: 26px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); flex-shrink: 0; }
+  .pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    text-align: center;
+    /* Uppercase glyphs have no descenders → they sit visually high in
+       their box. Asymmetric padding (more top, less bottom) pushes the
+       caps toward the optical centre of the pill. */
+    padding: 5px 10px 3px;
+    border-radius: 999px;
+    font-size: 10px; font-weight: 700; line-height: 1;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .meta { font-size: 10px; color: var(--text-secondary-60); font-family: var(--font-mono); }
+  h4 { color: var(--text-secondary-60); margin-bottom: 10px; font-size: 10px; }
+</style></head>
+<body>
+<div class="card">
+  <h4>statuts vélo (BDT)</h4>
+  <div class="grid">
+    <div class="row"><span class="pill" style="background:#fff056;color:#000;">RV</span></div>
+    <div class="row"><span class="pill" style="background:#fff056;color:#000;">REÇU</span></div>
+    <div class="row"><span class="pill" style="background:#88fa4e;color:#000;">ÉVAL.</span></div>
+    <div class="row"><span class="pill" style="background:#fb923c;color:#000;">EN ATTENTE</span></div>
+
+    <div class="row"><span class="pill" style="background:#62e335;color:#000;">APPROUVÉ</span></div>
+    <div class="row"><span class="pill" style="background:#5cd62b;color:#000;">ON BENCH</span></div>
+    <div class="row"><span class="pill" style="background:#2e7d32;color:#fff;">CTRL QLTÉ</span></div>
+    <div class="row"><span class="pill" style="background:#fce4ec;color:#c62828;">FINI</span></div>
+
+    <div class="row"><span class="pill" style="background:#e53935;color:#fff;">FACTURER</span></div>
+    <div class="row"><span class="pill" style="background:#ffcdd2;color:#b71c1c;">FACTURÉ</span></div>
+    <div class="row"><span class="pill" style="background:#e0e0e0;color:#333;">LIVRÉ</span></div>
+    <div class="row"><span class="pill" style="background:#eeeeee;color:#666;">STAFF</span></div>
+  </div>
+</div>
+</body></html>

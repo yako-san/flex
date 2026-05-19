@@ -1,0 +1,225 @@
+/* ============================================================
+ * FLEX — Design System tokens (extracted from yako-san/flex@main).
+ *
+ * Source de vérité : `src/app/globals.css` du repo `yako-san/flex` (V2).
+ * Référence visuelle V1 (yako-san/flex-rev-app) — couleurs identiques.
+ *
+ * Multi-tenant ready : Workshop.theme JSON peut surcharger toutes
+ * les CSS variables sans rebuild.
+ * ============================================================ */
+
+/* ----- Helvetica Neue LT Std (fonts maison Yako Cyclo) -------- */
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('fonts/HelveticaNeueLTStd-Th.otf') format('opentype');
+  font-weight: 100; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('fonts/HelveticaNeueLTStd-Lt.otf') format('opentype');
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('fonts/HelveticaNeueLTStd-LtIt.otf') format('opentype');
+  font-weight: 300; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('fonts/HelveticaNeueLTStd-Roman.otf') format('opentype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('fonts/HelveticaNeueLTStd-It.otf') format('opentype');
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('fonts/HelveticaNeueLTStd-Md.otf') format('opentype');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('fonts/HelveticaNeueLTStd-MdIt.otf') format('opentype');
+  font-weight: 500; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('fonts/HelveticaNeueLTStd-Bd.otf') format('opentype');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('fonts/HelveticaNeueLTStd-BdIt.otf') format('opentype');
+  font-weight: 700; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('fonts/HelveticaNeueLTStd-Blk.otf') format('opentype');
+  font-weight: 900; font-style: normal; font-display: swap;
+}
+
+:root {
+  /* ===== PALETTE SIGNATURE ================================= */
+  --jaune:         #fff056;   /* couleur signature FLEX (sidebar, CTA, h1) */
+  --jaune-h:       #e6d84e;   /* hover */
+  --rouge:         #d92020;   /* destructive, alerte */
+  --rouge-h:       #b81818;
+  --brun:          #806642;   /* logo brun yako-cyclo, accent secondaire */
+  --brun-h:        #6b5536;
+  --brun-text:     #9a7b4f;   /* texte des items inactifs dans sidebar jaune */
+  --dark:          #1a1a1a;   /* texte principal */
+
+  /* Gris (système) — Note : le système de gris est ADDITIF. Les fonds
+     gris sont créés par EMPILEMENT de --overlay-dark-20 (light mode)
+     ou --overlay-light-20 (dark mode) sur une base. Les variables
+     ci-dessous sont des constantes utilitaires pour les bords et
+     surfaces de transition. Pour les vrais fonds, voir les overlays
+     plus bas et le pattern panel → bloc-contenu → card. */
+  --gris-bg:       #757575;   /* PageHeader, workshop bar */
+  --gris-bord:    #e0e0e0;
+  --gris-fond:    #fafafa;
+  --app-bg:        #929292;   /* base globale de l'AppShell (light) */
+
+  /* ===== SYSTÈME DE GRIS ADDITIF (alpha 20 % stacking) ============
+     Empiler une de ces couches sur le bg crée le prochain niveau.
+     5 niveaux : 0 % (base) · 20 % · 40 % · 60 % · 80 %.
+     `--overlay-dark-*`  → light mode (assombrit par couches noires)
+     `--overlay-light-*` → dark mode  (éclaircit par couches blanches) */
+  --overlay-dark-20:  rgba(0,0,0,0.20);
+  --overlay-dark-40:  rgba(0,0,0,0.40);
+  --overlay-dark-60:  rgba(0,0,0,0.60);
+  --overlay-dark-80:  rgba(0,0,0,0.80);
+  --overlay-light-20: rgba(255,255,255,0.20);
+  --overlay-light-40: rgba(255,255,255,0.40);
+  --overlay-light-60: rgba(255,255,255,0.60);
+  --overlay-light-80: rgba(255,255,255,0.80);
+
+  /* ===== STATUTS VÉLO (BDT) — bg / fg ===================== */
+  --st-rv-bg:         #fff056;  --st-rv-fg:         #000000;  /* rendez-vous */
+  --st-recu-bg:       #fff056;  --st-recu-fg:       #000000;  /* reçu */
+  --st-eval-bg:       #88fa4e;  --st-eval-fg:       #000000;  /* évalué */
+  --st-attente-bg:    #fb923c;  --st-attente-fg:    #000000;  /* en attente */
+  --st-approuve-bg:   #62e335;  --st-approuve-fg:   #000000;  /* approuvé */
+  --st-on-bench-bg:   #5cd62b;  --st-on-bench-fg:   #000000;  /* on bench */
+  --st-ctrl-qlte-bg:  #2e7d32;  --st-ctrl-qlte-fg:  #ffffff;  /* contrôle qualité */
+  --st-fini-bg:       #fce4ec;  --st-fini-fg:       #c62828;  /* fini, à facturer */
+  --st-facturer-bg:   #e53935;  --st-facturer-fg:   #ffffff;
+  --st-facture-bg:    #ffcdd2;  --st-facture-fg:    #b71c1c;  /* facturé */
+  --st-livre-bg:      #e0e0e0;  --st-livre-fg:      #333333;  /* livré */
+
+  /* ===== STATUTS PIÈCES (cmd) ============================ */
+  --cmd-listee-bg:    #ffffff;  --cmd-listee-fg:    #000000;
+  --cmd-estimee-bg:   #ffcfc9;  --cmd-estimee-fg:   #b10202;
+  --cmd-a-cmder-bg:   #d4edbc;  --cmd-a-cmder-fg:   #11734b;
+  --cmd-en-cmde-bg:   #ffff00;  --cmd-en-cmde-fg:   #473821;
+  --cmd-recu-part-bg: #ffe0b2;  --cmd-recu-part-fg: #e65100;
+  --cmd-recue-bg:     #00ff00;  --cmd-recue-fg:     #000000;
+
+  /* ===== ÉTAPES MÉCANO =================================== */
+  --etape-eval-bg:    #d9ead3;  --etape-eval-fg:    #38761d;
+  --etape-meca-bg:    #b6d7a8;  --etape-meca-fg:    #38761d;
+  --etape-ctrl-bg:    #93c47d;  --etape-ctrl-fg:    #274e13;
+
+  /* ===== TEXTE / OVERLAYS UTILITAIRES ===================== */
+  --overlay-light-35:   rgba(255,255,255,0.35);
+  --overlay-light-50:   rgba(255,255,255,0.50);
+  --overlay-light-70:   rgba(255,255,255,0.70);
+  --overlay-light-85:   rgba(255,255,255,0.85);
+  --text-secondary-35:  rgba(0,0,0,0.35);
+  --text-secondary-50:  rgba(0,0,0,0.50);
+  --text-secondary-60:  rgba(0,0,0,0.60);
+  --text-secondary-70:  rgba(0,0,0,0.70);
+  --text-secondary-80:  rgba(0,0,0,0.80);
+
+  /* ===== TYPOGRAPHIE ==================================== */
+  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+
+  /* Hiérarchie V1 (intentionnellement non-conventionnelle :
+     h1 thin & énorme, h2 black, h3 régulier, h4 micro-caps uppercase) */
+  --h1-size: 3.0rem;    --h1-weight: 300;   /* THIN — page titles in jaune */
+  --h2-size: 1.8rem;    --h2-weight: 900;
+  --h3-size: 1.3rem;    --h3-weight: 600;
+  --h4-size: 0.9rem;    --h4-weight: 900;   /* uppercase tracking 0.1em */
+  --h5-size: 0.65rem;   --h5-weight: 600;
+  --h6-size: 0.5rem;    --h6-weight: 600;   /* italique */
+  --th-size: 11px;      --th-weight: 600;   /* table headers — lowercase ! */
+
+  /* ===== LAYOUT ========================================= */
+  --sidebar-w-collapsed: 100px;
+  --sidebar-w-expanded:  200px;
+  --sidebar-pastille:    60px;
+  --header-h:            72px;
+
+  /* ===== FORMS / BOUTONS =============================== */
+  --input-radius:     12px;
+  --input-border:     rgba(0,0,0,0.2);
+  --input-focus-ring: rgba(255,240,86,0.4);
+  --btn-radius:       30px;     /* pill V1 */
+  --btn-h-sm:         32px;
+  --btn-h-md:         38px;
+  --btn-h-lg:         44px;
+  --addbtn-size:      40px;     /* AddButton rond */
+
+  /* ===== RAYONS / SHADOWS ============================== */
+  --radius-card:       30px;    /* bloc-contenu V1 */
+  --radius-sidebar:    50px;    /* pill sidebar */
+  --radius-modal:      20px;
+  --shadow-sidebar:       0 10px 12px -4px rgba(0,0,0,0.35);
+  --shadow-sidebar-hover: 0 18px 24px -8px rgba(0,0,0,0.50);
+  --shadow-card:       0 2px 6px rgba(0,0,0,0.10);
+  --shadow-add-btn:    0 2px 6px rgba(0,0,0,0.18);
+}
+
+/* ===== SEMANTIC HELPERS =================================== */
+
+* { font-family: var(--font-sans); box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  color: var(--dark);
+  background: var(--gris-fond);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1 { font-size: var(--h1-size); font-weight: var(--h1-weight); margin: 0;
+     color: var(--jaune); line-height: 1; }
+h2 { font-size: var(--h2-size); font-weight: var(--h2-weight); margin: 0; }
+h3 { font-size: var(--h3-size); font-weight: var(--h3-weight); margin: 0;
+     text-transform: none; }
+h4 { font-size: var(--h4-size); font-weight: var(--h4-weight); margin: 0;
+     text-transform: uppercase; letter-spacing: 0.1em; }
+h5 { font-size: var(--h5-size); font-weight: var(--h5-weight); margin: 0; }
+h6 { font-size: var(--h6-size); font-weight: var(--h6-weight); margin: 0;
+     font-style: italic; }
+
+/* « entête » — titre de bloc / catégorie (PAS uppercase) */
+.entete {
+  font-size: var(--h3-size); font-weight: var(--h3-weight);
+  text-transform: none; padding: 0.5rem 1rem;
+}
+
+/* Légendes de colonnes (thead) — 11px LOWERCASE weight 600 */
+.legende, thead, thead tr, thead th, th {
+  font-size: var(--th-size) !important;
+  font-weight: var(--th-weight) !important;
+  text-transform: lowercase !important;
+  letter-spacing: normal !important;
+}
+
+/* Label de formulaire — lowercase 11px gris */
+.label-system {
+  display: block; font-size: 11px; font-weight: 600;
+  text-transform: lowercase; color: var(--text-secondary-50);
+  margin-bottom: 4px;
+}
+
+/* « Bloc contenu » — panneau sombre V1 sous PageHeader */
+.bloc-contenu {
+  background-color: var(--overlay-dark-20);
+  border-radius: var(--radius-card);
+  margin: 16px 20px 20px;
+}

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>FLEX — UI kit</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="../../assets/flex-f-jaune.svg">
+
+  <!-- React + Babel pinned -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Components in dependency order -->
+  <script type="text/babel" src="Icons.jsx"></script>
+  <script type="text/babel" src="Primitives.jsx"></script>
+  <script type="text/babel" src="Sidebar.jsx"></script>
+  <script type="text/babel" src="Dashboard.jsx"></script>
+  <script type="text/babel" src="Inventaire.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    (function () {
+      const Icons = window.FlexIcons;
+      const NAV_ITEMS = [
+        { id: 'inventaire', icon: Icons.Tag,      label: 'Inventaire', badgeVariant: 'vert' },
+        { id: 'ventes',     icon: Icons.Banknote, label: 'Ventes',     badgeVariant: 'rouge' },
+        { id: 'services',   icon: Icons.Wrench,   label: 'Services' },
+        { id: 'pieces',     icon: Icons.Box,      label: 'Pièces',     badgeVariant: 'rouge' },
+        { id: 'clients',    icon: Icons.Contact,  label: 'Clients' },
+      ];
+
+      const BADGES = { inventaire: 6, ventes: 1, pieces: 51 };
+
+      function App() {
+        const [screen, setScreen] = React.useState('inventaire');
+        return (
+          <div className="app-shell">
+            <Sidebar
+              items={NAV_ITEMS}
+              activeId={screen}
+              onNavigate={setScreen}
+              badges={BADGES}
+            />
+            <div className="panel">
+              {screen === 'inventaire' && <Inventaire onOpen={() => setScreen('bdt')}/>}
+              {screen === 'ventes' && <Placeholder title="Ventes" eyebrow="caisse POS"/>}
+              {screen === 'services' && <Placeholder title="Services" eyebrow="forfaits + à la carte"/>}
+              {screen === 'pieces' && <Placeholder title="Pièces" eyebrow="catalogue + stock"/>}
+              {screen === 'clients' && <Placeholder title="Clients" eyebrow="annuaire"/>}
+              {screen === 'bdt' && <Dashboard onOpen={() => setScreen('inventaire')}/>}
+            </div>
+          </div>
+        );
+      }
+
+      function Placeholder({ title, eyebrow }) {
+        return (
+          <React.Fragment>
+            <PageHeader eyebrow={eyebrow} title={title}/>
+            <div className="main">
+              <div className="bloc" style={{ padding: 40, textAlign: 'center' }}>
+                <p style={{ color:'rgba(255,255,255,0.6)', fontStyle: 'italic', fontSize: 14, margin: 0 }}>
+                  Écran de démonstration — voir Inventaire/Dashboard pour les patterns complets.
+                </p>
+              </div>
+            </div>
+          </React.Fragment>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+    })();
+  </script>
+</body>
+</html>
