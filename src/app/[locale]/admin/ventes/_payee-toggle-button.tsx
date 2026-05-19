@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircleIcon } from '@/components/icons';
 import { toast } from 'sonner';
 import { markVentePayeeAction } from './actions';
 
@@ -33,7 +33,7 @@ export function PayeeToggleButton({ venteId, initialPaid, facture }: Props) {
         className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--text-secondary-35)] opacity-40"
         aria-label="Marquer payée (indisponible)"
       >
-        <CheckCircle2 size={14} aria-hidden />
+        <CheckCircleIcon width={14} height={14} aria-hidden />
       </button>
     );
   }
@@ -66,7 +66,7 @@ export function PayeeToggleButton({ venteId, initialPaid, facture }: Props) {
           : 'inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/10 text-[var(--text-secondary-70)] hover:bg-black/20 disabled:opacity-60'
       }
     >
-      <CheckCircle2 size={14} aria-hidden />
+      <CheckCircleIcon width={14} height={14} aria-hidden />
     </button>
   );
 }

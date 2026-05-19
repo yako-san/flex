@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Archive } from 'lucide-react';
+import { ArchiveIcon } from '@/components/icons';
 import { ArchiveChoiceDialog, type ArchiveChoice } from '@/components/domain/archive-choice-dialog';
 import { toast } from '@/lib/utils/toast';
 import { archiveBdtWithChoiceAction } from '../../bdcs/actions';
@@ -42,7 +42,7 @@ export function ArchiveBdtButton({ bdcId, resteAPayer }: Props) {
         disabled={pending}
         className="inline-flex h-8 items-center gap-1 rounded-full bg-[var(--jaune)] px-3 text-xs font-bold uppercase tracking-wider text-black transition-colors hover:bg-[var(--jaune-h)] disabled:opacity-50"
       >
-        <Archive size={14} />
+        <ArchiveIcon width={14} height={14} />
         {pending ? '…' : 'Archiver'}
       </button>
       <ArchiveChoiceDialog open={open} onOpenChange={setOpen} onChoose={onChoose} resteAPayer={resteAPayer} />

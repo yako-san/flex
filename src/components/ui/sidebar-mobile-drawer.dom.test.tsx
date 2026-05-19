@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { Bike, Users } from 'lucide-react';
+import { BikeIcon, UsersIcon } from '@/components/icons';
 import { SidebarMobileDrawer } from './sidebar-mobile-drawer';
 import type { SidebarItem } from './sidebar';
 
@@ -17,8 +17,8 @@ afterEach(() => {
 });
 
 const ITEMS: SidebarItem[] = [
-  { href: '/fr-CA/admin', icon: Bike, label: 'Dashboard' },
-  { href: '/fr-CA/admin/clients', icon: Users, label: 'Clients' },
+  { href: '/fr-CA/admin', icon: BikeIcon, label: 'Dashboard' },
+  { href: '/fr-CA/admin/clients', icon: UsersIcon, label: 'Clients' },
 ];
 
 describe('SidebarMobileDrawer', () => {
@@ -121,7 +121,7 @@ describe('SidebarMobileDrawer', () => {
     render(
       <SidebarMobileDrawer
         items={[
-          { href: '/x', icon: Bike, label: 'BDT', badge: 5, badgeVariant: 'rouge' },
+          { href: '/x', icon: BikeIcon, label: 'BDT', badge: 5, badgeVariant: 'rouge' },
         ]}
       />,
     );

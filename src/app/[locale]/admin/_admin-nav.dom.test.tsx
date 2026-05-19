@@ -47,9 +47,9 @@ describe('AdminSidebar', () => {
     expect(screen.getByText('Clients')).toBeTruthy();
   });
 
-  it("logo FLEX REV présent comme déclencheur du popover secondaire", () => {
+  it("logo FLEX REV présent comme déclencheur du popover", () => {
     render(<AdminSidebar locale="fr-CA" />);
-    // Le bouton porte un aria-label explicite pour l'a11y.
-    expect(screen.getByLabelText('Menu Paramètres et Outils')).toBeTruthy();
+    // Le bouton logo porte un aria-label décrivant le tenant courant.
+    expect(screen.getByLabelText('FLEX/REV — yako.cyclo')).toBeTruthy();
   });
 });

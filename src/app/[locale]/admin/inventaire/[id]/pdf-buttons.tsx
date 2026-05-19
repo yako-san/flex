@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { FileText, Receipt } from 'lucide-react';
+import { FileTextIcon, ReceiptIcon } from '@/components/icons';
 import { customConfirm } from '@/components/ui/confirm-dialog';
 import { toast } from '@/lib/utils/toast';
 import { emitFactureAction } from './emit-facture-action';
@@ -32,7 +32,7 @@ export function PdfButtons({
         rel="noopener noreferrer"
         className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-[var(--gris-bord)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary-70)] no-underline transition-colors hover:border-[var(--jaune)] hover:bg-[var(--jaune)]/10"
       >
-        <FileText size={14} />
+        <FileTextIcon width={14} height={14} />
         Évaluation (PDF)
       </a>
 
@@ -43,7 +43,7 @@ export function PdfButtons({
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--st-approuve-bg)] px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--st-approuve-fg)] no-underline transition-opacity hover:opacity-90"
         >
-          <Receipt size={14} />
+          <ReceiptIcon width={14} height={14} />
           Facture {emitted.numero}
         </a>
       ) : (
@@ -109,7 +109,7 @@ function FactureEmitForm({
         onClick={handleClick}
         className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--st-approuve-bg)] px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--st-approuve-fg)] transition-opacity hover:opacity-90 disabled:opacity-50"
       >
-        <Receipt size={14} />
+        <ReceiptIcon width={14} height={14} />
         {pending ? 'Émission…' : 'Émettre la facture'}
       </button>
     </div>

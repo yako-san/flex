@@ -1,4 +1,4 @@
-import { Plus, QrCode, Search } from 'lucide-react';
+import { PlusIcon, QrCodeIcon, SearchIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { AddButton, UtilButton, IconButton } from '@/components/ui/icon-button';
 import { Pill } from '@/components/ui/pill';
@@ -67,9 +67,9 @@ export function UiKitContent({ eyebrow = 'dev · qa visuelle', locale = 'fr-CA' 
         subline="Vitrine des primitives Flex V2 — palette V1, tokens CSS variables, multi-tenant ready."
         actions={
           <>
-            <UtilButton aria-label="Rechercher"><Search size={16} /></UtilButton>
+            <UtilButton aria-label="Rechercher"><SearchIcon width={16} height={16} /></UtilButton>
             <Button variant="outline" size="sm">↓ Export</Button>
-            <AddButton aria-label="Ajouter"><Plus size={20} /></AddButton>
+            <AddButton aria-label="Ajouter"><PlusIcon width={20} height={20} /></AddButton>
           </>
         }
       />
@@ -103,19 +103,19 @@ export function UiKitContent({ eyebrow = 'dev · qa visuelle', locale = 'fr-CA' 
       <Section title="IconButton (AddButton 40×40 jaune+shadow / UtilButton 32×32 gris)">
         <div className="flex items-center gap-4">
           <div className="flex flex-col items-center gap-2">
-            <AddButton aria-label="Ajouter"><Plus size={24} /></AddButton>
+            <AddButton aria-label="Ajouter"><PlusIcon width={24} height={24} /></AddButton>
             <span className="text-xs text-[var(--text-secondary-50)]">add (jaune)</span>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <IconButton tone="addOutline" aria-label="Ajouter (outline)"><Plus size={24} /></IconButton>
+            <IconButton tone="addOutline" aria-label="Ajouter (outline)"><PlusIcon width={24} height={24} /></IconButton>
             <span className="text-xs text-[var(--text-secondary-50)]">addOutline</span>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <UtilButton aria-label="Rechercher"><Search size={16} /></UtilButton>
+            <UtilButton aria-label="Rechercher"><SearchIcon width={16} height={16} /></UtilButton>
             <span className="text-xs text-[var(--text-secondary-50)]">util (32×32)</span>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <UtilButton aria-label="Étiquettes"><QrCode size={16} /></UtilButton>
+            <UtilButton aria-label="Étiquettes"><QrCodeIcon width={16} height={16} /></UtilButton>
             <span className="text-xs text-[var(--text-secondary-50)]">util qr</span>
           </div>
         </div>
@@ -375,7 +375,7 @@ export function UiKitContent({ eyebrow = 'dev · qa visuelle', locale = 'fr-CA' 
           <li>Tous les composants consomment des CSS variables — un Workshop.theme JSON peut surcharger sans rebuild.</li>
           <li>Radix UI primitives sous le capot (Dialog, etc.) — accessibilité ARIA + clavier garantie.</li>
           <li>CVA pour variants typés strict — autocomplete IDE complet sur Pill / Button.</li>
-          <li>Lucide icons (mapping V1 Heroicons → Lucide documenté dans v1-v2-parity.md).</li>
+          <li>Heroicons 24/outline (stroke 1.5), accessibles via <code>@/components/icons</code>.</li>
         </ul>
       </Section>
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Mail, Send, FileEdit, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { MailIcon, SendIcon, FileEditIcon, AlertCircleIcon, CheckCircleIcon } from '@/components/icons';
 import {
   sendEvalEmailAction,
   sendFactureEmailAction,
@@ -46,7 +46,7 @@ export function EmailButtons({
   if (!clientCourriel) {
     return (
       <p className="mt-2 flex items-center gap-1 text-xs italic text-[var(--text-secondary-60)]">
-        <AlertCircle size={12} />
+        <AlertCircleIcon width={12} height={12} />
         Pas de courriel client — saisis-le sur la fiche client pour activer l&apos;envoi.
       </p>
     );
@@ -105,14 +105,14 @@ export function EmailButtons({
                 active={mode === 'draft'}
                 onClick={() => setMode('draft')}
                 title={`Crée un brouillon dans ${gmailEmail ?? 'Gmail'} — tu vérifies + envoies manuellement`}
-                icon={<FileEdit size={12} />}
+                icon={<FileEditIcon width={12} height={12} />}
                 label="Brouillon Gmail"
               />
               <ModePill
                 active={mode === 'send'}
                 onClick={() => setMode('send')}
                 title="Envoi direct via SMTP/Resend (sans relecture)"
-                icon={<Send size={12} />}
+                icon={<SendIcon width={12} height={12} />}
                 label="Envoyer maintenant"
               />
             </div>
@@ -132,7 +132,7 @@ export function EmailButtons({
             disabled={pending}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--jaune)] px-4 py-2 text-xs font-bold uppercase tracking-wider text-black transition-colors hover:bg-[var(--jaune-h)] disabled:opacity-50"
           >
-            {mode === 'draft' ? <FileEdit size={14} /> : <Send size={14} />}
+            {mode === 'draft' ? <FileEditIcon width={14} height={14} /> : <SendIcon width={14} height={14} />}
             {pending
               ? mode === 'draft' ? 'Création brouillon…' : 'Envoi…'
               : mode === 'draft' ? 'Créer le brouillon Gmail' : 'Envoyer maintenant'}
@@ -142,13 +142,13 @@ export function EmailButtons({
 
       {result?.error ? (
         <div className="flex items-center gap-1 rounded-xl border border-[var(--rouge)]/30 bg-[var(--rouge)]/10 px-3 py-1.5 text-xs text-[var(--rouge)]">
-          <AlertCircle size={12} />
+          <AlertCircleIcon width={12} height={12} />
           {result.error}
         </div>
       ) : null}
       {result?.success ? (
         <div className="flex items-center gap-1 rounded-xl border border-[var(--st-approuve-bg)] bg-[var(--st-approuve-bg)]/30 px-3 py-1.5 text-xs text-[var(--st-approuve-fg)]">
-          <CheckCircle2 size={12} />
+          <CheckCircleIcon width={12} height={12} />
           {result.mode === 'draft'
             ? 'Brouillon créé dans Gmail. Ouvre Gmail pour vérifier et envoyer.'
             : 'Courriel envoyé.'}
@@ -181,7 +181,7 @@ function EmailTriggerBtn({
             : 'border-[var(--gris-bord)] text-[var(--text-secondary-70)] hover:border-[var(--jaune)] hover:bg-[var(--jaune)]/10'
       }`}
     >
-      <Mail size={14} />
+      <MailIcon width={14} height={14} />
       {label}
     </button>
   );

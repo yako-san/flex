@@ -26,13 +26,12 @@ describe('SidebarPreview', () => {
     expect(screen.getByText('49')).toBeTruthy();
   });
 
-  it("header 'F/V' et version visible", () => {
+  it("version label visible", () => {
     render(<SidebarPreview />);
-    expect(screen.getByText('F/V')).toBeTruthy();
-    expect(screen.getByText('v2.0.0')).toBeTruthy();
+    expect(screen.getByText(/v2\.0\.0/)).toBeTruthy();
   });
 
-  it("footer 'yk' visible", () => {
+  it("loginInitial 'yk' visible", () => {
     render(<SidebarPreview />);
     expect(screen.getByText('yk')).toBeTruthy();
   });

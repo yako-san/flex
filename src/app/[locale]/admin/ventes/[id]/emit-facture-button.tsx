@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Receipt } from 'lucide-react';
+import { ReceiptIcon } from '@/components/icons';
 import { customConfirm } from '@/components/ui/confirm-dialog';
 import { toast } from '@/lib/utils/toast';
 import { emitVenteFactureAction } from '../actions';
@@ -53,7 +53,7 @@ export function EmitFactureButton({ venteId, disabled }: { venteId: string; disa
         onClick={handleClick}
         className="inline-flex h-8 items-center gap-1 rounded-full bg-[var(--st-approuve-bg)] px-3 text-xs font-bold uppercase tracking-wider text-black transition-opacity hover:opacity-90 disabled:opacity-50"
       >
-        <Receipt size={14} />
+        <ReceiptIcon width={14} height={14} />
         {pending ? '…' : 'Émettre'}
       </button>
     </div>

@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2 } from 'lucide-react';
+import { TrashIcon } from '@/components/icons';
 import { customConfirm } from '@/components/ui/confirm-dialog';
 import { toast } from '@/lib/utils/toast';
 import { deleteVenteAction } from '../actions';
@@ -37,7 +37,7 @@ export function DeleteVenteButton({ venteId }: { venteId: string }) {
       disabled={pending}
       className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-[var(--rouge)] px-3 text-xs font-semibold uppercase tracking-wider text-[var(--rouge)] transition-colors hover:bg-[var(--rouge)]/10 disabled:opacity-50"
     >
-      <Trash2 size={14} />
+      <TrashIcon width={14} height={14} />
       {pending ? '…' : 'Supprimer'}
     </button>
   );

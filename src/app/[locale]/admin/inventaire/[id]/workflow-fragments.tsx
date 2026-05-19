@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Loader2, AlertCircle } from 'lucide-react';
+import { CheckIcon, ArrowPathIcon, AlertCircleIcon } from '@/components/icons';
 import {
   patchBdcAvanceAction,
   patchBdcNotesAction,
@@ -76,9 +76,9 @@ function AutosaveBadge({ status, label }: { status: AutosaveStatus; label: strin
             status === 'error' && 'text-[var(--rouge)]',
           )}
         >
-          {status === 'saving' ? <Loader2 size={11} className="animate-spin" /> : null}
-          {status === 'saved' ? <Check size={11} /> : null}
-          {status === 'error' ? <AlertCircle size={11} /> : null}
+          {status === 'saving' ? <ArrowPathIcon width={11} height={11} className="animate-spin" /> : null}
+          {status === 'saved' ? <CheckIcon width={11} height={11} /> : null}
+          {status === 'error' ? <AlertCircleIcon width={11} height={11} /> : null}
           {status === 'saving' ? 'Enreg.' : status === 'saved' ? 'OK' : 'Err'}
         </span>
       )}

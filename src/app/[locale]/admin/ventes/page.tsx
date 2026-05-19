@@ -1,6 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { Prisma } from '@prisma/client';
-import { Eye, FileText } from 'lucide-react';
+import { EyeIcon, FileTextIcon } from '@/components/icons';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
@@ -144,12 +144,12 @@ export default async function VentesPage({ params, searchParams }: Props) {
                       <ActionIcon
                         href={`/${locale}/admin/ventes/${v.id}`}
                         title="Ouvrir la vente"
-                        icon={<Eye size={14} />}
+                        icon={<EyeIcon width={14} height={14} />}
                       />
                       <ActionIcon
                         href={facture ? `/api/admin/factures/${v.id}/pdf` : undefined}
                         title={facture ? 'PDF facture' : 'PDF — disponible une fois facturée'}
-                        icon={<FileText size={14} />}
+                        icon={<FileTextIcon width={14} height={14} />}
                         disabled={!facture}
                         target="_blank"
                       />

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Archive } from 'lucide-react';
+import { ArchiveIcon } from '@/components/icons';
 import { toast } from 'sonner';
 import { customConfirm } from '@/components/ui/confirm-dialog';
 import { archiveVenteAction } from './actions';
@@ -13,7 +13,7 @@ type Props = {
 };
 
 /**
- * Bouton icône Archive — soft-delete d'une vente directe.
+ * Bouton icône ArchiveIcon — soft-delete d'une vente directe.
  * Cluster 4 item m : autorisé uniquement si facturée ET payée.
  *
  * 3 états :
@@ -33,7 +33,7 @@ export function ArchiveVenteButton({ venteId, facture, paid }: Props) {
         className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--text-secondary-35)] opacity-40"
         aria-label="Archiver (brouillon)"
       >
-        <Archive size={14} aria-hidden />
+        <ArchiveIcon width={14} height={14} aria-hidden />
       </button>
     );
   }
@@ -47,7 +47,7 @@ export function ArchiveVenteButton({ venteId, facture, paid }: Props) {
         className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--text-secondary-35)] opacity-40"
         aria-label="Archiver (paiement requis)"
       >
-        <Archive size={14} aria-hidden />
+        <ArchiveIcon width={14} height={14} aria-hidden />
       </button>
     );
   }
@@ -80,7 +80,7 @@ export function ArchiveVenteButton({ venteId, facture, paid }: Props) {
       aria-label="Archiver la vente"
       className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/10 text-[var(--text-secondary-70)] hover:bg-black/20 disabled:opacity-60"
     >
-      <Archive size={14} aria-hidden />
+      <ArchiveIcon width={14} height={14} aria-hidden />
     </button>
   );
 }

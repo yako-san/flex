@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { Bike, Users } from 'lucide-react';
+import { BikeIcon, UsersIcon } from '@/components/icons';
 import { Sidebar, type SidebarItem } from './sidebar';
 
 // next/navigation usePathname est utilisé par Sidebar pour marquer l'item actif.
@@ -15,84 +15,74 @@ afterEach(() => {
 });
 
 const ITEMS: SidebarItem[] = [
-  { href: '/fr-CA/admin', icon: Bike, label: 'Dashboard' },
+  { href: '/fr-CA/admin', icon: BikeIcon, label: 'Dashboard' },
   {
     href: '/fr-CA/admin/clients',
     matchPrefix: '/fr-CA/admin/clients',
-    icon: Users,
+    icon: UsersIcon,
     label: 'Clients',
+    separatorBefore: true,
   },
 ];
 
-describe('Sidebar (layout vertical V1)', () => {
+describe('Sidebar (refonte design-system 2026-05-19)', () => {
   it('rend <aside> avec aria-label "Navigation principale"', () => {
-    render(<Sidebar items={ITEMS} />);
+    render(<Sidebar items={ITEMS} popoverItems={[]} />);
     expect(screen.getByLabelText('Navigation principale')).toBeTruthy();
   });
 
-  it('rend un lien <a> par item', () => {
-    render(<Sidebar items={ITEMS} />);
+  it('rend un lien <a> par item (popover désactivé)', () => {
+    render(<Sidebar items={ITEMS} popoverItems={[]} />);
     expect(screen.getAllByRole('link')).toHaveLength(2);
   });
 
-  it('le label de chaque item est rendu (visible en permanence en V1 vertical)', () => {
-    render(<Sidebar items={ITEMS} />);
+  it('le label de chaque item est rendu en permanence (layout vertical)', () => {
+    render(<Sidebar items={ITEMS} popoverItems={[]} />);
     expect(screen.getByText('Dashboard')).toBeTruthy();
     expect(screen.getByText('Clients')).toBeTruthy();
   });
 
   it("aria-current='page' sur l'item dont matchPrefix correspond", () => {
     mockedPathname = '/fr-CA/admin/clients';
-    render(<Sidebar items={ITEMS} />);
+    render(<Sidebar items={ITEMS} popoverItems={[]} />);
     const links = screen.getAllByRole('link');
     expect(links[1]!.getAttribute('aria-current')).toBe('page');
-    // Dashboard a startsWith '/fr-CA/admin' qui matche aussi '/fr-CA/admin/clients'
+    // Dashboard a startsWith '/fr-CA/admin' qui matche aussi '/fr-CA/admin/clients'.
     expect(links[0]!.getAttribute('aria-current')).toBe('page');
   });
 
   it("aria-current='page' avec sous-route (ex /admin/clients/abc)", () => {
     mockedPathname = '/fr-CA/admin/clients/cli_123';
-    render(<Sidebar items={ITEMS} />);
+    render(<Sidebar items={ITEMS} popoverItems={[]} />);
     expect(screen.getAllByRole('link')[1]!.getAttribute('aria-current')).toBe('page');
   });
 
-  it('largeur 100px par défaut (collapsed)', () => {
-    render(<Sidebar items={ITEMS} />);
-    const aside = screen.getByLabelText('Navigation principale');
-    expect(aside.className).toContain('w-[var(--sidebar-w-collapsed)]');
-    expect(aside.getAttribute('data-expanded')).toBe('false');
+  it('data-expanded="false" par défaut (collapsed)', () => {
+    const { container } = render(<Sidebar items={ITEMS} popoverItems={[]} />);
+    const wrapper = container.querySelector('[data-expanded]') as HTMLElement;
+    expect(wrapper.getAttribute('data-expanded')).toBe('false');
   });
 
-  it('expandedByDefault=true → 200px expanded (pattern Dashboard V1)', () => {
-    render(<Sidebar items={ITEMS} expandedByDefault />);
-    const aside = screen.getByLabelText('Navigation principale');
-    expect(aside.className).toContain('w-[var(--sidebar-w-expanded)]');
-    expect(aside.getAttribute('data-expanded')).toBe('true');
+  it('expandedByDefault=true → data-expanded="true" (pattern Dashboard V1)', () => {
+    const { container } = render(
+      <Sidebar items={ITEMS} popoverItems={[]} expandedByDefault />,
+    );
+    const wrapper = container.querySelector('[data-expanded]') as HTMLElement;
+    expect(wrapper.getAttribute('data-expanded')).toBe('true');
   });
 
-  it('hover sur aside → data-expanded passe à true (overlay 200px)', () => {
-    render(<Sidebar items={ITEMS} />);
-    const aside = screen.getByLabelText('Navigation principale');
-    fireEvent.mouseEnter(aside);
-    expect(aside.getAttribute('data-expanded')).toBe('true');
-    expect(aside.className).toContain('absolute');
-    fireEvent.mouseLeave(aside);
-    expect(aside.getAttribute('data-expanded')).toBe('false');
-  });
-
-  it('header slot rendu', () => {
-    render(<Sidebar items={ITEMS} header={<div data-testid="logo">F</div>} />);
-    expect(screen.getByTestId('logo')).toBeTruthy();
-  });
-
-  it('footer slot rendu', () => {
-    render(<Sidebar items={ITEMS} footer={<div data-testid="userbtn">U</div>} />);
-    expect(screen.getByTestId('userbtn')).toBeTruthy();
+  it('hover sur le conteneur → data-expanded passe à true (overlay)', () => {
+    const { container } = render(<Sidebar items={ITEMS} popoverItems={[]} />);
+    const wrapper = container.querySelector('[data-expanded]') as HTMLElement;
+    fireEvent.mouseEnter(wrapper);
+    expect(wrapper.getAttribute('data-expanded')).toBe('true');
+    fireEvent.mouseLeave(wrapper);
+    expect(wrapper.getAttribute('data-expanded')).toBe('false');
   });
 
   it('badge.variant jaune (default) → bg-black text-jaune', () => {
     const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 5 }];
-    render(<Sidebar items={items} />);
+    render(<Sidebar items={items} popoverItems={[]} />);
     const badge = screen.getByLabelText('5 Dashboard');
     expect(badge.className).toContain('bg-black');
     expect(badge.className).toContain('text-[var(--jaune)]');
@@ -100,7 +90,7 @@ describe('Sidebar (layout vertical V1)', () => {
 
   it('badge.variant vert → bg --st-on-bench-bg', () => {
     const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 3, badgeVariant: 'vert' }];
-    render(<Sidebar items={items} />);
+    render(<Sidebar items={items} popoverItems={[]} />);
     expect(screen.getByLabelText('3 Dashboard').className).toContain(
       'bg-[var(--st-on-bench-bg)]',
     );
@@ -108,7 +98,7 @@ describe('Sidebar (layout vertical V1)', () => {
 
   it('badge.variant rouge → bg --rouge text-white', () => {
     const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 2, badgeVariant: 'rouge' }];
-    render(<Sidebar items={items} />);
+    render(<Sidebar items={items} popoverItems={[]} />);
     const cls = screen.getByLabelText('2 Dashboard').className;
     expect(cls).toContain('bg-[var(--rouge)]');
     expect(cls).toContain('text-white');
@@ -116,42 +106,81 @@ describe('Sidebar (layout vertical V1)', () => {
 
   it("badge >= 100 affiché '99+'", () => {
     const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 234 }];
-    render(<Sidebar items={items} />);
+    render(<Sidebar items={items} popoverItems={[]} />);
     expect(screen.getByText('99+')).toBeTruthy();
   });
 
-  it('badge = 0 → pas de badge affiché', () => {
+  it('badge = 0 → pas de badge', () => {
     const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 0 }];
-    render(<Sidebar items={items} />);
+    render(<Sidebar items={items} popoverItems={[]} />);
     expect(screen.queryByLabelText('0 Dashboard')).toBeNull();
   });
 
   it('badge null → pas de badge', () => {
     const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: null }];
-    render(<Sidebar items={items} />);
+    render(<Sidebar items={items} popoverItems={[]} />);
     expect(screen.queryByLabelText(/\d+ Dashboard/)).toBeNull();
   });
 
-  it('hidden md:flex rounded-[50px] (sidebar desktop pill V1)', () => {
-    render(<Sidebar items={ITEMS} />);
-    const aside = screen.getByLabelText('Navigation principale');
-    const cls = aside.className;
-    expect(cls).toContain('hidden');
-    expect(cls).toContain('md:flex');
-    expect(cls).toContain('rounded-[50px]');
-  });
-
-  it('séparateurs <hr> entre items (V1 visual)', () => {
-    const { container } = render(<Sidebar items={ITEMS} />);
-    // 2 items → 1 séparateur entre eux
+  it('séparateur <hr> rendu si separatorBefore=true', () => {
+    const { container } = render(<Sidebar items={ITEMS} popoverItems={[]} />);
+    // ITEMS[1] a separatorBefore: true → 1 séparateur attendu.
     expect(container.querySelectorAll('hr')).toHaveLength(1);
   });
 
-  it('badge en overlay sur l\'icône (top-right, pas en ligne)', () => {
-    const items: SidebarItem[] = [{ ...ITEMS[0]!, badge: 7, badgeVariant: 'vert' }];
-    render(<Sidebar items={items} />);
-    const badge = screen.getByLabelText('7 Dashboard');
-    // Position absolute pour overlay
-    expect(badge.className).toContain('absolute');
+  it('pas de séparateur sans separatorBefore', () => {
+    const items: SidebarItem[] = [
+      { href: '/a', icon: BikeIcon, label: 'A' },
+      { href: '/b', icon: UsersIcon, label: 'B' },
+    ];
+    const { container } = render(<Sidebar items={items} popoverItems={[]} />);
+    expect(container.querySelectorAll('hr')).toHaveLength(0);
+  });
+
+  it('popover désactivé si popoverItems vide', () => {
+    render(<Sidebar items={ITEMS} popoverItems={[]} />);
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('popover par défaut rendu mais caché (5 items V1)', () => {
+    render(<Sidebar items={ITEMS} />);
+    const menu = screen.getByRole('menu', { hidden: true });
+    expect(menu).toBeTruthy();
+    // 5 items : Dashboard / Archives / Dépenses / Paramètres / Aide.
+    expect(menu.querySelectorAll('a').length).toBe(5);
+  });
+
+  it('versionLabel rendu uniquement en mode expand', () => {
+    render(
+      <Sidebar
+        items={ITEMS}
+        popoverItems={[]}
+        versionLabel="v2.0"
+        expandedByDefault
+      />,
+    );
+    expect(screen.getByText('v2.0')).toBeTruthy();
+  });
+
+  it('loginInitial → pastille Google rendue (avec dot online)', () => {
+    render(
+      <Sidebar items={ITEMS} popoverItems={[]} loginInitial="y" loginTitle="yako@x" />,
+    );
+    expect(screen.getByTitle('yako@x').textContent).toContain('y');
+  });
+
+  it('footer custom override pastille Google', () => {
+    render(
+      <Sidebar
+        items={ITEMS}
+        popoverItems={[]}
+        loginInitial="y"
+        loginTitle="yako@x"
+        footer={<div data-testid="userbtn">U</div>}
+      />,
+    );
+    expect(screen.getByTestId('userbtn')).toBeTruthy();
+    // La pastille Google (avec title=loginTitle) n'est PAS rendue.
+    expect(screen.queryByTitle('yako@x')).toBeNull();
   });
 });

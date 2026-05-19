@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
-import { Package } from 'lucide-react';
+import { PackageIcon } from '@/components/icons';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
@@ -47,7 +47,7 @@ export default async function ForfaitsPage({ params }: Props) {
           <div className="overflow-x-auto rounded-2xl bg-white/85 shadow-sm">
             <header className="flex items-center justify-between bg-[var(--jaune)] px-4 py-2 text-sm font-semibold text-black">
               <span className="flex items-center gap-2">
-                <Package size={16} />
+                <PackageIcon width={16} height={16} />
                 <span>Forfaits</span>
                 <span className="text-xs opacity-60">{forfaits.length}</span>
               </span>

@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2 } from 'lucide-react';
+import { TrashIcon } from '@/components/icons';
 import { customConfirm } from '@/components/ui/confirm-dialog';
 import { toast } from '@/lib/utils/toast';
 import { deleteVeloAction } from '../actions';
@@ -48,7 +48,7 @@ export function DeleteVeloButton({ veloId, veloLabel, hasBdcs }: Props) {
       title={hasBdcs ? 'Le vélo a des BDT associés' : 'Soft delete'}
       className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-[var(--rouge)] px-3 text-xs font-semibold uppercase tracking-wider text-[var(--rouge)] transition-colors hover:bg-[var(--rouge)]/10 disabled:cursor-not-allowed disabled:border-[var(--gris-bord)] disabled:text-[var(--text-secondary-50)] disabled:hover:bg-transparent"
     >
-      <Trash2 size={14} />
+      <TrashIcon width={14} height={14} />
       {pending ? 'Suppression…' : 'Supprimer'}
     </button>
   );
