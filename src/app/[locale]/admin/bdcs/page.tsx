@@ -15,13 +15,30 @@ type Props = {
   searchParams: Promise<{ q?: string; archive?: string; refuse?: string }>;
 };
 
-// Ordre V1 : RV → REÇU → EVAL → ON_BENCH → … → LIVRE. UNE seule table continue
-// (pas de sections groupées avec headers comme V2 historique). La séparation
-// visuelle vient des couleurs de fond par statut.
+// Ordre V1 : RV → REÇU → EVAL → ON_BENCH → … → LIVRE.
 const STATUS_ORDER: Record<VeloStatus, number> = {
   RV: 0, RECU: 1, EVAL: 2, EN_ATTENTE: 3, APPROUVE: 4, ON_BENCH: 5,
   CTRL_QLTE: 6, FINI: 7, FACTURER: 8, FACTURE: 9, LIVRE: 10,
 };
+
+// Regroupement V1 — 5 buckets séparés visuellement. « Staff » est une
+// exception transversale : tout BDT dont le client est un membre actif
+// de l'atelier (jointure `Client.courriel` ↔ `User.email` via
+// `WorkshopMember`) tombe dans le bucket Staff peu importe son statut.
+type GroupKey = 'nouveau' | 'en-cours' | 'termine' | 'livre' | 'staff';
+const GROUP_OF_STATUS: Record<VeloStatus, Exclude<GroupKey, 'staff'>> = {
+  RV: 'nouveau', RECU: 'nouveau', EVAL: 'nouveau',
+  EN_ATTENTE: 'en-cours', APPROUVE: 'en-cours', ON_BENCH: 'en-cours',
+  CTRL_QLTE: 'termine', FINI: 'termine', FACTURER: 'termine', FACTURE: 'termine',
+  LIVRE: 'livre',
+};
+const GROUP_DEFS: Array<{ key: GroupKey; label: string }> = [
+  { key: 'nouveau',  label: 'nouveau' },
+  { key: 'en-cours', label: 'en cours' },
+  { key: 'termine',  label: 'terminé' },
+  { key: 'livre',    label: 'livré' },
+  { key: 'staff',    label: 'staff' },
+];
 
 // État dérivé du workflow — texte affiché dans la colonne « État » V1.
 // Quand un mécano est assigné à l'étape courante, on l'affiche ; sinon on
@@ -106,7 +123,7 @@ export default async function BdcsPage({ params, searchParams }: Props) {
           couleur: true,
           status: true,
           date2: true,
-          client: { select: { id: true, prenom: true, nom: true } },
+          client: { select: { id: true, prenom: true, nom: true, courriel: true } },
           marque: { select: { nom: true } },
           evalMecano: { select: { id: true, surnom: true } },
           mecaMecano: { select: { id: true, surnom: true } },
@@ -117,12 +134,36 @@ export default async function BdcsPage({ params, searchParams }: Props) {
   });
 
   // Tri V1 : par priorité de statut (RV en haut, LIVRE en bas), puis par
-  // date desc à l'intérieur de chaque tranche. UNE seule table continue.
+  // date desc à l'intérieur de chaque tranche.
   bdcs.sort((a, b) => {
     const ord = STATUS_ORDER[a.velo.status] - STATUS_ORDER[b.velo.status];
     if (ord !== 0) return ord;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
+
+  // Emails des membres actifs de l'atelier — sert à détecter les BDT staff
+  // sans flag dédié en DB. Match insensible à la casse via `@db.Citext`
+  // côté Prisma + normalisation `.trim().toLowerCase()` côté JS.
+  const members = await prisma.workshopMember.findMany({
+    where: { workshopId: workshop.id, deletedAt: null },
+    select: { user: { select: { email: true } } },
+  });
+  const staffEmails = new Set(
+    members
+      .map((m) => m.user.email?.trim().toLowerCase())
+      .filter((e): e is string => Boolean(e)),
+  );
+  const isStaffBdc = (courriel: string | null | undefined): boolean =>
+    Boolean(courriel && staffEmails.has(courriel.trim().toLowerCase()));
+
+  // Bucketisation : staff override tout autre statut.
+  const grouped: Record<GroupKey, typeof bdcs> = {
+    nouveau: [], 'en-cours': [], termine: [], livre: [], staff: [],
+  };
+  for (const b of bdcs) {
+    const key: GroupKey = isStaffBdc(b.velo.client?.courriel) ? 'staff' : GROUP_OF_STATUS[b.velo.status];
+    grouped[key].push(b);
+  }
 
   const dateFmt = new Intl.DateTimeFormat('fr-CA', { year: 'numeric', month: '2-digit', day: '2-digit' });
   const totalShown = bdcs.length;
@@ -172,10 +213,12 @@ export default async function BdcsPage({ params, searchParams }: Props) {
               <span className="text-center">date</span>
             </div>
 
-            {/* Pills lignes V1 — chaque BDT = pill arrondi séparé, coloré
-                selon statut. Spec : pad 10pt, gap 14, mb 6, ID bold 17pt
-                avec pill 9pt inline, date bold 15pt tabular centrée. */}
-            {bdcs.map((b) => {
+            {/* Sections groupées V1 — gap visible entre buckets. Staff
+                toujours en dernier (gris). Sections vides masquées. */}
+            {GROUP_DEFS.map((g, gi) => {
+              const rows = grouped[g.key];
+              if (rows.length === 0) return null;
+              const renderRow = (b: (typeof bdcs)[number]) => {
               const colors = VELO_STATUS_COLORS[b.velo.status];
               const label = VELO_STATUS_LABELS[b.velo.status].fr;
               const eval_ = b.velo.evalMecano?.surnom;
@@ -266,6 +309,15 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                     {b.velo.date2 ? dateFmt.format(b.velo.date2) : '—'}
                   </span>
                 </div>
+              );
+              };
+              return (
+                <section key={g.key} className={gi === 0 ? '' : 'mt-3'}>
+                  <h2 className="px-[10px] pb-1 pt-1 text-[11px] font-semibold lowercase text-white/60">
+                    {g.label} <span className="opacity-70">· {rows.length}</span>
+                  </h2>
+                  {rows.map(renderRow)}
+                </section>
               );
             })}
           </div>
