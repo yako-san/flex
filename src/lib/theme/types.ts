@@ -14,6 +14,15 @@ export type WorkshopTheme = {
   rouge?: string;
   'rouge-h'?: string;
   'gris-bg'?: string;
+  'app-bg'?: string;       // Gris système, fond global AppShell (dark)
+  'app-bg-light'?: string; // Pendant light (override de body.light-mode)
+
+  // Typographie — taille (rem/px) et couleur (hex/rgba) par niveau.
+  'h1-size'?: string; 'h1-color'?: string;
+  'h2-size'?: string; 'h2-color'?: string;
+  'h3-size'?: string; 'h3-color'?: string;
+  'h4-size'?: string; 'h4-color'?: string;
+  'h5-size'?: string; 'h5-color'?: string;
 
   // Statuts vélo (bg + fg)
   'st-rv-bg'?: string;        'st-rv-fg'?: string;
@@ -44,10 +53,19 @@ export type WorkshopTheme = {
 
 const HEX_RE = /^#[0-9a-fA-F]{3,8}$/;
 const RGBA_RE = /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:,\s*[\d.]+\s*)?\)$/;
+// Tailles CSS : px / rem / em uniquement, max 4 chiffres + 2 décimales.
+const SIZE_RE = /^\d{1,4}(\.\d{1,2})?(px|rem|em)$/;
 
 export function isValidColorValue(v: unknown): v is string {
   return typeof v === 'string' && (HEX_RE.test(v) || RGBA_RE.test(v));
 }
+
+export function isValidSizeValue(v: unknown): v is string {
+  return typeof v === 'string' && SIZE_RE.test(v);
+}
+
+// Clés qui acceptent une taille CSS au lieu d'une couleur (white-list).
+const SIZE_KEYS = new Set(['h1-size', 'h2-size', 'h3-size', 'h4-size', 'h5-size']);
 
 export function sanitizeTheme(raw: unknown): WorkshopTheme {
   if (!raw || typeof raw !== 'object') return {};
@@ -55,8 +73,9 @@ export function sanitizeTheme(raw: unknown): WorkshopTheme {
   for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
     if (typeof k !== 'string') continue;
     if (!/^[a-z0-9-]+$/.test(k)) continue;
-    if (!isValidColorValue(v)) continue;
-    out[k] = v;
+    const ok = SIZE_KEYS.has(k) ? isValidSizeValue(v) : isValidColorValue(v);
+    if (!ok) continue;
+    out[k] = v as string;
   }
   return out as WorkshopTheme;
 }

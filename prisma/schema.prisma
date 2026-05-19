@@ -40,6 +40,11 @@ model Workshop {
   // Logo en base64 (PNG). Utilisé pour PDFs + favicon dynamique. Max ~500KB.
   logoBase64 String? @map("logo_base64")
 
+  // Thème CSS par tenant. JSON validé par `src/lib/theme/types.ts` —
+  // chaque clé correspond à une CSS variable (`jaune`, `app-bg`, `h1-size`, etc.)
+  // injectée à runtime via `<TenantThemeStyle>`. Null = palette par défaut.
+  theme Json? @map("theme")
+
   // Multi-tenant : chaque Workshop est lié à une Clerk Organization.
   // Null tant que pas linké (workshop seed pré-Clerk Orgs).
   clerkOrgId String? @unique @map("clerk_org_id")
