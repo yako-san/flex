@@ -114,7 +114,7 @@ export function Sidebar({
       }}
       data-expanded={expanded}
       className={cn(
-        'relative hidden md:flex md:flex-shrink-0',
+        'relative hidden h-full md:flex md:flex-shrink-0',
         overlay && 'absolute inset-y-0 left-0 z-40',
       )}
     >
@@ -151,7 +151,7 @@ export function Sidebar({
 
       <aside
         aria-label="Navigation principale"
-        className="relative z-[1] flex flex-col items-stretch overflow-visible bg-[var(--jaune)] py-5 text-black"
+        className="relative z-[1] flex h-full flex-col items-stretch overflow-visible bg-[var(--jaune)] py-5 text-black"
         style={{
           width: expanded
             ? 'var(--sidebar-w-expanded)'
@@ -254,7 +254,7 @@ export function Sidebar({
                       height: 'var(--sidebar-pastille)',
                     }}
                   >
-                    <Icon className="h-[31px] w-[31px]" aria-hidden />
+                    <Icon className="h-[31px] w-[31px]" strokeWidth={2} aria-hidden />
                     {it.badge != null && it.badge > 0 ? (
                       <span
                         className={cn(
@@ -357,6 +357,7 @@ export function Sidebar({
                 <Icon
                   className="h-[18px] w-[18px] shrink-0"
                   style={{ color: 'rgba(0,0,0,0.55)' }}
+                  strokeWidth={2}
                   aria-hidden
                 />
                 {p.label}
