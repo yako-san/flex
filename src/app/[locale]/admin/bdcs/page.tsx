@@ -4,7 +4,6 @@ import { Prisma, type BdcEvalStatus, type VeloStatus } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
-import { Pill } from '@/components/ui/pill';
 import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
 import { VELO_STATUS_LABELS, VELO_STATUS_COLORS } from '@/lib/velo/status-labels';
@@ -14,14 +13,6 @@ export const dynamic = 'force-dynamic';
 type Props = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ q?: string; archive?: string; refuse?: string }>;
-};
-
-type PillVariant = 'rv' | 'recu' | 'eval' | 'attente' | 'approuve' | 'on-bench' | 'ctrl-qlte' | 'fini' | 'facturer' | 'facture' | 'livre';
-
-const STATUS_TO_PILL: Record<VeloStatus, PillVariant> = {
-  RV: 'rv', RECU: 'recu', EVAL: 'eval', EN_ATTENTE: 'attente', APPROUVE: 'approuve',
-  ON_BENCH: 'on-bench', CTRL_QLTE: 'ctrl-qlte', FINI: 'fini', FACTURER: 'facturer',
-  FACTURE: 'facture', LIVRE: 'livre',
 };
 
 // Ordre V1 : RV → REÇU → EVAL → ON_BENCH → … → LIVRE. UNE seule table continue
@@ -163,32 +154,40 @@ export default async function BdcsPage({ params, searchParams }: Props) {
             Aucun BDT {trimmed ? `pour la recherche « ${trimmed} »` : ''}.
           </p>
         ) : (
-          <div className="space-y-1.5">
-            {/* Header colonnes — aligné sur la grille des pills ci-dessous */}
+          <div>
+            {/* Header colonnes — aligné sur la grille des pills (lowercase 11pt). */}
             <div
-              className="grid items-center gap-3 px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/60"
-              style={{ gridTemplateColumns: '92px 60px minmax(0,2fr) minmax(0,1.6fr) 88px 88px minmax(0,1.4fr) 96px' }}
+              className="grid items-center px-[10px] py-[6px] text-[11px] font-semibold lowercase text-white/60"
+              style={{
+                gridTemplateColumns: '130px minmax(0,1.6fr) minmax(0,1.4fr) 90px 90px minmax(0,1.2fr) 110px',
+                gap: 14,
+              }}
             >
-              <span>Statut</span>
-              <span>BDT</span>
-              <span>Vélo</span>
-              <span>Client</span>
-              <span>Éval</span>
-              <span>Méca</span>
-              <span>État</span>
-              <span className="text-right">Date</span>
+              <span>bdt</span>
+              <span>vélo</span>
+              <span>client</span>
+              <span>éval</span>
+              <span>méca</span>
+              <span>état</span>
+              <span className="text-center">date</span>
             </div>
 
             {/* Pills lignes V1 — chaque BDT = pill arrondi séparé, coloré
-                selon statut. Espace 6px entre pills (space-y-1.5). */}
+                selon statut. Spec : pad 10pt, gap 14, mb 6, ID bold 17pt
+                avec pill 9pt inline, date bold 15pt tabular centrée. */}
             {bdcs.map((b) => {
               const colors = VELO_STATUS_COLORS[b.velo.status];
-              const pill = STATUS_TO_PILL[b.velo.status];
               const label = VELO_STATUS_LABELS[b.velo.status].fr;
               const eval_ = b.velo.evalMecano?.surnom;
               const meca = b.velo.mecaMecano?.surnom;
+              const isFacture = b.velo.status === 'FACTURE';
+              // Pill statut inline avec ID. Spec preview : sur ligne colorée
+              // standard, bg-black/15 text-black ; sur ligne FACTURÉ rose pâle,
+              // bg bordeaux text-white.
+              const pillBg = isFacture ? 'var(--st-facture-fg)' : 'rgba(0,0,0,0.15)';
+              const pillFg = isFacture ? '#fff' : '#000';
               const placeholder = (
-                <span className="text-[var(--text-secondary-50)] italic">Sélection →</span>
+                <span className="italic opacity-60">Sélection →</span>
               );
               const etat = getEtatText(
                 b.velo.status,
@@ -200,24 +199,48 @@ export default async function BdcsPage({ params, searchParams }: Props) {
               return (
                 <div
                   key={b.id}
-                  className="grid items-center gap-3 rounded-full px-4 py-2 text-sm shadow-sm transition-opacity hover:opacity-90"
+                  className="grid items-center rounded-full transition-opacity hover:opacity-90"
                   style={{
                     backgroundColor: colors.bg,
                     color: colors.fg,
-                    gridTemplateColumns: '92px 60px minmax(0,2fr) minmax(0,1.6fr) 88px 88px minmax(0,1.4fr) 96px',
+                    gridTemplateColumns: '130px minmax(0,1.6fr) minmax(0,1.4fr) 90px 90px minmax(0,1.2fr) 110px',
+                    padding: 10,
+                    gap: 14,
+                    marginBottom: 6,
                   }}
                 >
-                  <Pill variant={pill} size="sm">{label}</Pill>
+                  {/* Col 1 — ID bold 17pt + pill statut 9pt inline. */}
                   <Link
                     href={`/${locale}/admin/bdcs/${b.id}`}
-                    className="font-mono font-semibold hover:underline"
+                    className="flex items-center gap-2 whitespace-nowrap font-bold leading-none hover:underline"
+                    style={{
+                      fontSize: 17,
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
                   >
                     {String(b.numero).padStart(4, '0')}
+                    <span
+                      className="inline-flex items-center justify-center rounded-full uppercase"
+                      style={{
+                        background: pillBg,
+                        color: pillFg,
+                        padding: '3px 10px',
+                        fontSize: 9,
+                        fontWeight: 700,
+                        letterSpacing: '0.06em',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {label}
+                    </span>
                   </Link>
-                  <span className="truncate">
+                  <span
+                    className="truncate text-left"
+                    style={{ fontWeight: 500, fontSize: 13 }}
+                  >
                     {[b.velo.marque?.nom, b.velo.modele, b.velo.couleur].filter(Boolean).join(', ') || '—'}
                   </span>
-                  <span className="truncate">
+                  <span className="truncate text-left text-[13px]" style={{ fontWeight: 500 }}>
                     {b.velo.client ? (
                       <Link
                         href={`/${locale}/admin/clients/${b.velo.client.id ?? ''}`}
@@ -231,8 +254,15 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                   </span>
                   <span className="truncate text-xs">{eval_ ?? placeholder}</span>
                   <span className="truncate text-xs">{meca ?? placeholder}</span>
-                  <span className="truncate text-xs italic opacity-80">{etat}</span>
-                  <span className="text-right font-mono text-xs tabular-nums opacity-80">
+                  <span className="truncate text-xs italic opacity-70">{etat}</span>
+                  <span
+                    className="whitespace-nowrap text-center font-bold leading-none"
+                    style={{
+                      fontSize: 15,
+                      fontVariantNumeric: 'tabular-nums',
+                      opacity: 0.7,
+                    }}
+                  >
                     {b.velo.date2 ? dateFmt.format(b.velo.date2) : '—'}
                   </span>
                 </div>
