@@ -10,6 +10,7 @@ import {
   CloudCogIcon,
   UploadIcon,
   AlertTriangleIcon,
+  TagIcon,
 } from '@/components/icons';
 import { PageHeader } from '@/components/ui/page-header';
 
@@ -46,6 +47,12 @@ export default async function SettingsHubPage({ params }: Props) {
       icon: <Building2Icon width={20} height={20} />,
       title: 'Infos atelier',
       description: 'Logo, identité fiscale (TPS/TVQ), notifications courriel, organisation Clerk.',
+    },
+    {
+      href: `/${locale}/admin/settings/design-system`,
+      icon: <TagIcon width={20} height={20} />,
+      title: 'Design system',
+      description: 'Tokens éditables — couleur highlight, background dark/light, taille et couleur H1–H5.',
     },
     {
       href: `/${locale}/admin/equipe`,

@@ -254,7 +254,7 @@ export function Sidebar({
                       height: 'var(--sidebar-pastille)',
                     }}
                   >
-                    <Icon className="h-[31px] w-[31px]" strokeWidth={2} aria-hidden />
+                    <Icon className="h-[40px] w-[40px]" strokeWidth={2} aria-hidden />
                     {it.badge != null && it.badge > 0 ? (
                       <span
                         className={cn(

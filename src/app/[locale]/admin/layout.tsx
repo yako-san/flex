@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { AdminMobileTopBar, AdminSidebar, AdminWorkshopBar } from './_admin-nav';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { prisma } from '@/lib/db';
+import { TenantThemeStyle } from '@/components/tenant-theme-style';
 
 /** Compteurs sidebar V1 (badges numériques sur Inventaire/Ventes/Pièces). */
 async function getSidebarBadges(workshopId: string): Promise<{
@@ -92,6 +93,9 @@ export default async function AdminLayout({ children, params }: Props) {
       className="min-h-screen bg-[var(--app-bg)] md:flex md:h-screen md:overflow-hidden md:p-5"
       style={{ gap: '20px' }}
     >
+      {/* Override tokens CSS par tenant (Workshop.theme JSON). */}
+      <TenantThemeStyle theme={workshop?.theme ?? null} />
+
       {/* Top bar mobile (< md) — pill jaune comme V1 */}
       <AdminMobileTopBar locale={locale} badges={badges} />
 

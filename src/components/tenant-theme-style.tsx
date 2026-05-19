@@ -25,7 +25,16 @@ type Props = {
  */
 export function TenantThemeStyle({ theme, scope = ':root' }: Props) {
   const sanitized: WorkshopTheme = sanitizeTheme(theme);
-  const css = themeToCssVars(sanitized);
-  if (!css) return null;
-  return <style>{`${scope} { ${css} }`}</style>;
+  // Sépare le pendant light : `app-bg-light` cible `body.light-mode`
+  // (override de `--app-bg` quand le toggle est ON).
+  const { 'app-bg-light': appBgLight, ...rest } = sanitized;
+  const rootCss = themeToCssVars(rest);
+  const lightCss = appBgLight ? `--app-bg: ${appBgLight};` : '';
+  if (!rootCss && !lightCss) return null;
+  return (
+    <>
+      {rootCss ? <style>{`${scope} { ${rootCss} }`}</style> : null}
+      {lightCss ? <style>{`body.light-mode { ${lightCss} }`}</style> : null}
+    </>
+  );
 }
