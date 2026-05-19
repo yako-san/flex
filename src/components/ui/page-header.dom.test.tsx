@@ -4,39 +4,52 @@ import { PageHeader } from './page-header';
 
 afterEach(() => cleanup());
 
-describe('PageHeader', () => {
+describe('PageHeader (text-bg par ligne)', () => {
   it('rend <header> + <h1> avec title', () => {
     render(<PageHeader title="Mon titre" />);
     expect(screen.getByRole('banner')).toBeTruthy(); // <header>
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Mon titre');
   });
 
-  it("title peut être un ReactNode (JSX)", () => {
+  it('title peut être un ReactNode (JSX)', () => {
     render(<PageHeader title={<span>X</span>} />);
     expect(screen.getByRole('heading', { level: 1 }).querySelector('span')).toBeTruthy();
   });
 
-  it("eyebrow rendu en slug italique pâle V1 (pas uppercase tracking)", () => {
+  it('eyebrow rendu lowercase dans sa propre plaque grise', () => {
     render(<PageHeader title="x" eyebrow="vélos en atelier" />);
-    const p = screen.getByText('vélos en atelier');
-    expect(p.className).toContain('italic');
-    expect(p.className).not.toContain('uppercase');
-    expect(p.className).not.toContain('tracking-widest');
+    const el = screen.getByText('vélos en atelier');
+    expect(el.style.textTransform).toBe('lowercase');
+    expect(el.style.background).toContain('--app-bg');
   });
 
   it("pas d'eyebrow si non fourni", () => {
-    const { container } = render(<PageHeader title="x" />);
-    expect(container.querySelectorAll('p').length).toBe(0);
+    render(<PageHeader title="x" />);
+    expect(screen.queryByText(/^vélos/)).toBeNull();
   });
 
-  it('hint affiché à côté du titre', () => {
-    render(<PageHeader title="x" hint="(5 actifs)" />);
-    expect(screen.getByText('(5 actifs)')).toBeTruthy();
+  it('help=true rend la pastille `?` jaune', () => {
+    render(<PageHeader title="x" help />);
+    const badge = screen.getByText('?');
+    expect(badge.getAttribute('role')).toBe('img');
+    expect(badge.style.background).toContain('--jaune');
   });
 
-  it('subline rendu sous le titre', () => {
-    render(<PageHeader title="x" subline="32 BDT actifs sur 100" />);
-    expect(screen.getByText('32 BDT actifs sur 100')).toBeTruthy();
+  it('help="texte" rend la pastille avec tooltip + aria-label', () => {
+    render(<PageHeader title="x" help="Cliquez ici pour la doc" />);
+    const badge = screen.getByLabelText('Cliquez ici pour la doc');
+    expect(badge.getAttribute('title')).toBe('Cliquez ici pour la doc');
+  });
+
+  it('help non fourni → pas de pastille', () => {
+    render(<PageHeader title="x" />);
+    expect(screen.queryByText('?')).toBeNull();
+  });
+
+  it('subline rendu dans sa propre plaque sous le titre', () => {
+    render(<PageHeader title="x" subline="32 BDT actifs" />);
+    const el = screen.getByText('32 BDT actifs');
+    expect(el.style.background).toContain('--app-bg');
   });
 
   it('actions rendus dans la zone droite', () => {
@@ -71,10 +84,17 @@ describe('PageHeader', () => {
     expect(screen.getByRole('banner').className).toContain('my-extra');
   });
 
-  it("border-b + fond gris-bg (classes communes)", () => {
-    render(<PageHeader title="x" />);
+  it('plus de bg gris-bg sur le header (déplacé sur les plaques par ligne)', () => {
+    render(<PageHeader title="x" eyebrow="e" subline="s" />);
     const cls = screen.getByRole('banner').className;
-    expect(cls).toContain('border-b');
-    expect(cls).toContain('gris-bg');
+    expect(cls).not.toContain('bg-[var(--gris-bg)]');
+    expect(cls).not.toContain('border-b');
+  });
+
+  it('H1 weight 300 et color jaune (signature V1)', () => {
+    render(<PageHeader title="Inventaire" />);
+    const h1 = screen.getByRole('heading', { level: 1 });
+    expect(h1.style.fontWeight).toBe('300');
+    expect(h1.style.color).toContain('--jaune');
   });
 });

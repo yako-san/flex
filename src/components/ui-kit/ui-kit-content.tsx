@@ -63,7 +63,7 @@ export function UiKitContent({ eyebrow = 'dev · qa visuelle', locale = 'fr-CA' 
       <PageHeader
         eyebrow={eyebrow}
         title="UI Kit"
-        hint="composants Sprint 4"
+        help="composants Sprint 4"
         subline="Vitrine des primitives Flex V2 — palette V1, tokens CSS variables, multi-tenant ready."
         actions={
           <>
