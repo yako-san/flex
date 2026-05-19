@@ -233,6 +233,42 @@ input, textarea, select {
   outline-offset: 2px;
 }
 
+/* ============================================================
+ * Light/dark mode — bascule globale via `body.light-mode`.
+ *
+ * Spec : toutes les previews `docs/design-system/preview/*.html`
+ * intègrent un toggle "LIGHT / DARK" qui flippe `body.light-mode`.
+ * Dark = défaut (`--app-bg: #929292`, overlays sombres, textes blanc-alpha).
+ * Light = `--app-bg: #bfbfbf`, overlays clairs, textes noir-alpha.
+ *
+ * La sidebar reste jaune dans les 2 modes (signature FLEX).
+ * Le PillsToggle bascule son bg-dark-20 en bg-light-20 (cf. preview
+ * pills-toggle.html).
+ *
+ * Persistance : `src/lib/theme/theme-init.ts` initialise la classe
+ * depuis localStorage avant le first paint pour éviter le flash.
+ * ============================================================ */
+body.light-mode {
+  --app-bg: #bfbfbf;
+}
+
+/* PillsToggle — `<div role=radiogroup>` bascule son overlay en light. */
+body.light-mode [role="radiogroup"][class*="overlay-dark-20"] {
+  background: var(--overlay-light-20) !important;
+}
+/* Buttons inactifs : texte blanc → texte noir-alpha. */
+body.light-mode [role="radiogroup"] button[role="radio"]:not([aria-checked="true"]) {
+  color: rgba(0, 0, 0, 0.65);
+}
+body.light-mode [role="radiogroup"] button[role="radio"]:hover:not([aria-checked="true"]) {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+/* Bloc-contenu + KPI cards (composés sur `--overlay-dark-20`) : en
+   light, les overlays restent sombres pour garder le contraste avec
+   les cards blanches/jaunes dessus — pattern V1 « strates additives ».
+   Le texte blanc-alpha reste lisible sur ces surfaces dans les 2 modes. */
+
 /* --- « Bloc contenu » V1 ----------------------------------------- */
 /* Wrapper noir 20% supplémentaire sous le PageHeader qui encadre
    TOUT le contenu fonctionnel d'une page admin (cartes, tables,

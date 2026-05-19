@@ -31,12 +31,28 @@ export default async function LocaleLayout({ children, params }: Props) {
   const clerkKey = process.env['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'];
   const content = (
     <html lang={locale}>
-      <body>
+      <head>
+        {/* Init du theme dark/light AVANT le first paint pour éviter le
+            flash. Lit `flex-theme` depuis localStorage, ajoute la classe
+            `light-mode` au body si nécessaire. Inline pour exécution
+            synchrone, blocking. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('flex-theme');if(t==='light')document.documentElement.classList.add('flex-theme-pre-light');}catch(e){}`,
+          }}
+        />
+      </head>
+      <body className="flex-theme-body">
         <NextIntlClientProvider messages={messages}>
           {children}
           <ConfirmDialogHost />
           <Toaster />
         </NextIntlClientProvider>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(document.documentElement.classList.contains('flex-theme-pre-light'))document.body.classList.add('light-mode');}catch(e){}`,
+          }}
+        />
       </body>
     </html>
   );
