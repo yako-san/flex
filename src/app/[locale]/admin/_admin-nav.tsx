@@ -20,6 +20,7 @@ import {
   type SidebarPopoverItem,
 } from '@/components/ui/sidebar';
 import { SidebarMobileDrawer } from '@/components/ui/sidebar-mobile-drawer';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 type SidebarBadges = {
   inventaire: number;
@@ -179,9 +180,10 @@ export function AdminWorkshopBar({ workshopName }: { workshopName: string | null
           elements: { organizationSwitcherTrigger: { padding: '4px 8px', borderRadius: 999 } },
         }}
       />
-      <span className="text-xs text-[var(--text-secondary-60)]">
+      <span className="flex-1 text-xs text-[var(--text-secondary-60)]">
         {workshopName ? `Workshop : ${workshopName}` : 'Aucun workshop lié'}
       </span>
+      <ThemeToggle />
     </div>
   );
 }
