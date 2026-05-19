@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Search } from 'lucide-react';
+import { SearchIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import {
   Dialog,
@@ -136,8 +136,8 @@ export function AjoutItemsModal({
 
         <div className="flex flex-col gap-2 sm:flex-row">
           <div className="relative flex-1">
-            <Search
-              size={16}
+            <SearchIcon
+              width={16} height={16}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary-50)]"
               aria-hidden
             />

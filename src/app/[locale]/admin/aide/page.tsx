@@ -1,17 +1,17 @@
 import { setRequestLocale } from 'next-intl/server';
 import {
-  Inbox,
-  ClipboardCheck,
-  Wrench,
-  LayoutDashboard,
-  Workflow,
-  ListChecks,
-  Layers,
-  Smartphone,
-  Banknote,
-  QrCode,
-  Receipt,
-} from 'lucide-react';
+  InboxIcon,
+  ClipboardCheckIcon,
+  WrenchIcon,
+  LayoutDashboardIcon,
+  WorkflowIcon,
+  ListChecksIcon,
+  LayersIcon,
+  SmartphoneIcon,
+  BanknoteIcon,
+  QrCodeIcon,
+  ReceiptIcon,
+} from '@/components/icons';
 import { PageHeader } from '@/components/ui/page-header';
 
 export const dynamic = 'force-dynamic';
@@ -35,19 +35,19 @@ const SECTIONS: Section[] = [
       {
         num: '01',
         title: 'Recevoir un vélo',
-        icon: <Inbox size={22} />,
+        icon: <InboxIcon width={22} height={22} />,
         blurb: 'Créer un BDT, lier client + vélo (existant ou nouveau), choisir le sigle initial.',
       },
       {
         num: '02',
         title: 'Évaluer un vélo',
-        icon: <ClipboardCheck size={22} />,
+        icon: <ClipboardCheckIcon width={22} height={22} />,
         blurb: 'Ajouter services + pièces, valider la liste, envoyer l\'évaluation par courriel au client.',
       },
       {
         num: '03',
         title: 'Réparer un vélo',
-        icon: <Wrench size={22} />,
+        icon: <WrenchIcon width={22} height={22} />,
         blurb: 'Cocher les sous-tâches forfait, ajuster prix, mettre les pièces en commande.',
       },
     ],
@@ -58,19 +58,19 @@ const SECTIONS: Section[] = [
       {
         num: '04',
         title: 'Dashboard',
-        icon: <LayoutDashboard size={22} />,
+        icon: <LayoutDashboardIcon width={22} height={22} />,
         blurb: 'Vue d\'ensemble : KPI atelier, BDT actifs, stock à commander, dernières factures et ventes.',
       },
       {
         num: '05',
-        title: 'Workflow : Bon de Travail',
-        icon: <Workflow size={22} />,
+        title: 'WorkflowIcon : Bon de Travail',
+        icon: <WorkflowIcon width={22} height={22} />,
         blurb: 'RV → REÇU → ÉVAL. → APPROUVÉ → ON BENCH → CTRL QLTÉ → FACTURER → FACTURÉ → LIVRÉ.',
       },
       {
         num: '06',
         title: 'Statut : Bon de Travail',
-        icon: <ListChecks size={22} />,
+        icon: <ListChecksIcon width={22} height={22} />,
         blurb: 'Couleurs de fond selon statut, pills mécaniciens, checkboxes avancement.',
       },
     ],
@@ -81,31 +81,31 @@ const SECTIONS: Section[] = [
       {
         num: '07',
         title: 'Services + pièces',
-        icon: <Layers size={22} />,
+        icon: <LayersIcon width={22} height={22} />,
         blurb: 'Catalogue services à la carte, forfaits avec sous-tâches, pièces en stock vs à commander.',
       },
       {
         num: '08',
         title: 'Inventaire mobile',
-        icon: <Smartphone size={22} />,
+        icon: <SmartphoneIcon width={22} height={22} />,
         blurb: 'Consulter et ajuster le stock depuis le téléphone (à venir).',
       },
       {
         num: '09',
         title: 'Vente rapide POS',
-        icon: <Banknote size={22} />,
+        icon: <BanknoteIcon width={22} height={22} />,
         blurb: 'Créer une vente au comptoir (walk-in), ajouter items, encaisser en un clic.',
       },
       {
         num: '10',
         title: 'Scanner code-barre',
-        icon: <QrCode size={22} />,
+        icon: <QrCodeIcon width={22} height={22} />,
         blurb: 'Scanner les pièces à la réception ou à la vente pour gain de temps.',
       },
       {
         num: '11',
         title: 'Facturation & taxes',
-        icon: <Receipt size={22} />,
+        icon: <ReceiptIcon width={22} height={22} />,
         blurb: 'TPS 5 % + TVQ 9,975 % calculés sur le sous-total HT. Acompte affiché en « reste à payer ».',
       },
     ],

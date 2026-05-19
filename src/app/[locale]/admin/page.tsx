@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import Decimal from 'decimal.js';
-import { Bike, Package, Bell, DollarSign, Calendar, Wrench, Mail, FileText, ShoppingCart } from 'lucide-react';
+import { BikeIcon, PackageIcon, BellIcon, DollarSignIcon, CalendarIcon, WrenchIcon, MailIcon, FileTextIcon, ShoppingCartIcon } from '@/components/icons';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
 import { PageHeader } from '@/components/ui/page-header';
@@ -209,7 +209,7 @@ export default async function AdminDashboardPage({ params }: Props) {
         {/* 4 KPI cards */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
-            icon={<Bike size={18} />}
+            icon={<BikeIcon width={18} height={18} />}
             iconBg="var(--st-on-bench-bg)"
             label="BDT actifs"
             value={bdcActifCount}
@@ -229,7 +229,7 @@ export default async function AdminDashboardPage({ params }: Props) {
           </KpiCard>
 
           <KpiCard
-            icon={<Package size={18} />}
+            icon={<PackageIcon width={18} height={18} />}
             iconBg="var(--rouge)"
             iconFg="white"
             label="Stock à commander"
@@ -238,7 +238,7 @@ export default async function AdminDashboardPage({ params }: Props) {
           />
 
           <KpiCard
-            icon={<Bell size={18} />}
+            icon={<BellIcon width={18} height={18} />}
             iconBg="var(--jaune)"
             label="Suivis"
             value={bdtSuivi.length}
@@ -246,7 +246,7 @@ export default async function AdminDashboardPage({ params }: Props) {
           />
 
           <KpiCard
-            icon={<DollarSign size={18} />}
+            icon={<DollarSignIcon width={18} height={18} />}
             iconBg="var(--st-approuve-bg)"
             label="Revenus du mois"
             value={`${caMonth.toFixed(2)} $`}
@@ -258,7 +258,7 @@ export default async function AdminDashboardPage({ params }: Props) {
         <div className="grid gap-4 lg:grid-cols-3 items-start">
           {/* Col 1 : Rendez-vous + BDT Terminés + BDT Suivi */}
           <div className="space-y-4">
-            <DashSection icon={<Calendar size={16} />} title="Rendez-vous" count={rendezVous.length}>
+            <DashSection icon={<CalendarIcon width={16} height={16} />} title="Rendez-vous" count={rendezVous.length}>
               {rendezVous.length === 0 ? (
                 <EmptyState>Aucun BDT en RV/REÇU.</EmptyState>
               ) : (
@@ -280,7 +280,7 @@ export default async function AdminDashboardPage({ params }: Props) {
               )}
             </DashSection>
 
-            <DashSection icon={<Wrench size={16} />} title="BDT — Terminés" count={bdtTermines.length}>
+            <DashSection icon={<WrenchIcon width={16} height={16} />} title="BDT — Terminés" count={bdtTermines.length}>
               {bdtTermines.length === 0 ? (
                 <EmptyState>Aucun BDT en CTRL QLTÉ/FINI/FACTURER.</EmptyState>
               ) : (
@@ -302,7 +302,7 @@ export default async function AdminDashboardPage({ params }: Props) {
               )}
             </DashSection>
 
-            <DashSection icon={<Mail size={16} />} title="BDT — Suivi à envoyer" count={bdtSuivi.length}>
+            <DashSection icon={<MailIcon width={16} height={16} />} title="BDT — Suivi à envoyer" count={bdtSuivi.length}>
               {bdtSuivi.length === 0 ? (
                 <EmptyState>Aucun BDT livré sans suivi.</EmptyState>
               ) : (
@@ -323,7 +323,7 @@ export default async function AdminDashboardPage({ params }: Props) {
           </div>
 
           {/* Col 2 : Pièces à commander */}
-          <DashSection icon={<Package size={16} />} title="Pièces — stock épuisé" count={stockLow.length}>
+          <DashSection icon={<PackageIcon width={16} height={16} />} title="Pièces — stock épuisé" count={stockLow.length}>
             {stockLow.length === 0 ? (
               <EmptyState>Aucune pièce à 0 ou moins.</EmptyState>
             ) : (
@@ -345,7 +345,7 @@ export default async function AdminDashboardPage({ params }: Props) {
 
           {/* Col 3 : Dernières factures + Dernières ventes */}
           <div className="space-y-4">
-            <DashSection icon={<FileText size={16} />} title="Dernières factures" count={recentFactures.length}>
+            <DashSection icon={<FileTextIcon width={16} height={16} />} title="Dernières factures" count={recentFactures.length}>
               {recentFactures.length === 0 ? (
                 <EmptyState>Aucune facture.</EmptyState>
               ) : (
@@ -363,7 +363,7 @@ export default async function AdminDashboardPage({ params }: Props) {
               )}
             </DashSection>
 
-            <DashSection icon={<ShoppingCart size={16} />} title="Dernières ventes" count={recentVentes.length}>
+            <DashSection icon={<ShoppingCartIcon width={16} height={16} />} title="Dernières ventes" count={recentVentes.length}>
               {recentVentes.length === 0 ? (
                 <EmptyState>Aucune vente.</EmptyState>
               ) : (

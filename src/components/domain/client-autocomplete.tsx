@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Search, X } from 'lucide-react';
+import { SearchIcon, XIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
@@ -132,8 +132,8 @@ export function ClientAutocomplete({
   return (
     <div ref={containerRef} className={cn('relative', className)}>
       <div className="relative">
-        <Search
-          size={16}
+        <SearchIcon
+          width={16} height={16}
           aria-hidden
           className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary-50)]"
         />
@@ -161,7 +161,7 @@ export function ClientAutocomplete({
             aria-label="Effacer"
             className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-[var(--text-secondary-50)] hover:bg-black/5"
           >
-            <X size={14} />
+            <XIcon width={14} height={14} />
           </button>
         ) : null}
       </div>

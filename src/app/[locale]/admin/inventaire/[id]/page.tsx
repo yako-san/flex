@@ -1,7 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Plus, Wrench, Cog } from 'lucide-react';
+import { PlusIcon, WrenchIcon, CogIcon } from '@/components/icons';
 import type { BdcPieceCmdStatus } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
@@ -218,7 +218,7 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
 
         {/* COLONNE CENTRE — Services + Forfaits */}
         <ItemsBlock
-          icon={<Wrench size={16} />}
+          icon={<WrenchIcon width={16} height={16} />}
           title="Services"
           count={itemsServices.length}
           accentBg={blockBg}
@@ -261,7 +261,7 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
 
         {/* COLONNE DROITE — Pièces */}
         <ItemsBlock
-          icon={<Cog size={16} />}
+          icon={<CogIcon width={16} height={16} />}
           title="Pièces"
           count={itemsPieces.length}
           accentBg={blockBg}
@@ -448,7 +448,7 @@ function ItemsBlock({
         </div>
         <details className="relative">
           <summary className="inline-flex h-7 w-7 cursor-pointer list-none items-center justify-center rounded-full bg-white/40 hover:bg-white/60">
-            <Plus size={16} />
+            <PlusIcon width={16} height={16} />
           </summary>
           <div className="absolute right-0 z-20 mt-2 min-w-[280px] rounded-xl bg-white p-3 shadow-lg ring-1 ring-black/10">
             {addForm}

@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Upload, X } from 'lucide-react';
+import { UploadIcon, XIcon } from '@/components/icons';
 import { toast } from '@/lib/utils/toast';
 import { cn } from '@/lib/utils';
 import { uploadBdcPhotoAction } from './photo-actions';
@@ -110,7 +110,7 @@ export function BdcPhotoUpload({ bdcId }: Props) {
             : 'border-[var(--gris-bord)] bg-white/40 hover:border-[var(--jaune)] hover:bg-[var(--jaune)]/5',
         )}
       >
-        <Upload size={20} className="text-[var(--text-secondary-60)]" />
+        <UploadIcon width={20} height={20} className="text-[var(--text-secondary-60)]" />
         <span className="font-semibold text-[var(--text-secondary-70)]">
           Glisse une image ici ou clique pour choisir
         </span>
@@ -150,8 +150,8 @@ export function BdcPhotoUpload({ bdcId }: Props) {
             disabled={pending}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--jaune)] px-4 py-2 text-xs font-bold uppercase tracking-wider text-black transition-colors hover:bg-[var(--jaune-h)] disabled:opacity-50"
           >
-            <Upload size={14} />
-            {pending ? `Upload (${queue.length})…` : `Téléverser ${queue.length} photo${queue.length > 1 ? 's' : ''}`}
+            <UploadIcon width={14} height={14} />
+            {pending ? `UploadIcon (${queue.length})…` : `Téléverser ${queue.length} photo${queue.length > 1 ? 's' : ''}`}
           </button>
         </div>
       ) : null}
@@ -202,7 +202,7 @@ function QueueItem({
             className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--rouge)] hover:bg-[var(--rouge)]/10"
             aria-label="Retirer de la file"
           >
-            <X size={14} />
+            <XIcon width={14} height={14} />
           </button>
         </div>
         <div className="flex gap-1">

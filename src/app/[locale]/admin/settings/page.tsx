@@ -1,16 +1,16 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import {
-  Mail,
-  Building2,
-  Users,
-  Bike,
-  ScanLine,
-  HardDrive,
-  CloudCog,
-  Upload,
-  AlertTriangle,
-} from 'lucide-react';
+  MailIcon,
+  Building2Icon,
+  UsersIcon,
+  BikeIcon,
+  ScanLineIcon,
+  HardDriveIcon,
+  CloudCogIcon,
+  UploadIcon,
+  AlertTriangleIcon,
+} from '@/components/icons';
 import { PageHeader } from '@/components/ui/page-header';
 
 export const dynamic = 'force-dynamic';
@@ -37,56 +37,56 @@ export default async function SettingsHubPage({ params }: Props) {
   const cards: Card[] = [
     {
       href: `/${locale}/admin/settings/email-templates`,
-      icon: <Mail size={20} />,
+      icon: <MailIcon width={20} height={20} />,
       title: 'Modèles de messages',
       description: 'Templates courriels (évaluation, facture, vente) + SMS rappel et suivi.',
     },
     {
       href: `/${locale}/admin/settings/atelier`,
-      icon: <Building2 size={20} />,
+      icon: <Building2Icon width={20} height={20} />,
       title: 'Infos atelier',
       description: 'Logo, identité fiscale (TPS/TVQ), notifications courriel, organisation Clerk.',
     },
     {
       href: `/${locale}/admin/equipe`,
-      icon: <Users size={20} />,
+      icon: <UsersIcon width={20} height={20} />,
       title: 'Équipe atelier',
       description: 'Liste des mécaniciens affichés dans les dropdowns de BDT.',
     },
     {
       href: `/${locale}/admin/marques`,
-      icon: <Bike size={20} />,
+      icon: <BikeIcon width={20} height={20} />,
       title: 'Catalogue vélo',
       description: 'Marques disponibles dans les dropdowns (et leurs tailles).',
     },
     {
       href: '#',
-      icon: <ScanLine size={20} />,
+      icon: <ScanLineIcon width={20} height={20} />,
       title: 'Historique scans',
       description: 'Log local des derniers codes-barres scannés + export CSV.',
       disabled: true,
     },
     {
       href: `/${locale}/admin/settings/atelier#google`,
-      icon: <CloudCog size={20} />,
+      icon: <CloudCogIcon width={20} height={20} />,
       title: 'Santé APIs Google',
       description: 'Statut détaillé Sheets / Drive / Gmail / Contacts + sync forcée.',
     },
     {
       href: `/${locale}/admin/import`,
-      icon: <HardDrive size={20} />,
+      icon: <HardDriveIcon width={20} height={20} />,
       title: 'Backup / Export',
       description: 'Snapshots BD, import dump V1, refresh partiel des nouveaux champs.',
     },
     {
       href: `/${locale}/admin/clients/import`,
-      icon: <Upload size={20} />,
+      icon: <UploadIcon width={20} height={20} />,
       title: 'Import clients (CSV)',
       description: 'Import massif depuis un CSV avec détection auto des colonnes + dédoublonnage.',
     },
     {
       href: `/${locale}/admin/maintenance`,
-      icon: <AlertTriangle size={20} />,
+      icon: <AlertTriangleIcon width={20} height={20} />,
       title: 'Admin — opérations destructives',
       description: 'Recalcul stock, suppression d\'un BDT par ID, consolidation des fantômes.',
       destructive: true,

@@ -2,7 +2,7 @@
 
 import { startTransition, useOptimistic, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check } from 'lucide-react';
+import { CheckIcon } from '@/components/icons';
 import { toast } from '@/lib/utils/toast';
 import { cn } from '@/lib/utils';
 import {
@@ -85,7 +85,7 @@ export function BdtAdvancement({ bdcId, initialCheckboxes, initialEvalStatus }: 
                   checked && 'bg-current',
                 )}
               >
-                {checked ? <Check size={10} className="text-white mix-blend-difference" /> : null}
+                {checked ? <CheckIcon width={10} height={10} className="text-white mix-blend-difference" /> : null}
               </span>
               <span className={cn(checked ? 'font-semibold' : 'opacity-70')}>
                 {CHECKBOX_LABELS[key]}

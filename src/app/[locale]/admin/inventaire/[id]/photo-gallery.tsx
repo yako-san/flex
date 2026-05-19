@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2, ImageOff, X } from 'lucide-react';
+import { TrashIcon, PhotoIcon, XIcon } from '@/components/icons';
 import { customConfirm } from '@/components/ui/confirm-dialog';
 import { toast } from '@/lib/utils/toast';
 import { cn } from '@/lib/utils';
@@ -41,7 +41,7 @@ export function BdcPhotoGallery({ photos }: Props) {
   if (photos.length === 0) {
     return (
       <p className="flex items-center gap-1 px-3 py-4 text-center text-xs italic text-[var(--text-secondary-60)]">
-        <ImageOff size={14} />
+        <PhotoIcon width={14} height={14} />
         Aucune photo. Glisse une image dans la zone d&apos;upload pour démarrer.
       </p>
     );
@@ -116,7 +116,7 @@ function PhotoThumb({ photo, onZoom }: { photo: BdcPhotoLite; onZoom: () => void
         }}
         className="absolute right-1 top-1 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
       >
-        <Trash2 size={12} />
+        <TrashIcon width={12} height={12} />
       </span>
       {photo.caption ? (
         <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1 text-left text-[10px] text-white">
@@ -142,7 +142,7 @@ function Lightbox({ photo, onClose }: { photo: BdcPhotoLite; onClose: () => void
         className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
         aria-label="Fermer"
       >
-        <X size={20} />
+        <XIcon width={20} height={20} />
       </button>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

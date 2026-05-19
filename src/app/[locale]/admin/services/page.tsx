@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
-import { Package, Wrench } from 'lucide-react';
+import { PackageIcon, WrenchIcon } from '@/components/icons';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getActiveWorkshop } from '@/lib/workshop';
@@ -73,7 +73,7 @@ export default async function ServicesPage({ params, searchParams }: Props) {
         <details open className="overflow-hidden rounded-2xl shadow-sm">
           <summary className="flex cursor-pointer items-center justify-between bg-[var(--jaune)] px-4 py-2 text-sm font-semibold text-black">
             <span className="flex items-center gap-2">
-              <Package size={16} />
+              <PackageIcon width={16} height={16} />
               <span>Forfaits</span>
               <span className="text-xs opacity-60">{forfaits.length}</span>
             </span>
@@ -124,7 +124,7 @@ export default async function ServicesPage({ params, searchParams }: Props) {
         <details open className="overflow-hidden rounded-2xl shadow-sm">
           <summary className="flex cursor-pointer items-center justify-between bg-[var(--jaune)] px-4 py-2 text-sm font-semibold text-black">
             <span className="flex items-center gap-2">
-              <Wrench size={16} />
+              <WrenchIcon width={16} height={16} />
               <span>Services — À la carte</span>
               <span className="text-xs opacity-60">{services.length}</span>
             </span>

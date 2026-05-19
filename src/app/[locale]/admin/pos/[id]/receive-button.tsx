@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Package } from 'lucide-react';
+import { PackageIcon } from '@/components/icons';
 import { customConfirm } from '@/components/ui/confirm-dialog';
 import { toast } from '@/lib/utils/toast';
 import { receivePoAction } from '../actions';
@@ -38,7 +38,7 @@ export function ReceivePoButton({ poId, poNumero }: Props) {
       onClick={handleClick}
       className="inline-flex h-9 items-center gap-2 rounded-full bg-[var(--st-approuve-bg)] px-4 text-xs font-bold uppercase tracking-wider text-black transition-opacity hover:opacity-90 disabled:opacity-50"
     >
-      <Package size={14} />
+      <PackageIcon width={14} height={14} />
       {pending ? 'Réception…' : 'Marquer reçu'}
     </button>
   );

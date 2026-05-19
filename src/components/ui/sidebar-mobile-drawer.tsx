@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { MenuIcon, XIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import type { SidebarItem } from './sidebar';
 
@@ -74,7 +74,7 @@ export function SidebarMobileDrawer({ items, header, footer, triggerLabel = 'Men
         aria-expanded={open}
         aria-controls="sidebar-mobile-drawer"
       >
-        <Menu size={22} aria-hidden />
+        <MenuIcon className="h-[22px] w-[22px]" aria-hidden />
       </button>
 
       {/* Backdrop */}
@@ -107,7 +107,7 @@ export function SidebarMobileDrawer({ items, header, footer, triggerLabel = 'Men
             className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40"
             aria-label="Fermer le menu"
           >
-            <X size={18} aria-hidden />
+            <XIcon className="h-[18px] w-[18px]" aria-hidden />
           </button>
         </div>
 
@@ -130,7 +130,7 @@ export function SidebarMobileDrawer({ items, header, footer, triggerLabel = 'Men
                 )}
                 aria-current={active ? 'page' : undefined}
               >
-                <Icon size={20} className="shrink-0" aria-hidden />
+                <Icon className="h-5 w-5 shrink-0" aria-hidden />
                 <span className="truncate text-sm">{it.label}</span>
                 {it.badge != null && it.badge > 0 ? (
                   <span
