@@ -1,0 +1,59 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #5E5E5E; font-family: var(--font-sans); transition: background 220ms ease; }
+  body.light-mode { background: #BFBFBF; }
+  .card { padding: 16px 18px; }
+  .panel { background: rgba(0,0,0,0.2); border-radius: 24px; padding: 12px; transition: background 220ms ease; }
+  body.light-mode .panel { background: rgba(255,255,255,0.30); }
+  .row { display: grid; grid-template-columns: 120px 1.6fr 170px 110px; align-items: center;
+         padding: 10px; border-radius: 999px; gap: 14px; margin-bottom: 6px; }
+  .id { font-family: var(--font-sans); font-weight: 700; font-size: 17px; display: flex; align-items: center; gap: 8px; white-space: nowrap; line-height: 1; }
+  .pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    white-space: nowrap; flex-shrink: 0;
+    line-height: 1.2; text-align: center;
+  }
+  .name { font-weight: 500; font-size: 13px; text-align: left;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .meta { font-size: 12px; color: rgba(0,0,0,0.6); text-align: left;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .date { font-family: var(--font-sans); font-weight: 700; font-size: 15px; color: rgba(0,0,0,0.7);
+          font-variant-numeric: tabular-nums; line-height: 1; text-align: center; white-space: nowrap; }
+</style></head>
+<body>
+<div class="card">
+  <div class="panel">
+    <div class="row" style="background:#fff056;">
+      <div class="id">0149 <span class="pill" style="background:rgba(0,0,0,0.15);color:#000;">RV</span></div>
+      <div class="name">Sélection →, …</div>
+      <div class="meta">Client Test</div>
+      <div class="date">2026-05-12</div>
+    </div>
+    <div class="row" style="background:#5cd62b;">
+      <div class="id">0119 <span class="pill" style="background:rgba(0,0,0,0.15);color:#000;">ON BENCH</span></div>
+      <div class="name">Raleigh, Superbe, blanc, M</div>
+      <div class="meta">Julie Verreau Howard</div>
+      <div class="date">2026-04-22</div>
+    </div>
+    <div class="row" style="background:#fb923c;">
+      <div class="id">0112 <span class="pill" style="background:rgba(0,0,0,0.15);color:#000;">EN ATTENTE</span></div>
+      <div class="name">Argon18, Subito, Kaki, XXS</div>
+      <div class="meta">Nathalie Therrien</div>
+      <div class="date">2026-04-10</div>
+    </div>
+    <div class="row" style="background:#ffcdd2;">
+      <div class="id" style="color:#b71c1c;">0123 <span class="pill" style="background:#b71c1c;color:#fff;">FACTURÉ</span></div>
+      <div class="name" style="color:#b71c1c;">Bonelli, Lite 1, Vert emeraude, M</div>
+      <div class="meta" style="color:#b71c1c;">Louise Bacher</div>
+      <div class="date" style="color:#b71c1c;">2026-04-23</div>
+    </div>
+  </div>
+</div>
+<button id="theme-toggle" type="button" style="position:fixed;top:12px;right:12px;z-index:99;background:rgba(0,0,0,0.30);color:#fff;border:0;border-radius:999px;padding:8px 14px;font:600 11px/1 var(--font-sans);cursor:pointer;text-transform:uppercase;letter-spacing:0.08em;">light / dark</button>
+<script>document.getElementById('theme-toggle').addEventListener('click',()=>document.body.classList.toggle('light-mode'));</script>
+</body></html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #fafafa; font-family: var(--font-sans); }
+  .card { padding: 24px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+  .left { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+  /* Each line carries its own #929292 plate with 10pt padding. The
+     H1 plate uses negative margins INSIDE the box to trim the glyph's
+     descender slack so the optical pad matches the 10pt top pad. */
+  .eyebrow {
+    display: inline-block;
+    background: #929292; padding: 10px; border-radius: 6px;
+    font-size: 13px; font-weight: 700; color: #ffffff;
+    text-transform: lowercase; line-height: 1;
+    margin-bottom: -4px;        /* pull next line up to overlap slightly */
+  }
+  .title-row {
+    display: inline-flex; align-items: flex-start;
+    background: #929292; border-radius: 6px;
+    padding: 10px 10px 10px 10px;
+  }
+  .h1 {
+    color: #fff056; font-weight: 300; font-size: 48px;
+    line-height: 1; margin: 0;
+    /* Trim Helvetica Neue's intrinsic descender slack so the visual
+       padding around the caps matches the 10pt declared all around. */
+    margin-top: -6px;
+    margin-bottom: -10px;
+    padding-right: 8px;          /* visual breathing room before ? */
+  }
+  .help {
+    display: inline-flex; width: 18px; height: 18px; border-radius: 50%;
+    background: #fff056; color: #000; font-size: 11px; font-weight: 700;
+    align-items: center; justify-content: center; cursor: help;
+    line-height: 1; flex-shrink: 0; margin-top: -5px;
+  }
+  .title-row { margin-bottom: -4px; }   /* next-line overlap */
+  .subline {
+    display: inline-block;
+    background: #929292; padding: 10px; border-radius: 6px;
+    font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1;
+  }
+  .right { display: flex; gap: 6px; }
+  .pill {
+    padding: 5px 12px 3px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    background: transparent; color: var(--text-secondary-70);
+    border: 1px solid var(--gris-bord);
+    line-height: 1; cursor: pointer;
+  }
+</style></head>
+<body>
+<div class="card">
+  <div class="left">
+    <span class="eyebrow">vélos en atelier</span>
+    <div class="title-row">
+      <h1 class="h1">Inventaire</h1>
+      <span class="help">?</span>
+    </div>
+    <span class="subline">14 BDT actifs</span>
+  </div>
+  <div class="right">
+    <span class="pill">Sheets</span>
+    <span class="pill">Drive</span>
+    <span class="pill">Gmail</span>
+  </div>
+</div>
+</body></html>

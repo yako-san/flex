@@ -1,0 +1,317 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #5E5E5E; font-family: var(--font-sans); height: 100%; transition: background 220ms ease; }
+  body.light-mode { background: #BFBFBF; }
+  body { min-height: 100vh; }
+  /* Frame fills the viewport; padding 20px all around so the sidebar
+     can stretch to fill the available height. */
+  .frame { display: flex; padding: 20px; height: 100vh; box-sizing: border-box; }
+
+  .sb-stage {
+    position: relative;
+    display: flex; align-items: stretch;     /* sidebar fills frame height */
+    flex-shrink: 0;
+  }
+
+  /* Sibling ground shadows — anchored at the BASE of the sidebar so the
+     bottom of the pill touches the shadow. */
+  .shadow-a, .shadow-b {
+    position: absolute; left: 50%;
+    bottom: -3px;
+    transform: translateX(-50%) translateY(50%);
+    border-radius: 50%;
+    pointer-events: none;
+    transition: width 320ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .shadow-a {
+    width: 150px; height: 5px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0) 70%);
+    filter: blur(3px);
+  }
+  .shadow-b {
+    width: 80px; height: 3px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
+    filter: blur(2px);
+  }
+  .sb-stage[data-expanded="true"] .shadow-a { width: 300px; height: 7px; filter: blur(4px); }
+  .sb-stage[data-expanded="true"] .shadow-b { width: 160px; height: 4px; filter: blur(2.5px); }
+
+  /* Sidebar fills the stage height. Width transitions on hover. */
+  .sidebar {
+    background: #fff056; border-radius: 50px;
+    padding: 20px 0;
+    width: 100px;
+    display: flex; flex-direction: column; align-items: stretch;
+    gap: 14px;
+    position: relative; z-index: 1;
+    transition: width 320ms cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: visible;
+    flex: 1 0 auto;        /* fill stage height */
+  }
+  .sb-stage[data-expanded="true"] .sidebar { width: 200px; }
+
+  /* Logo block — top, fixed size (60×60 collapsed, 120×120 expanded).
+     Always centered horizontally regardless of sidebar width. */
+  .sb-logo-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
+  .sb-logo {
+    position: relative;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    cursor: pointer;
+    width: 60px; height: 60px;
+    transition: width 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                height 320ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sb-stage[data-expanded="true"] .sb-logo { width: 120px; height: 120px; }
+  .sb-logo .logo-img {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    border-radius: 50%;
+    transition: opacity 200ms ease;
+  }
+  .sb-logo .logo-img.collapsed { background-image: url("../assets/logo-F-brun-rond.svg"); opacity: 1; }
+  .sb-logo .logo-img.expanded  { background-image: url("../assets/logo-FLEX-rond-yako.svg"); opacity: 0; }
+  .sb-stage[data-expanded="true"] .logo-img.collapsed { opacity: 0; }
+  .sb-stage[data-expanded="true"] .logo-img.expanded  { opacity: 1; }
+
+  .sb-version {
+    font-size: 11px; color: #9a7b4f; font-weight: 600; text-align: center;
+    line-height: 1.2;
+    opacity: 0; height: 0; overflow: hidden;
+    transition: opacity 200ms ease 80ms, height 320ms ease;
+  }
+  .sb-stage[data-expanded="true"] .sb-version { opacity: 1; height: 28px; }
+
+  /* ===== Popover (anchored off logo, shown on logo hover) ===== */
+  .sb-popover {
+    position: absolute;
+    top: 20px; left: calc(100% + 16px);
+    background: #ffffff; border-radius: 14px;
+    padding: 10px 4px;
+    width: 200px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    display: flex; flex-direction: column; gap: 2px;
+    z-index: 50;
+    opacity: 0; pointer-events: none;
+    transform: translateX(-8px);
+    transition: opacity 180ms ease, transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sb-stage[data-popover="true"] .sb-popover {
+    opacity: 1; pointer-events: auto;
+    transform: translateX(0);
+  }
+  .sb-pop-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 14px; border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    color: var(--dark); cursor: pointer; transition: background 150ms;
+  }
+  .sb-pop-item:hover { background: #fafafa; }
+  .sb-pop-item svg { color: rgba(0,0,0,0.55); flex-shrink: 0; }
+
+  /* ===== Primary nav ===== */
+  .sb-nav {
+    display: flex; flex-direction: column; align-items: stretch;
+    gap: 6px;
+    margin: auto 0;
+    width: 100%;
+    padding: 0;
+  }
+  /* Each row is a VERTICAL stack: pastille on top, label below.
+     Both columns share the same horizontal footprint (sidebar width)
+     so the pastille is always centered regardless of expand state.
+     Label slot is reserved (24px tall) but text fades in on expand. */
+  .sb-item {
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer;
+    text-decoration: none;
+    gap: 4px;
+  }
+  .sb-pastille {
+    width: 60px; height: 60px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #9a7b4f; transition: background 150ms;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .sb-item.active .sb-pastille { background: #9a7b4f; color: #fff056; }
+  .sb-item:hover:not(.active) .sb-pastille { background: rgba(154,123,79,0.12); }
+
+  /* Label sits BELOW the pastille. Slot has a fixed height (reserved
+     space even when empty) so pastilles stay vertically aligned between
+     states. Text opacity fades in on expand. */
+  .sb-label {
+    height: 16px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase; color: #9a7b4f;
+    white-space: nowrap;
+    opacity: 0;
+    line-height: 16px;
+    transition: opacity 200ms ease 80ms, font-size 320ms ease;
+  }
+  .sb-stage[data-expanded="true"] .sb-label { opacity: 1; font-size: 13px; }
+
+  .sb-badge {
+    position: absolute; top: -2px; right: -2px;
+    min-width: 18px; height: 18px; padding: 0 4px;
+    border-radius: 999px; font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px #fff056;
+  }
+  .sb-badge.vert  { background: #62e335; color: #000; }
+  .sb-badge.rouge { background: #d92020; color: #fff; }
+
+  .sb-divider {
+    width: 60%; margin: 4px auto; border: 0;
+    border-top: 1px solid rgba(154,123,79,0.3);
+    transition: width 320ms ease;
+  }
+  .sb-stage[data-expanded="true"] .sb-divider { width: 80%; }
+
+  /* ===== Login pastille — at the BOTTOM of the column (mt: auto) ===== */
+  .sb-login-wrap { display: flex; justify-content: center; flex-shrink: 0; }
+  .sb-login {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fbbc04 0%, #ea4335 35%, #4285f4 70%, #34a853 100%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    position: relative; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 22px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+    transition: width 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                height 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                font-size 320ms ease;
+  }
+  .sb-stage[data-expanded="true"] .sb-login { width: 80px; height: 80px; font-size: 28px; }
+  .sb-login::after {
+    content: ""; position: absolute;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #62e335; right: 0; bottom: 2px;
+    box-shadow: 0 0 0 2px #fff056;
+  }
+
+  .demo-hint {
+    margin-left: 24px;
+    font-family: var(--font-mono); font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    align-self: center; max-width: 220px; line-height: 1.5;
+  }
+  .demo-hint b { color: #fff; }
+</style></head>
+<body>
+<div class="frame">
+  <button id="theme-toggle" type="button" style="position:fixed;top:12px;right:12px;z-index:99;
+    background:rgba(0,0,0,0.30); color:#fff; border:0; border-radius:999px;
+    padding:8px 14px; font:600 11px/1 var(--font-sans); cursor:pointer;
+    text-transform:uppercase; letter-spacing:0.08em;">
+    light / dark
+  </button>
+  <div class="sb-stage" data-expanded="false" data-popover="false" id="stage">
+    <span class="shadow-a"></span>
+    <span class="shadow-b"></span>
+    <aside class="sidebar">
+      <div class="sb-logo-wrap">
+        <div class="sb-logo" id="logo" role="img" aria-label="FLEX/REV — yako.cyclo">
+          <span class="logo-img collapsed"></span>
+          <span class="logo-img expanded"></span>
+        </div>
+        <div class="sb-version">v1.0.19<br>yako</div>
+      </div>
+
+      <nav class="sb-nav">
+        <a class="sb-item active" href="#">
+          <span class="sb-pastille">
+            <svg width="31" height="31" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z"/></svg>
+            <span class="sb-badge vert">6</span>
+          </span>
+          <span class="sb-label">Inventaire</span>
+        </a>
+        <a class="sb-item" href="#">
+          <span class="sb-pastille">
+            <svg width="31" height="31" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V12Zm-12 0h.008v.008H6V12Z"/></svg>
+            <span class="sb-badge rouge">1</span>
+          </span>
+          <span class="sb-label">Ventes</span>
+        </a>
+        <hr class="sb-divider">
+        <a class="sb-item" href="#">
+          <span class="sb-pastille">
+            <svg width="31" height="31" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z"/></svg>
+          </span>
+          <span class="sb-label">Services</span>
+        </a>
+        <a class="sb-item" href="#">
+          <span class="sb-pastille">
+            <svg width="31" height="31" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+            <span class="sb-badge rouge">51</span>
+          </span>
+          <span class="sb-label">Pièces</span>
+        </a>
+        <hr class="sb-divider">
+        <a class="sb-item" href="#">
+          <span class="sb-pastille">
+            <svg width="31" height="31" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"/></svg>
+          </span>
+          <span class="sb-label">Clients</span>
+        </a>
+      </nav>
+
+      <div class="sb-login-wrap">
+        <div class="sb-login" title="yako.cyclo@gmail.com">y</div>
+      </div>
+    </aside>
+
+    <!-- Popover anchored off logo -->
+    <div class="sb-popover" id="popover">
+      <div class="sb-pop-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg>
+        Dashboard
+      </div>
+      <div class="sb-pop-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5v11.625c0 1.035-.84 1.875-1.875 1.875h-13.5A1.875 1.875 0 0 1 3 19.125V7.5M14.25 12h-4.5M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-3c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v3c0 .621.504 1.125 1.125 1.125Z"/></svg>
+        Archives
+      </div>
+      <div class="sb-pop-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14.25 14.25 9M21 5.25v13.5l-3-1.5-3 1.5-3-1.5-3 1.5-3-1.5-3 1.5V5.25l3 1.5 3-1.5 3 1.5 3-1.5 3 1.5 3-1.5Z"/></svg>
+        Dépenses
+      </div>
+      <div class="sb-pop-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.397-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+        Paramètres
+      </div>
+      <div class="sb-pop-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"/></svg>
+        Aide
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-hint">
+    <b>Survol</b> du sidebar → expand 100 → 200px<br>
+    <b>Survol du logo</b> → popover Dashboard / Archives / Dépenses / Paramètres / Aide<br>
+    Transitions 320ms cubic-bezier
+  </div>
+</div>
+
+<script>
+  const stage   = document.getElementById('stage');
+  const logo    = document.getElementById('logo');
+  const popover = document.getElementById('popover');
+  document.getElementById('theme-toggle')
+    .addEventListener('click', () => document.body.classList.toggle('light-mode'));
+
+  // Sidebar expand/collapse on mouseenter/leave
+  stage.addEventListener('mouseenter', () => stage.setAttribute('data-expanded', 'true'));
+  stage.addEventListener('mouseleave', () => {
+    stage.setAttribute('data-expanded', 'false');
+    stage.setAttribute('data-popover', 'false');
+  });
+
+  // Logo popover on hover — kept open while hovering popover itself
+  logo.addEventListener('mouseenter',    () => stage.setAttribute('data-popover', 'true'));
+  popover.addEventListener('mouseenter', () => stage.setAttribute('data-popover', 'true'));
+  popover.addEventListener('mouseleave', () => stage.setAttribute('data-popover', 'false'));
+</script>
+</body></html>

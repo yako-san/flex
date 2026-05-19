@@ -1,0 +1,28 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #fafafa; font-family: var(--font-sans); }
+  .card { padding: 22px; color: var(--dark); display: grid; gap: 14px; }
+  .specimen { font-size: 13px; }
+  .label { font-family: var(--font-mono); font-size: 9px; color: var(--text-secondary-50); text-transform: lowercase; margin-bottom: 2px; }
+  .l100 { font-weight: 100; font-size: 26px; }
+  .l300 { font-weight: 300; font-size: 26px; }
+  .l400 { font-weight: 400; font-size: 26px; }
+  .l500 { font-weight: 500; font-size: 26px; }
+  .l700 { font-weight: 700; font-size: 26px; }
+  .l900 { font-weight: 900; font-size: 26px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 24px; }
+</style></head>
+<body>
+<div class="card">
+  <div class="grid">
+    <div><div class="label">100 · ultra-light</div><div class="l100">Helvetica</div></div>
+    <div><div class="label">300 · light</div><div class="l300">Helvetica</div></div>
+    <div><div class="label">400 · roman</div><div class="l400">Helvetica</div></div>
+    <div><div class="label">500 · medium</div><div class="l500">Helvetica</div></div>
+    <div><div class="label">700 · bold</div><div class="l700">Helvetica</div></div>
+    <div><div class="label">900 · black</div><div class="l900">Helvetica</div></div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #fafafa; font-family: var(--font-sans); }
+  .card { padding: 20px 24px; color: var(--dark); display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-end; }
+  .stack { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .label { font-family: var(--font-mono); font-size: 9px; color: var(--text-secondary-50); text-transform: lowercase; }
+  .ib { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; transition: background 150ms; cursor: pointer; border: 0; }
+  .ib.add { background: #fff056; width: 40px; height: 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.18); }
+  .ib.addOutline { background: transparent; width: 38px; height: 38px; border: 2px solid rgba(0,0,0,0.7); }
+  .ib.util { background: #fff; width: 32px; height: 32px; border: 1px solid #e0e0e0; }
+  .ib.utilDark { background: rgba(0,0,0,0.2); width: 32px; height: 32px; color: #fff; }
+  .ib.danger { background: #d92020; width: 32px; height: 32px; color: #fff; }
+  /* Default = solid yellow AddButton, stroke 3. addOutline ALSO uses
+     stroke 3 (bold +), but with 2px less diameter for visual balance
+     against the heavy outline. util / utilDark / danger drop to 2. */
+  .ib svg { stroke-width: 3; color: rgba(0,0,0,0.5); }
+  .ib.addOutline svg { stroke-width: 3; color: rgba(0,0,0,0.7); }
+  .ib.util svg,
+  .ib.utilDark svg,
+  .ib.danger svg { stroke-width: 2; color: currentColor; }
+</style></head>
+<body>
+<div class="card">
+  <div class="stack"><button class="ib add" aria-label="ajout">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>
+  </button><span class="label">add</span></div>
+  <div class="stack"><button class="ib addOutline" aria-label="ajout outline">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>
+  </button><span class="label">addOutline</span></div>
+  <div class="stack"><button class="ib util" aria-label="util">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+  </button><span class="label">util</span></div>
+  <div class="stack"><button class="ib utilDark" aria-label="util dark">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m6 9 6 6 6-6"/></svg>
+  </button><span class="label">utilDark</span></div>
+  <div class="stack"><button class="ib danger" aria-label="danger">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+  </button><span class="label">danger</span></div>
+</div>
+</body></html>
