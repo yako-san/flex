@@ -17,6 +17,20 @@ type Props = {
 };
 
 const SIZE_KEYS = new Set(['h1-size', 'h2-size', 'h3-size', 'h4-size', 'h5-size']);
+const WEIGHT_KEYS = new Set(['h1-weight', 'h2-weight', 'h3-weight', 'h4-weight', 'h5-weight']);
+
+// Options du select font-weight (CSS standard 100..900 par pas de 100).
+const WEIGHT_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: '100', label: '100 — Thin' },
+  { value: '200', label: '200 — Extralight' },
+  { value: '300', label: '300 — Light' },
+  { value: '400', label: '400 — Regular' },
+  { value: '500', label: '500 — Medium' },
+  { value: '600', label: '600 — Semibold' },
+  { value: '700', label: '700 — Bold' },
+  { value: '800', label: '800 — Extrabold' },
+  { value: '900', label: '900 — Black' },
+];
 
 const SECTIONS: Array<{ title: string; rows: Array<{ key: keyof WorkshopTheme; label: string; hint?: string }> }> = [
   {
@@ -30,11 +44,11 @@ const SECTIONS: Array<{ title: string; rows: Array<{ key: keyof WorkshopTheme; l
   {
     title: 'Typographie',
     rows: [
-      { key: 'h1-size', label: 'H1 — taille' }, { key: 'h1-color', label: 'H1 — couleur' },
-      { key: 'h2-size', label: 'H2 — taille' }, { key: 'h2-color', label: 'H2 — couleur' },
-      { key: 'h3-size', label: 'H3 — taille' }, { key: 'h3-color', label: 'H3 — couleur' },
-      { key: 'h4-size', label: 'H4 — taille' }, { key: 'h4-color', label: 'H4 — couleur' },
-      { key: 'h5-size', label: 'H5 — taille' }, { key: 'h5-color', label: 'H5 — couleur' },
+      { key: 'h1-size', label: 'H1 — taille' }, { key: 'h1-color', label: 'H1 — couleur' }, { key: 'h1-weight', label: 'H1 — graisse' },
+      { key: 'h2-size', label: 'H2 — taille' }, { key: 'h2-color', label: 'H2 — couleur' }, { key: 'h2-weight', label: 'H2 — graisse' },
+      { key: 'h3-size', label: 'H3 — taille' }, { key: 'h3-color', label: 'H3 — couleur' }, { key: 'h3-weight', label: 'H3 — graisse' },
+      { key: 'h4-size', label: 'H4 — taille' }, { key: 'h4-color', label: 'H4 — couleur' }, { key: 'h4-weight', label: 'H4 — graisse' },
+      { key: 'h5-size', label: 'H5 — taille' }, { key: 'h5-color', label: 'H5 — couleur' }, { key: 'h5-weight', label: 'H5 — graisse' },
     ],
   },
 ];
@@ -53,40 +67,54 @@ export function DesignSystemForm({ defaults, current }: Props) {
           <legend className="px-2 text-sm font-semibold uppercase tracking-wider text-[var(--dark)]">
             {section.title}
           </legend>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             {section.rows.map((row) => {
               const placeholder = defaults[row.key as string] ?? '';
               const value = current[row.key];
               const isSize = SIZE_KEYS.has(row.key as string);
+              const isWeight = WEIGHT_KEYS.has(row.key as string);
               return (
                 <label key={row.key as string} className="flex flex-col gap-1 text-xs">
                   <span className="font-semibold text-[var(--dark)]">{row.label}</span>
                   {row.hint ? (
                     <span className="text-[11px] text-[var(--text-secondary-60)]">{row.hint}</span>
                   ) : null}
-                  <div className="flex items-center gap-2">
-                    {!isSize ? (
-                      <input
-                        type="color"
-                        defaultValue={value ?? placeholder}
-                        aria-label={`${row.label} (sélecteur)`}
-                        onChange={(e) => {
-                          const text = e.currentTarget
-                            .closest('div')
-                            ?.querySelector<HTMLInputElement>('input[type="text"]');
-                          if (text) text.value = e.currentTarget.value;
-                        }}
-                        className="h-9 w-12 cursor-pointer rounded border border-[var(--gris-bord)]"
-                      />
-                    ) : null}
-                    <input
-                      type="text"
+                  {isWeight ? (
+                    <select
                       name={row.key as string}
                       defaultValue={value ?? ''}
-                      placeholder={placeholder}
-                      className="flex-1 rounded-md border border-[var(--gris-bord)] px-2 py-1.5 font-mono text-xs"
-                    />
-                  </div>
+                      className="rounded-md border border-[var(--gris-bord)] bg-white px-2 py-1.5 text-xs"
+                    >
+                      <option value="">Défaut ({placeholder})</option>
+                      {WEIGHT_OPTIONS.map((w) => (
+                        <option key={w.value} value={w.value}>{w.label}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      {!isSize ? (
+                        <input
+                          type="color"
+                          defaultValue={value ?? placeholder}
+                          aria-label={`${row.label} (sélecteur)`}
+                          onChange={(e) => {
+                            const text = e.currentTarget
+                              .closest('div')
+                              ?.querySelector<HTMLInputElement>('input[type="text"]');
+                            if (text) text.value = e.currentTarget.value;
+                          }}
+                          className="h-9 w-12 cursor-pointer rounded border border-[var(--gris-bord)]"
+                        />
+                      ) : null}
+                      <input
+                        type="text"
+                        name={row.key as string}
+                        defaultValue={value ?? ''}
+                        placeholder={placeholder}
+                        className="flex-1 rounded-md border border-[var(--gris-bord)] px-2 py-1.5 font-mono text-xs"
+                      />
+                    </div>
+                  )}
                 </label>
               );
             })}

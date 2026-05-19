@@ -16,11 +16,11 @@ const ALLOWED_KEYS = new Set<keyof WorkshopTheme>([
   'jaune',
   'app-bg',
   'app-bg-light',
-  'h1-size', 'h1-color',
-  'h2-size', 'h2-color',
-  'h3-size', 'h3-color',
-  'h4-size', 'h4-color',
-  'h5-size', 'h5-color',
+  'h1-size', 'h1-color', 'h1-weight',
+  'h2-size', 'h2-color', 'h2-weight',
+  'h3-size', 'h3-color', 'h3-weight',
+  'h4-size', 'h4-color', 'h4-weight',
+  'h5-size', 'h5-color', 'h5-weight',
 ]);
 
 export async function saveDesignSystemAction(
