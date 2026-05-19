@@ -80,7 +80,7 @@
   --gris-bord:    #e0e0e0;
   --gris-fond:    #fafafa;
   --dark:         #1a1a1a;
-  --app-bg:       #929292;  /* fond global AppShell V1 */
+  --app-bg:       #7e7e7e;  /* fond global AppShell V1 (Gris système, dark) */
 
   /* Statuts vélo — bg / fg */
   --st-rv-bg:         #fff056;  --st-rv-fg:         #000000;
@@ -238,8 +238,8 @@ input, textarea, select {
  *
  * Spec : toutes les previews `docs/design-system/preview/*.html`
  * intègrent un toggle "LIGHT / DARK" qui flippe `body.light-mode`.
- * Dark = défaut (`--app-bg: #929292`, overlays sombres, textes blanc-alpha).
- * Light = `--app-bg: #bfbfbf`, overlays clairs, textes noir-alpha.
+ * Dark = défaut (`--app-bg: #7e7e7e`, overlays sombres, textes blanc-alpha).
+ * Light = `--app-bg: #cccccc`, overlays clairs, textes noir-alpha.
  *
  * La sidebar reste jaune dans les 2 modes (signature FLEX).
  * Le PillsToggle bascule son bg-dark-20 en bg-light-20 (cf. preview
@@ -249,7 +249,7 @@ input, textarea, select {
  * depuis localStorage avant le first paint pour éviter le flash.
  * ============================================================ */
 body.light-mode {
-  --app-bg: #bfbfbf;
+  --app-bg: #cccccc;
 }
 
 /* PillsToggle — `<div role=radiogroup>` bascule son overlay en light. */
@@ -343,7 +343,7 @@ th {
 }
 
 /* --- Thème sombre admin (data-admin-theme="dark") -----------------
-   Le panneau principal admin est bg-black/20 sur #929292.
+   Le panneau principal admin est bg-black/20 sur #7e7e7e (Gris système).
    Les --text-secondary-* (rgba noirs) deviennent blancs-alpha.
    Réinitialisation pour les cartes blanches et les lignes colorées. */
 [data-admin-theme="dark"] {
