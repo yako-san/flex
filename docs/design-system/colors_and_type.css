@@ -80,7 +80,7 @@
   --gris-bg:       #757575;   /* PageHeader, workshop bar */
   --gris-bord:    #e0e0e0;
   --gris-fond:    #fafafa;
-  --app-bg:        #929292;   /* base globale de l'AppShell (light) */
+  --app-bg:        #7e7e7e;   /* Gris système — fond AppShell dark (light: #cccccc) */
 
   /* ===== SYSTÈME DE GRIS ADDITIF (alpha 20 % stacking) ============
      Empiler une de ces couches sur le bg crée le prochain niveau.

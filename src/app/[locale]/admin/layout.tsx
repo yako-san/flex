@@ -87,7 +87,7 @@ export default async function AdminLayout({ children, params }: Props) {
     : { inventaire: 0, ventes: 0, pieces: 0 };
 
   return (
-    /* Fond global gris V1 (#929292). Layout flex row desktop, colonne mobile. */
+    /* Fond global gris V1 (#7e7e7e). Layout flex row desktop, colonne mobile. */
     <div
       className="min-h-screen bg-[var(--app-bg)] md:flex md:h-screen md:overflow-hidden md:p-5"
       style={{ gap: '20px' }}
@@ -105,7 +105,7 @@ export default async function AdminLayout({ children, params }: Props) {
         <AdminSidebar locale={locale} badges={badges} />
       </div>
 
-      {/* Panneau principal — verre sombre V1 (rgba(0,0,0,0.20) sur #929292).
+      {/* Panneau principal — verre sombre V1 (rgba(0,0,0,0.20) sur #7e7e7e).
           data-admin-theme="dark" → CSS vars texte basculées en blanc-alpha. */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden md:rounded-[50px] md:bg-black/20" data-admin-theme="dark">
         <AdminWorkshopBar workshopName={workshop?.name ?? null} />

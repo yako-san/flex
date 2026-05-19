@@ -138,7 +138,8 @@ ring, pastilles « add », statut RV/Reçu : tout est jaune.
 - `--brun: #806642` — le brun du logo Yako Cyclo. Pastille active dans
   la sidebar jaune, accent secondaire.
 - `--dark: #1a1a1a` — texte principal sur fond clair.
-- `--app-bg: #929292` — gris moyen, fond global de l'admin shell.
+- `--app-bg` — Gris système, fond global de l'admin shell. `#7e7e7e` en
+  dark mode, `#cccccc` en light mode (`body.light-mode`).
 
 **Statuts métier — couleurs « éclatantes »** : c'est un trait distinctif
 de FLEX. Plutôt qu'une palette neutre, **chaque ligne et carte change de
@@ -186,7 +187,7 @@ typographique** de FLEX. Inverse de la convention : grand mais léger.
   20px de marge, **100 px collapsed** / **200 px expanded** au hover.
   Au hover, passe en `position: absolute` pour ne pas pousser le
   contenu (overlay shadow approfondie).
-- **Panneau principal** — `bg-black/20` sur `#929292`, `border-radius:
+- **Panneau principal** — `bg-black/20` sur `--app-bg`, `border-radius:
   50px`, occupe le reste du viewport. `data-admin-theme="dark"` bascule
   les `--text-secondary-*` en blanc-alpha.
 - **PageHeader sticky** — fond `--gris-bg` (#757575), eyebrow lowercase
@@ -202,7 +203,7 @@ typographique** de FLEX. Inverse de la convention : grand mais léger.
 
 **Aucun gradient.** Aucune image full-bleed. Aucun pattern. Aucune
 texture. Les seuls « gradients » sont les **superpositions
-semi-transparentes** sur le gris `#929292` :
+semi-transparentes** sur le Gris système (`--app-bg`) :
 
 - Panneau : `rgba(0,0,0,0.20)` — verre sombre
 - Bloc contenu (sur panneau) : `rgba(0,0,0,0.20)` × 2 cumulé

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 type Props = {
   /**
    * Eyebrow lowercase au-dessus du titre. Rendu dans une plaque grise
-   * séparée (#929292, padding 10pt, radius 6px) — pattern `text-bg par
+   * séparée (#7e7e7e, padding 10pt, radius 6px) — pattern `text-bg par
    * ligne` du DS (`docs/design-system/preview/components-page-header.html`).
    */
   eyebrow?: React.ReactNode;
@@ -33,7 +33,7 @@ type Props = {
  *
  * Spec figée par `docs/design-system/preview/components-page-header.html` :
  * chaque ligne (eyebrow / title-row / subline) porte sa propre plaque
- * `#929292` `padding: 10pt` `border-radius: 6px`, empilées avec un
+ * `#7e7e7e` `padding: 10pt` `border-radius: 6px`, empilées avec un
  * léger overlap vertical de -4px. Le H1 utilise des marges négatives
  * pour trimmer le descender slack de Helvetica afin que le padding
  * optique soit homogène 10pt sur les 4 côtés.

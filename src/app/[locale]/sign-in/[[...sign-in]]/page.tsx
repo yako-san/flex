@@ -9,7 +9,7 @@ type Props = {
  * Page de connexion V1-fidèle (capture `0-login.png`).
  *
  * Composition V1 :
- * - Fond `--app-bg` (#929292)
+ * - Fond `--app-bg` (#7e7e7e)
  * - Pill jaune arrondie centrée, ombre douce
  * - Logo FLEX rond complet (brun + texte jaune « FLEX:/REV » + tagline
  *   localisée). Utilise le SVG correspondant à la locale (fr/en).
