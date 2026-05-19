@@ -254,7 +254,7 @@ export function Sidebar({
                       height: 'var(--sidebar-pastille)',
                     }}
                   >
-                    <Icon className="h-[40px] w-[40px]" strokeWidth={2} aria-hidden />
+                    <Icon className="h-[40px] w-[40px]" strokeWidth={1.5} aria-hidden />
                     {it.badge != null && it.badge > 0 ? (
                       <span
                         className={cn(
@@ -357,7 +357,7 @@ export function Sidebar({
                 <Icon
                   className="h-[18px] w-[18px] shrink-0"
                   style={{ color: 'rgba(0,0,0,0.55)' }}
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   aria-hidden
                 />
                 {p.label}

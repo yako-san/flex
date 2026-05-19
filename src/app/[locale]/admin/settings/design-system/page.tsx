@@ -12,20 +12,20 @@ type Props = { params: Promise<{ locale: string }> };
 // dans les inputs quand l'atelier n'a pas (encore) d'override.
 const DEFAULTS: Required<Pick<WorkshopTheme,
   'jaune' | 'app-bg' | 'app-bg-light' |
-  'h1-size' | 'h1-color' |
-  'h2-size' | 'h2-color' |
-  'h3-size' | 'h3-color' |
-  'h4-size' | 'h4-color' |
-  'h5-size' | 'h5-color'
+  'h1-size' | 'h1-color' | 'h1-weight' |
+  'h2-size' | 'h2-color' | 'h2-weight' |
+  'h3-size' | 'h3-color' | 'h3-weight' |
+  'h4-size' | 'h4-color' | 'h4-weight' |
+  'h5-size' | 'h5-color' | 'h5-weight'
 >> = {
   'jaune':        '#fff056',
   'app-bg':       '#7e7e7e',
   'app-bg-light': '#cccccc',
-  'h1-size':  '3rem',     'h1-color':  '#fff056',
-  'h2-size':  '1.8rem',   'h2-color':  '#ffffff',
-  'h3-size':  '1.3rem',   'h3-color':  '#ffffff',
-  'h4-size':  '0.9rem',   'h4-color':  '#ffffff',
-  'h5-size':  '0.65rem',  'h5-color':  '#ffffff',
+  'h1-size':  '3rem',     'h1-color':  '#fff056', 'h1-weight': '300',
+  'h2-size':  '1.8rem',   'h2-color':  '#ffffff', 'h2-weight': '900',
+  'h3-size':  '1.3rem',   'h3-color':  '#ffffff', 'h3-weight': '600',
+  'h4-size':  '0.9rem',   'h4-color':  '#ffffff', 'h4-weight': '900',
+  'h5-size':  '0.65rem',  'h5-color':  '#ffffff', 'h5-weight': '600',
 };
 
 export default async function DesignSystemPage({ params }: Props) {
