@@ -17,12 +17,19 @@ export type WorkshopTheme = {
   'app-bg'?: string;       // Gris système, fond global AppShell (dark)
   'app-bg-light'?: string; // Pendant light (override de body.light-mode)
 
-  // Typographie — taille (rem/px) et couleur (hex/rgba) par niveau.
-  'h1-size'?: string; 'h1-color'?: string; 'h1-weight'?: string;
-  'h2-size'?: string; 'h2-color'?: string; 'h2-weight'?: string;
-  'h3-size'?: string; 'h3-color'?: string; 'h3-weight'?: string;
-  'h4-size'?: string; 'h4-color'?: string; 'h4-weight'?: string;
-  'h5-size'?: string; 'h5-color'?: string; 'h5-weight'?: string;
+  // Typographie — taille (rem/px), couleur (hex/rgba), graisse (100..900),
+  // casse (none/uppercase/lowercase/capitalize) par niveau.
+  'h1-size'?: string; 'h1-color'?: string; 'h1-weight'?: string; 'h1-caps'?: string;
+  'h2-size'?: string; 'h2-color'?: string; 'h2-weight'?: string; 'h2-caps'?: string;
+  'h3-size'?: string; 'h3-color'?: string; 'h3-weight'?: string; 'h3-caps'?: string;
+  'h4-size'?: string; 'h4-color'?: string; 'h4-weight'?: string; 'h4-caps'?: string;
+  'h5-size'?: string; 'h5-color'?: string; 'h5-weight'?: string; 'h5-caps'?: string;
+
+  // Couleurs signature additionnelles + incrément alpha gris additif.
+  brun?: string;
+  vert?: string;
+  dark?: string;
+  'overlay-step'?: string;
 
   // Statuts vélo (bg + fg)
   'st-rv-bg'?: string;        'st-rv-fg'?: string;
@@ -57,6 +64,10 @@ const RGBA_RE = /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:,\s*[\d.]+\s*)?\)$/;
 const SIZE_RE = /^\d{1,4}(\.\d{1,2})?(px|rem|em)$/;
 // font-weight : valeurs numériques 100..900 par pas de 100 uniquement.
 const WEIGHT_RE = /^(100|200|300|400|500|600|700|800|900)$/;
+// text-transform : 4 keywords CSS supportés.
+const CAPS_VALUES = new Set(['none', 'uppercase', 'lowercase', 'capitalize']);
+// Incrément alpha : 0.00..1.00 (2 décimales).
+const STEP_RE = /^0?\.\d{1,2}$|^1(\.0{1,2})?$|^0$/;
 
 export function isValidColorValue(v: unknown): v is string {
   return typeof v === 'string' && (HEX_RE.test(v) || RGBA_RE.test(v));
@@ -70,9 +81,19 @@ export function isValidWeightValue(v: unknown): v is string {
   return typeof v === 'string' && WEIGHT_RE.test(v);
 }
 
-// Clés qui acceptent une taille / un poids CSS au lieu d'une couleur.
-const SIZE_KEYS = new Set(['h1-size', 'h2-size', 'h3-size', 'h4-size', 'h5-size']);
+export function isValidCapsValue(v: unknown): v is string {
+  return typeof v === 'string' && CAPS_VALUES.has(v);
+}
+
+export function isValidStepValue(v: unknown): v is string {
+  return typeof v === 'string' && STEP_RE.test(v);
+}
+
+// Clés qui acceptent une taille / un poids / une casse / un step au lieu d'une couleur.
+const SIZE_KEYS   = new Set(['h1-size', 'h2-size', 'h3-size', 'h4-size', 'h5-size']);
 const WEIGHT_KEYS = new Set(['h1-weight', 'h2-weight', 'h3-weight', 'h4-weight', 'h5-weight']);
+const CAPS_KEYS   = new Set(['h1-caps', 'h2-caps', 'h3-caps', 'h4-caps', 'h5-caps']);
+const STEP_KEYS   = new Set(['overlay-step']);
 
 export function sanitizeTheme(raw: unknown): WorkshopTheme {
   if (!raw || typeof raw !== 'object') return {};
@@ -80,11 +101,12 @@ export function sanitizeTheme(raw: unknown): WorkshopTheme {
   for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
     if (typeof k !== 'string') continue;
     if (!/^[a-z0-9-]+$/.test(k)) continue;
-    const ok = WEIGHT_KEYS.has(k)
-      ? isValidWeightValue(v)
-      : SIZE_KEYS.has(k)
-        ? isValidSizeValue(v)
-        : isValidColorValue(v);
+    const ok =
+      WEIGHT_KEYS.has(k) ? isValidWeightValue(v)
+      : CAPS_KEYS.has(k) ? isValidCapsValue(v)
+      : SIZE_KEYS.has(k) ? isValidSizeValue(v)
+      : STEP_KEYS.has(k) ? isValidStepValue(v)
+      : isValidColorValue(v);
     if (!ok) continue;
     out[k] = v as string;
   }

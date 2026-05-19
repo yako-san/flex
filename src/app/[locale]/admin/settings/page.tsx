@@ -49,10 +49,10 @@ export default async function SettingsHubPage({ params }: Props) {
       description: 'Logo, identité fiscale (TPS/TVQ), notifications courriel, organisation Clerk.',
     },
     {
-      href: `/${locale}/admin/settings/design-system`,
+      href: `/${locale}/admin/settings/tokens`,
       icon: <TagIcon width={20} height={20} />,
-      title: 'Design system',
-      description: 'Tokens éditables — couleur highlight, background dark/light, taille et couleur H1–H5.',
+      title: 'Tokens éditables',
+      description: 'Couleurs signature, échelle typographique, gris système. Aperçu live + export JSON.',
     },
     {
       href: `/${locale}/admin/equipe`,
