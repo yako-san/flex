@@ -4,13 +4,13 @@ import * as React from 'react';
 import { OrganizationSwitcher, UserButton } from '@clerk/nextjs';
 import {
   ArchiveBoxIcon,
+  BanknoteIcon,
   Cog6ToothIcon,
+  ContactIcon,
   CurrencyDollarIcon,
   DashboardIcon,
   PackageIcon,
   QuestionMarkCircleIcon,
-  ShoppingCartIcon,
-  UsersIcon,
   WrenchIcon,
   TagIcon,
 } from '@/components/icons';
@@ -46,7 +46,7 @@ function buildPrimary(locale: string, badges?: SidebarBadges): SidebarItem[] {
     {
       href: `/${locale}/admin/ventes`,
       matchPrefix: `/${locale}/admin/ventes`,
-      icon: ShoppingCartIcon,
+      icon: BanknoteIcon,
       label: 'Ventes',
       badge: badges?.ventes ?? null,
       badgeVariant: 'rouge',
@@ -69,7 +69,7 @@ function buildPrimary(locale: string, badges?: SidebarBadges): SidebarItem[] {
     {
       href: `/${locale}/admin/clients`,
       matchPrefix: `/${locale}/admin/clients`,
-      icon: UsersIcon,
+      icon: ContactIcon,
       label: 'Clients',
       separatorBefore: true,
     },
@@ -107,7 +107,12 @@ export function AdminSidebar({ locale, badges }: { locale: string; badges?: Side
       footer={
         <UserButton
           appearance={{
-            elements: { rootBox: { display: 'flex', justifyContent: 'center' } },
+            elements: {
+              rootBox: { display: 'flex', justifyContent: 'center' },
+              userButtonBox: { width: 60, height: 60 },
+              userButtonAvatarBox: { width: 60, height: 60 },
+              userButtonTrigger: { width: 60, height: 60 },
+            },
           }}
         />
       }
