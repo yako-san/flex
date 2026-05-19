@@ -30,10 +30,19 @@ export default async function SignInPage({ params }: Props) {
     : 'Accès restreint aux membres de l\'atelier.';
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--app-bg)] px-4 py-8">
+    <main className="flex min-h-screen items-center justify-center bg-[var(--app-bg)] px-4 py-10">
+      {/* Spec : `docs/design-system/preview/screen-login.html` — carte
+          jaune `rounded-30 padding 40/50`, ombre douce, gap 32px entre
+          logo / bouton Google / caption, largeur 320px. */}
       <div
-        className="flex w-full max-w-[420px] flex-col items-center gap-4 rounded-[40px] bg-[var(--jaune)] p-8"
-        style={{ boxShadow: '0 16px 40px rgba(0,0,0,0.3)' }}
+        className="flex w-[320px] max-w-full flex-col items-center"
+        style={{
+          background: 'var(--jaune)',
+          borderRadius: 30,
+          padding: '40px 50px',
+          gap: 32,
+          boxShadow: '0 12px 32px rgba(0,0,0,0.22)',
+        }}
       >
         {/* Logo complet FLEX/REV avec tagline localisée. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -42,7 +51,7 @@ export default async function SignInPage({ params }: Props) {
           alt="Flex"
           width={160}
           height={160}
-          style={{ display: 'block' }}
+          style={{ display: 'block', borderRadius: '50%' }}
         />
 
         <SignIn
@@ -51,18 +60,21 @@ export default async function SignInPage({ params }: Props) {
           appearance={{
             elements: {
               rootBox: 'w-full',
-              card: 'bg-transparent shadow-none border-0',
+              card: 'bg-transparent shadow-none border-0 p-0',
               headerTitle: 'hidden',
               headerSubtitle: 'hidden',
+              // Bouton OAuth Google (et autres) : pill brun spec 44h,
+              // uppercase letter-spacing 0.08em, font 13pt 700.
               socialButtonsBlockButton:
-                'bg-[var(--brun)] hover:bg-[var(--brun-h)] text-white rounded-full font-semibold uppercase tracking-wider text-xs',
+                'bg-[var(--brun)] hover:bg-[var(--brun-h)] text-white rounded-full font-bold uppercase text-[13px] tracking-[0.08em] h-[44px]',
+              socialButtonsBlockButtonText: 'text-white',
               formButtonPrimary:
-                'bg-[var(--brun)] hover:bg-[var(--brun-h)] text-white rounded-full font-semibold uppercase tracking-wider text-xs',
+                'bg-[var(--brun)] hover:bg-[var(--brun-h)] text-white rounded-full font-bold uppercase text-[13px] tracking-[0.08em] h-[44px]',
               formFieldInput:
                 'rounded-xl border-[1.5px] border-[var(--brun)]/30 bg-white text-sm',
               footerActionLink: 'text-[var(--brun)] hover:text-[var(--brun-h)]',
               dividerLine: 'bg-[var(--brun)]/20',
-              dividerText: 'text-[var(--brun)]/60 text-xs',
+              dividerText: 'text-[var(--brun)]/60 text-xs uppercase tracking-[0.06em]',
             },
             variables: {
               colorPrimary: '#806642',
@@ -73,7 +85,14 @@ export default async function SignInPage({ params }: Props) {
           }}
         />
 
-        <p className="mt-2 text-center text-[11px] italic text-[var(--brun)]/70">
+        <p
+          className="text-center"
+          style={{
+            fontSize: 11,
+            color: 'rgba(0,0,0,0.5)',
+            marginTop: -16,
+          }}
+        >
           {restrictText}
         </p>
       </div>
