@@ -209,7 +209,7 @@ export default async function AdminDashboardPage({ params }: Props) {
         {/* 4 KPI cards */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
-            icon={<BikeIcon width={18} height={18} />}
+            icon={<BikeIcon width={16} height={16} />}
             iconBg="var(--st-on-bench-bg)"
             label="BDT actifs"
             value={bdcActifCount}
@@ -229,7 +229,7 @@ export default async function AdminDashboardPage({ params }: Props) {
           </KpiCard>
 
           <KpiCard
-            icon={<PackageIcon width={18} height={18} />}
+            icon={<PackageIcon width={16} height={16} />}
             iconBg="var(--rouge)"
             iconFg="white"
             label="Stock à commander"
@@ -238,7 +238,7 @@ export default async function AdminDashboardPage({ params }: Props) {
           />
 
           <KpiCard
-            icon={<BellIcon width={18} height={18} />}
+            icon={<BellIcon width={16} height={16} />}
             iconBg="var(--jaune)"
             label="Suivis"
             value={bdtSuivi.length}
@@ -246,7 +246,7 @@ export default async function AdminDashboardPage({ params }: Props) {
           />
 
           <KpiCard
-            icon={<DollarSignIcon width={18} height={18} />}
+            icon={<DollarSignIcon width={16} height={16} />}
             iconBg="var(--st-approuve-bg)"
             label="Revenus du mois"
             value={`${caMonth.toFixed(2)} $`}
@@ -404,27 +404,65 @@ function KpiCard({
   sub?: string;
   children?: React.ReactNode;
 }) {
+  // Spec : `docs/design-system/preview/components-kpi-card.html`.
+  // Card sur bloc-contenu dark → texte blanc-alpha. Value 32pt 700 jaune
+  // tabular-nums letter-spacing -0.01em.
   return (
-    <div className="rounded-2xl bg-[var(--overlay-dark-20)] p-4 shadow-sm">
+    <div
+      className="min-w-0 flex-1 rounded-2xl text-white"
+      style={{
+        background: 'var(--overlay-dark-20)',
+        padding: 16,
+      }}
+    >
       <div className="mb-2 flex items-center gap-2">
         <span
           aria-hidden
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full"
-          style={{ backgroundColor: iconBg, color: iconFg }}
+          className="inline-flex items-center justify-center rounded-full"
+          style={{
+            width: 32,
+            height: 32,
+            backgroundColor: iconBg,
+            color: iconFg,
+          }}
         >
           {icon}
         </span>
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary-70)]">
+        <span
+          className="uppercase"
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: '0.08em',
+            color: 'rgba(255,255,255,0.7)',
+          }}
+        >
           {label}
         </span>
       </div>
       <div
-        className="font-mono text-2xl font-bold tabular-nums"
-        style={{ color: 'var(--jaune)' }}
+        className="tabular-nums"
+        style={{
+          color: 'var(--jaune)',
+          fontSize: 32,
+          fontWeight: 700,
+          lineHeight: 1,
+          letterSpacing: '-0.01em',
+        }}
       >
         {value}
       </div>
-      {sub ? <div className="mt-1 text-[11px] text-[var(--text-secondary-60)]">{sub}</div> : null}
+      {sub ? (
+        <div
+          style={{
+            marginTop: 4,
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.6)',
+          }}
+        >
+          {sub}
+        </div>
+      ) : null}
       {children}
     </div>
   );
