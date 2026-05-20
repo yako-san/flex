@@ -69,6 +69,12 @@ export function TokensEditorClient({ defaults, initial }: Props) {
   });
   const [pending, startTransition] = React.useTransition();
 
+  // Ref synchrone qui suit `tokens` — permet à `handleSave` de lire la
+  // dernière version peu importe les races de batching React (cas
+  // d'edge : input.onChange + button.onClick dans le même tick).
+  const tokensRef = React.useRef(tokens);
+  React.useEffect(() => { tokensRef.current = tokens; }, [tokens]);
+
   // Live preview : tous les tokens sont propagés en CSS vars sur :root
   // à chaque modification. `app-bg` ne sera vu en dark mode que.
   React.useEffect(() => {
@@ -106,7 +112,8 @@ export function TokensEditorClient({ defaults, initial }: Props) {
 
   function handleSave() {
     startTransition(async () => {
-      const r = await saveTokensAction(tokens);
+      // Lit via ref pour garantir la dernière version (cf. tokensRef).
+      const r = await saveTokensAction(tokensRef.current);
       if (r.ok) toast.success('Tokens sauvegardés');
       else toast.error(r.error);
     });
@@ -332,18 +339,19 @@ function Section({
 function ColorRow({
   label, varName, value, onChange,
 }: { label: string; varName: string; value: string; onChange: (v: string) => void }) {
-  // État local du champ texte : permet à l'utilisateur de taper librement
-  // (ex. « #ccc » incomplet) sans que onChange annule sa frappe. La
-  // valeur n'est propagée au parent qu'au blur (ou Enter) si elle est
-  // valide. Sync depuis `value` quand le parent met à jour (ex. reset).
+  // Draft local pour permettre une frappe libre (`#ccc` incomplet OK,
+  // pas d'annulation de frappe). À CHAQUE keystroke, on essaie de
+  // committer : si le hex est complet → onChange (state parent à jour
+  // immédiatement, pas de race au Save). Si incomplet → seul le draft
+  // change. Sync depuis `value` au mount / reset.
   const [draft, setDraft] = React.useState(value.toUpperCase());
   React.useEffect(() => { setDraft(value.toUpperCase()); }, [value]);
 
-  function commit(raw: string) {
+  function handleType(raw: string) {
+    setDraft(raw);
     let v = raw.trim();
     if (!v.startsWith('#')) v = '#' + v;
     if (/^#[0-9A-Fa-f]{6}$/.test(v)) onChange(v.toLowerCase());
-    else setDraft(value.toUpperCase()); // rejette → restaure
   }
 
   return (
@@ -367,11 +375,7 @@ function ColorRow({
       <input
         type="text"
         value={draft}
-        onChange={(e) => setDraft(e.currentTarget.value)}
-        onBlur={(e) => commit(e.currentTarget.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') (e.currentTarget as HTMLInputElement).blur();
-        }}
+        onChange={(e) => handleType(e.currentTarget.value)}
         className="w-full rounded-lg border-0 bg-black/25 px-2.5 py-2 font-mono text-[12px] uppercase tabular-nums text-white"
       />
       <span className="text-right font-mono text-[10px] text-white/45">--{varName}</span>
