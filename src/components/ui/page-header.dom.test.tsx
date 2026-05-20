@@ -16,11 +16,11 @@ describe('PageHeader (text-bg par ligne)', () => {
     expect(screen.getByRole('heading', { level: 1 }).querySelector('span')).toBeTruthy();
   });
 
-  it('eyebrow rendu lowercase dans sa propre plaque grise', () => {
+  it('eyebrow rendu lowercase sans bg de plaque (décision yako 2026-05-20)', () => {
     render(<PageHeader title="x" eyebrow="vélos en atelier" />);
     const el = screen.getByText('vélos en atelier');
     expect(el.style.textTransform).toBe('lowercase');
-    expect(el.style.background).toContain('--app-bg');
+    expect(el.style.background).toBe('');
   });
 
   it("pas d'eyebrow si non fourni", () => {
@@ -46,10 +46,10 @@ describe('PageHeader (text-bg par ligne)', () => {
     expect(screen.queryByText('?')).toBeNull();
   });
 
-  it('subline rendu dans sa propre plaque sous le titre', () => {
+  it('subline rendu sans bg de plaque (décision yako 2026-05-20)', () => {
     render(<PageHeader title="x" subline="32 BDT actifs" />);
     const el = screen.getByText('32 BDT actifs');
-    expect(el.style.background).toContain('--app-bg');
+    expect(el.style.background).toBe('');
   });
 
   it('actions rendus dans la zone droite', () => {
