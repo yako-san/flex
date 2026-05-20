@@ -8,6 +8,7 @@ import { Pill } from '@/components/ui/pill';
 import { ToolbarBlock, AddButton } from '@/components/ui/toolbar';
 import { SearchBar } from '../_components/search-bar';
 import { VELO_STATUS_LABELS } from '@/lib/velo/status-labels';
+import { ClientEditDialogTrigger } from './client-edit-dialog-trigger';
 
 type PillVariant = 'rv' | 'recu' | 'eval' | 'attente' | 'approuve' | 'on-bench' | 'ctrl-qlte' | 'fini' | 'facturer' | 'facture' | 'livre';
 
@@ -116,6 +117,7 @@ export default async function ClientsPage({ params, searchParams }: Props) {
                   <th className="px-3 py-2 text-right">Vélos</th>
                   <th className="px-3 py-2 text-left">Notes</th>
                   <th className="px-3 py-2 text-right">BDT actif</th>
+                  <th className="px-3 py-2 text-right w-12" />
                 </tr>
               </thead>
               <tbody>
@@ -156,6 +158,9 @@ export default async function ClientsPage({ params, searchParams }: Props) {
                         ) : (
                           <span className="text-[var(--text-secondary-50)]">—</span>
                         )}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <ClientEditDialogTrigger client={c} />
                       </td>
                     </tr>
                   );
