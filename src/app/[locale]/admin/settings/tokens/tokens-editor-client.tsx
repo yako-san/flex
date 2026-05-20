@@ -15,6 +15,13 @@ type Props = {
 const COLOR_KEYS: TokenKey[] = ['jaune', 'brun', 'vert', 'rouge', 'dark'];
 const TYPE_LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5'] as const;
 const GREY_KEYS: TokenKey[] = ['app-bg', 'app-bg-light'];
+const BUTTON_KEYS: TokenKey[] = ['btn-radius', 'btn-h-sm', 'btn-h-md', 'btn-h-lg'];
+const BUTTON_LABELS: Record<string, string> = {
+  'btn-radius': 'Rayon (pill)',
+  'btn-h-sm': 'Hauteur S',
+  'btn-h-md': 'Hauteur M',
+  'btn-h-lg': 'Hauteur L',
+};
 const CAPS_OPTIONS = [
   { v: 'none', l: 'Aa' },
   { v: 'uppercase', l: 'AA' },
@@ -30,6 +37,7 @@ const ALL_KEYS: TokenKey[] = [
   ...GREY_KEYS,
   'overlay-step',
   ...(TYPE_LEVELS.flatMap((h) => [`${h}-size`, `${h}-weight`, `${h}-caps`, `${h}-color`]) as TokenKey[]),
+  ...BUTTON_KEYS,
 ];
 
 // Applique un token en CSS var sur `:root` (live preview, pas de save).
@@ -63,7 +71,7 @@ export function TokensEditorClient({ defaults, initial }: Props) {
     setTokens((t) => ({ ...t, [key]: value }));
   }
 
-  function resetSection(scope: 'colors' | 'type' | 'grey' | 'all') {
+  function resetSection(scope: 'colors' | 'type' | 'grey' | 'buttons' | 'all') {
     setTokens((t) => {
       const next = { ...t };
       for (const k of ALL_KEYS) {
@@ -72,7 +80,8 @@ export function TokensEditorClient({ defaults, initial }: Props) {
           scope === 'all' ||
           (scope === 'colors' && (COLOR_KEYS as string[]).includes(ks)) ||
           (scope === 'type' && /^h[1-5]-/.test(ks)) ||
-          (scope === 'grey' && ((GREY_KEYS as string[]).includes(ks) || ks === 'overlay-step'));
+          (scope === 'grey' && ((GREY_KEYS as string[]).includes(ks) || ks === 'overlay-step')) ||
+          (scope === 'buttons' && (BUTTON_KEYS as string[]).includes(ks));
         if (inScope) next[ks] = defaults[ks] ?? '';
       }
       return next;
@@ -169,6 +178,20 @@ export function TokensEditorClient({ defaults, initial }: Props) {
           </p>
         </Section>
 
+        <Section title="Boutons" onReset={() => resetSection('buttons')}>
+          {BUTTON_KEYS.map((k) => (
+            <PxRow
+              key={k as string}
+              label={BUTTON_LABELS[k as string] ?? (k as string)}
+              varName={k as string}
+              value={tokens[k as string] ?? ''}
+              min={k === 'btn-radius' ? 0 : 24}
+              max={k === 'btn-radius' ? 40 : 64}
+              onChange={(v) => update(k as string, v)}
+            />
+          ))}
+        </Section>
+
         <footer className="flex flex-wrap items-center justify-end gap-2 pt-3">
           <button
             type="button"
@@ -201,6 +224,7 @@ export function TokensEditorClient({ defaults, initial }: Props) {
         <PreviewPalette tokens={tokens} />
         <PreviewTypeScale tokens={tokens} />
         <PreviewRails tokens={tokens} />
+        <PreviewButtons tokens={tokens} />
       </section>
     </div>
   );
@@ -216,7 +240,7 @@ function Section({
   return (
     <section className="border-b border-white/10 py-[14px] first:pt-0 last:border-b-0">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="m-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--jaune)]">
+        <h2 className="m-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
           {title}
         </h2>
         <button
@@ -352,8 +376,8 @@ function SliderRow({
 
 function PreviewPalette({ tokens }: { tokens: Record<string, string> }) {
   return (
-    <div className="rounded-2xl bg-black/30 p-[18px] text-white">
-      <h3 className="m-0 mb-3 text-[11px] uppercase tracking-[0.08em] text-white/70">
+    <div className="rounded-2xl bg-white/60 p-[18px] text-[var(--dark)]">
+      <h3 className="m-0 mb-3 text-[11px] uppercase tracking-[0.08em] text-black/55">
         Aperçu · palette
       </h3>
       <div className="grid grid-cols-5 gap-3">
@@ -386,7 +410,7 @@ function PreviewTypeScale({ tokens }: { tokens: Record<string, string> }) {
     h4: 'Inventaire', h5: 'bons de travail',
   };
   return (
-    <div className="rounded-2xl bg-white/85 p-[18px] text-[var(--dark)]">
+    <div className="rounded-2xl bg-white/60 p-[18px] text-[var(--dark)]">
       <h3 className="m-0 mb-3 text-[11px] uppercase tracking-[0.08em] text-black/55">
         Aperçu · échelle typographique
       </h3>
@@ -421,8 +445,8 @@ function PreviewTypeScale({ tokens }: { tokens: Record<string, string> }) {
 function PreviewRails({ tokens }: { tokens: Record<string, string> }) {
   const step = parseFloat(tokens['overlay-step'] ?? '0.20') || 0.20;
   return (
-    <div className="rounded-2xl bg-black/30 p-[18px] text-white">
-      <h3 className="m-0 mb-3 text-[11px] uppercase tracking-[0.08em] text-white/70">
+    <div className="rounded-2xl bg-white/60 p-[18px] text-[var(--dark)]">
+      <h3 className="m-0 mb-3 text-[11px] uppercase tracking-[0.08em] text-black/55">
         Aperçu · gris système
       </h3>
       {(['light', 'dark'] as const).map((mode) => {
@@ -451,6 +475,82 @@ function PreviewRails({ tokens }: { tokens: Record<string, string> }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function PreviewButtons({ tokens }: { tokens: Record<string, string> }) {
+  const radius = tokens['btn-radius'] || '30px';
+  const jaune = tokens['jaune'] || '#fff056';
+  const dark = tokens['dark'] || '#1a1a1a';
+  const sizes: Array<{ key: string; label: string }> = [
+    { key: 'btn-h-sm', label: 'Small' },
+    { key: 'btn-h-md', label: 'Medium' },
+    { key: 'btn-h-lg', label: 'Large' },
+  ];
+  return (
+    <div className="rounded-2xl bg-white/60 p-[18px] text-[var(--dark)]">
+      <h3 className="m-0 mb-3 text-[11px] uppercase tracking-[0.08em] text-black/55">
+        Aperçu · boutons
+      </h3>
+      <div className="flex flex-col gap-3">
+        {sizes.map((s) => {
+          const h = tokens[s.key] || '38px';
+          return (
+            <div key={s.key} className="flex items-center gap-3">
+              <span className="w-16 shrink-0 font-mono text-[10px] lowercase text-black/55">
+                {s.label}
+              </span>
+              <button
+                type="button"
+                style={{
+                  height: h, borderRadius: radius, background: jaune, color: '#000',
+                  padding: '0 18px', fontSize: 13, fontWeight: 900,
+                  textTransform: 'uppercase', letterSpacing: '0.1em', border: 0,
+                }}
+              >
+                Primary
+              </button>
+              <button
+                type="button"
+                style={{
+                  height: h, borderRadius: radius, background: 'transparent', color: dark,
+                  padding: '0 18px', fontSize: 13, fontWeight: 900,
+                  textTransform: 'uppercase', letterSpacing: '0.1em',
+                  border: `2px solid ${dark}80`,
+                }}
+              >
+                Secondary
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PxRow({
+  label, varName, value, min, max, onChange,
+}: { label: string; varName: string; value: string; min: number; max: number; onChange: (v: string) => void }) {
+  const num = parseInt(value.replace(/[^\d]/g, ''), 10) || 0;
+  return (
+    <div
+      className="mb-2 grid items-center"
+      style={{ gridTemplateColumns: '100px 1fr 60px 90px', gap: 10 }}
+    >
+      <label className="text-[11px] lowercase font-semibold text-white/70">{label}</label>
+      <input
+        type="range"
+        min={min} max={max} step={1}
+        value={num}
+        onChange={(e) => onChange(`${e.currentTarget.value}px`)}
+        className="h-1 w-full appearance-none rounded-full bg-white/20 outline-none accent-[var(--jaune)]"
+      />
+      <span className="text-right font-mono text-[11px] font-bold text-[var(--jaune)]">
+        {num}px
+      </span>
+      <span className="text-right font-mono text-[10px] text-white/45">--{varName}</span>
     </div>
   );
 }
