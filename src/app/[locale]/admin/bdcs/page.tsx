@@ -242,7 +242,7 @@ export default async function BdcsPage({ params, searchParams }: Props) {
               return (
                 <div
                   key={b.id}
-                  className="grid items-center rounded-full transition-opacity hover:opacity-90"
+                  className="relative grid items-center rounded-full transition-opacity hover:opacity-90"
                   style={{
                     backgroundColor: colors.bg,
                     color: colors.fg,
@@ -252,10 +252,16 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                     marginBottom: 6,
                   }}
                 >
-                  {/* Col 1 — ID bold 17pt + pill statut 9pt inline. */}
+                  {/* Overlay clickable — toute la ligne mène au BDT. Le lien
+                      client interne reste accessible via z-index supérieur. */}
                   <Link
                     href={`/${locale}/admin/bdcs/${b.id}`}
-                    className="flex items-center gap-2 whitespace-nowrap font-bold leading-none hover:underline"
+                    aria-label={`BDT ${String(b.numero).padStart(4, '0')}`}
+                    className="absolute inset-0 z-0 rounded-full focus:outline-none focus:ring-2 focus:ring-black/40"
+                  />
+                  {/* Col 1 — ID bold 17pt + pill statut 9pt inline. */}
+                  <span
+                    className="flex items-center gap-2 whitespace-nowrap font-bold leading-none"
                     style={{
                       fontSize: 17,
                       fontVariantNumeric: 'tabular-nums',
@@ -276,14 +282,14 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                     >
                       {label}
                     </span>
-                  </Link>
+                  </span>
                   <span
                     className="truncate text-left"
                     style={{ fontWeight: 500, fontSize: 13 }}
                   >
                     {[b.velo.marque?.nom, b.velo.modele, b.velo.couleur].filter(Boolean).join(', ') || '—'}
                   </span>
-                  <span className="truncate text-left text-[13px]" style={{ fontWeight: 500 }}>
+                  <span className="relative z-10 truncate text-left text-[13px]" style={{ fontWeight: 500 }}>
                     {b.velo.client ? (
                       <Link
                         href={`/${locale}/admin/clients/${b.velo.client.id ?? ''}`}
@@ -313,9 +319,11 @@ export default async function BdcsPage({ params, searchParams }: Props) {
               };
               return (
                 <section key={g.key} className={gi === 0 ? '' : 'mt-3'}>
-                  <h2 className="px-[10px] pb-1 pt-1 text-[11px] font-semibold lowercase text-white/60">
+                  {/* H4 blanc — hérite des tokens --h4-* (uppercase via
+                      --h4-caps, taille via --h4-size) éditables. */}
+                  <h4 className="px-[10px] pb-1 pt-1 text-white">
                     {g.label} <span className="opacity-70">· {rows.length}</span>
-                  </h2>
+                  </h4>
                   {rows.map(renderRow)}
                 </section>
               );

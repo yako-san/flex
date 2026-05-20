@@ -109,9 +109,11 @@ export default async function AdminLayout({ children, params }: Props) {
         <AdminSidebar locale={locale} badges={badges} />
       </div>
 
-      {/* Panneau principal — verre sombre V1 (rgba(0,0,0,0.20) sur #7e7e7e).
-          data-admin-theme="dark" → CSS vars texte basculées en blanc-alpha. */}
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden md:rounded-[50px] md:bg-black/20" data-admin-theme="dark">
+      {/* Panneau principal — couche `b` du système 3 strates additif
+          (cf. globals.css §« Système 3 couches additif »). En dark mode
+          c'est `a + noir 20%`, en light mode `a + blanc 20%` — flip
+          automatique via `--overlay-layer`. */}
+      <div className="page-block-bg flex min-w-0 flex-1 flex-col overflow-hidden md:rounded-[50px]" data-admin-theme="dark">
         <AdminWorkshopBar workshopName={workshop?.name ?? null} />
 
         <main className="flex-1 overflow-auto">

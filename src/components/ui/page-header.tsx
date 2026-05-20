@@ -58,7 +58,9 @@ export function PageHeader({
     <header
       className={cn(
         'flex w-full items-end justify-between gap-6 px-6 py-5',
-        sticky && 'sticky top-0 z-30',
+        // Bg opaque (couche `b` calculée) pour que le contenu qui scrolle
+        // ne se voie pas à travers le header quand sticky.
+        sticky && 'sticky top-0 z-30 bg-layer-b',
         className,
       )}
     >
