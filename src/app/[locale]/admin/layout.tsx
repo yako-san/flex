@@ -7,6 +7,7 @@ import { AdminMobileTopBar, AdminSidebar, AdminWorkshopBar } from './_admin-nav'
 import { getActiveWorkshop } from '@/lib/workshop';
 import { prisma } from '@/lib/db';
 import { TenantThemeStyle } from '@/components/tenant-theme-style';
+import { AutoTextContrast } from '@/components/auto-text-contrast';
 
 /** Compteurs sidebar V1 (badges numériques sur Inventaire/Ventes/Pièces). */
 async function getSidebarBadges(workshopId: string): Promise<{
@@ -95,6 +96,9 @@ export default async function AdminLayout({ children, params }: Props) {
     >
       {/* Override tokens CSS par tenant (Workshop.theme JSON). */}
       <TenantThemeStyle theme={workshop?.theme ?? null} />
+      {/* Calcule `--text-on-bg` (noir ou blanc) selon la luminance WCAG
+          de `--app-bg`. Sert de défaut auto-adaptatif aux body + h1-h5. */}
+      <AutoTextContrast />
 
       {/* Top bar mobile (< md) — pill jaune comme V1 */}
       <AdminMobileTopBar locale={locale} badges={badges} />
