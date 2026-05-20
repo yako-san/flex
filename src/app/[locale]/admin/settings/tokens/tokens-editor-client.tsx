@@ -450,27 +450,36 @@ function PreviewRails({ tokens }: { tokens: Record<string, string> }) {
         Aperçu · gris système
       </h3>
       {(['light', 'dark'] as const).map((mode) => {
-        const base = mode === 'light' ? tokens['app-bg-light'] : tokens['app-bg'];
+        const base = (mode === 'light' ? tokens['app-bg-light'] : tokens['app-bg']) ?? '';
         const overlay = mode === 'light' ? '255,255,255' : '0,0,0';
+        const labelColor = mode === 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.75)';
         const cells = [0, 1, 2, 3, 4];
         return (
           <div
             key={mode}
             className="mb-2 grid overflow-hidden rounded-[10px]"
-            style={{ gridTemplateColumns: '64px repeat(5, 1fr)', background: base }}
+            style={{ gridTemplateColumns: '90px repeat(5, 1fr)', background: base }}
           >
             <span
-              className="flex items-center justify-center p-2 font-mono text-[10px] lowercase"
-              style={{ color: mode === 'light' ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.7)' }}
+              className="flex flex-col items-center justify-center gap-0.5 p-2 font-mono text-[10px] lowercase"
+              style={{ color: labelColor }}
             >
-              {mode}
+              <span>{mode}</span>
+              <span className="text-[10px] uppercase tracking-tight">
+                {base.toUpperCase()}
+              </span>
             </span>
             {cells.map((i) => (
               <span
                 key={i}
-                className="block h-10"
-                style={{ background: i === 0 ? 'transparent' : `rgba(${overlay},${(step * i).toFixed(2)})` }}
-              />
+                className="flex h-10 items-center justify-center font-mono text-[10px] font-bold"
+                style={{
+                  background: i === 0 ? 'transparent' : `rgba(${overlay},${(step * i).toFixed(2)})`,
+                  color: labelColor,
+                }}
+              >
+                {i === 0 ? 'base' : `${Math.round(step * i * 100)}%`}
+              </span>
             ))}
           </div>
         );
