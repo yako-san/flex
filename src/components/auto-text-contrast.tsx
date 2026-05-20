@@ -24,7 +24,12 @@ export function AutoTextContrast() {
     const root = document.documentElement;
 
     function recompute() {
-      const computed = getComputedStyle(root);
+      // IMPORTANT : lire depuis BODY, pas `:root`. Le toggle light/dark
+      // override `--app-bg` via `body.light-mode { --app-bg: ... }`, donc
+      // seul getComputedStyle(body) résout la valeur réellement vue.
+      // Avant : getComputedStyle(root) retournait toujours le `:root`
+      // value (dark) même en light mode → contraste inversé.
+      const computed = getComputedStyle(document.body);
       const rawBg = (computed.getPropertyValue('--app-bg') || '').trim();
       // `--app-bg` peut être en hex (#7e7e7e) ou en rgb() — on normalise.
       const hex = rawBg.startsWith('#') ? rawBg : rgbToHex(rawBg);

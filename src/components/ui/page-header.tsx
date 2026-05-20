@@ -58,18 +58,18 @@ export function PageHeader({
     <header
       className={cn(
         'flex w-full items-end justify-between gap-6 px-6 py-5',
-        // Bg opaque (couche `b` calculée) pour que le contenu qui scrolle
-        // ne se voie pas à travers le header quand sticky.
-        sticky && 'sticky top-0 z-30 bg-layer-b',
+        // Plus de bg opaque sur le header (retour yako 2026-05-20) — le
+        // header reste sticky mais transparent ; le contenu qui scrolle
+        // dessous se voit. Décision design.
+        sticky && 'sticky top-0 z-30',
         className,
       )}
     >
       <div className="flex min-w-0 flex-1 flex-col items-start gap-0">
         {eyebrow ? (
           <span
-            className="inline-block rounded-md text-[13px] font-bold leading-none text-white"
+            className="inline-block text-[13px] font-bold leading-none text-white"
             style={{
-              background: 'var(--app-bg)',
               padding: 10,
               textTransform: 'lowercase',
               marginBottom: -4,
@@ -79,9 +79,8 @@ export function PageHeader({
           </span>
         ) : null}
         <div
-          className="inline-flex items-start rounded-md"
+          className="inline-flex items-start"
           style={{
-            background: 'var(--app-bg)',
             padding: 10,
             marginBottom: subline ? -4 : 0,
           }}
@@ -123,9 +122,8 @@ export function PageHeader({
         </div>
         {subline ? (
           <span
-            className="inline-block rounded-md text-[13px] leading-none"
+            className="inline-block text-[13px] leading-none"
             style={{
-              background: 'var(--app-bg)',
               padding: 10,
               color: 'rgba(255,255,255,0.75)',
             }}

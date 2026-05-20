@@ -75,14 +75,27 @@ export function TokensEditorClient({ defaults, initial }: Props) {
   const tokensRef = React.useRef(tokens);
   React.useEffect(() => { tokensRef.current = tokens; }, [tokens]);
 
-  // Live preview : tous les tokens sont propagés en CSS vars sur :root
-  // à chaque modification. `app-bg` ne sera vu en dark mode que.
+  // Live preview : on ne pousse QUE les tokens dont la valeur DIFFÈRE
+  // des défauts. Pousser tous les défauts casserait les fallback chains
+  // de globals.css — ex. `color: var(--h3-color, var(--text-on-bg))` ne
+  // tomberait jamais sur `--text-on-bg` (auto-contraste WCAG) parce que
+  // `--h3-color` serait toujours défini, même au défaut.
+  // À chaque token édité, on POSE la var ; sinon on la RETIRE pour
+  // laisser le fallback agir.
   React.useEffect(() => {
-    for (const [k, v] of Object.entries(tokens)) {
-      if (!v) continue;
-      setCssVar(k, v);
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    for (const k of ALL_KEYS) {
+      const ks = k as string;
+      const current = tokens[ks];
+      const def = defaults[ks];
+      if (current && current !== def) {
+        root.style.setProperty(`--${ks}`, current);
+      } else {
+        root.style.removeProperty(`--${ks}`);
+      }
     }
-  }, [tokens]);
+  }, [tokens, defaults]);
 
   // `app-bg-light` ne peut pas être appliqué simplement via `:root`
   // (la production le route vers `body.light-mode`). On émet une règle
@@ -112,8 +125,17 @@ export function TokensEditorClient({ defaults, initial }: Props) {
 
   function handleSave() {
     startTransition(async () => {
-      // Lit via ref pour garantir la dernière version (cf. tokensRef).
-      const r = await saveTokensAction(tokensRef.current);
+      // Envoie SEULEMENT les valeurs qui diffèrent des défauts. Sinon
+      // chaque Save persistait les défauts entiers en DB → TenantThemeStyle
+      // les ré-émettait globalement → cassait la chaîne fallback de
+      // `--hN-color` vers `--text-on-bg` (auto-contraste WCAG). Avec
+      // ce filtre, Workshop.theme ne contient que les VRAIS overrides.
+      const current = tokensRef.current;
+      const diffs: Record<string, string> = {};
+      for (const [k, v] of Object.entries(current)) {
+        if (v && v !== defaults[k]) diffs[k] = v;
+      }
+      const r = await saveTokensAction(diffs);
       if (r.ok) toast.success('Tokens sauvegardés');
       else toast.error(r.error);
     });
@@ -320,9 +342,13 @@ function Section({
   return (
     <section className="border-b-2 border-white/10 py-[14px] first:pt-0 last:border-b-0">
       <div className="mb-3 flex items-center justify-between">
-        {/* H3 blanc — matche les tokens --h3-size / --h3-weight / --h3-caps
-            définis par l'utilisateur, on force juste la couleur. */}
-        <h3 className="text-white">{title}</h3>
+        {/* H3 blanc — matche les tokens `--h3-size/-weight/-caps` mais
+            force la couleur via descendant span (le `color: ... !important`
+            global sur h3 bat la classe Tailwind, mais un descendant avec
+            son propre `color` propage à son texte). Label UI, pas contenu. */}
+        <h3>
+          <span style={{ color: '#ffffff' }}>{title}</span>
+        </h3>
         <button
           type="button"
           onClick={onReset}
