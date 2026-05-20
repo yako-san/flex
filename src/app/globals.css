@@ -160,6 +160,8 @@
   --btn-h-md:        38px;
   --btn-h-sm:        32px;
   --btn-h-lg:        44px;
+  --btn-font-size:   14px;     /* texte du bouton (overridable via theme) */
+  --btn-line-height: 1;        /* baseline texte dans pill */
   --addbtn-size:     40px;     /* AddButton rond V1 */
 
   /* Rayons standards V1 — 4 paliers (input 12 / card 30 / sidebar 50 / modal 20) */
@@ -220,11 +222,11 @@ a { color: inherit; text-decoration: none; }
 button { font: inherit; cursor: pointer; }
 
 /* Hiérarchie typo V1 — h2/h3/h4 ont !important car Tailwind base reset */
-h1 { font-size: var(--h1-size); font-weight: var(--h1-weight); color: var(--h1-color); text-transform: var(--h1-caps); margin: 0; }
-h2 { font-size: var(--h2-size) !important; font-weight: var(--h2-weight) !important; color: var(--h2-color); text-transform: var(--h2-caps) !important; margin: 0; }
-h3 { font-size: var(--h3-size) !important; font-weight: var(--h3-weight) !important; color: var(--h3-color); text-transform: var(--h3-caps) !important; margin: 0; }
-h4 { font-size: var(--h4-size) !important; font-weight: var(--h4-weight) !important; color: var(--h4-color); text-transform: var(--h4-caps) !important; letter-spacing: 0.1em !important; margin: 0; }
-h5 { font-size: var(--h5-size) !important; font-weight: var(--h5-weight) !important; color: var(--h5-color); text-transform: var(--h5-caps) !important; margin: 0; }
+h1 { font-size: var(--h1-size); font-weight: var(--h1-weight); color: var(--h1-color); text-transform: var(--h1-caps); line-height: 1; margin: 0; }
+h2 { font-size: var(--h2-size) !important; font-weight: var(--h2-weight) !important; color: var(--h2-color); text-transform: var(--h2-caps) !important; line-height: 1 !important; margin: 0; }
+h3 { font-size: var(--h3-size) !important; font-weight: var(--h3-weight) !important; color: var(--h3-color); text-transform: var(--h3-caps) !important; line-height: 1.1 !important; margin: 0; }
+h4 { font-size: var(--h4-size) !important; font-weight: var(--h4-weight) !important; color: var(--h4-color); text-transform: var(--h4-caps) !important; letter-spacing: 0.1em !important; line-height: 1.1 !important; margin: 0; }
+h5 { font-size: var(--h5-size) !important; font-weight: var(--h5-weight) !important; color: var(--h5-color); text-transform: var(--h5-caps) !important; line-height: 1.2 !important; margin: 0; }
 h6 { font-size: var(--h6-size) !important; font-weight: var(--h6-weight) !important; font-style: italic !important; margin: 0; }
 
 /* iOS Safari zoom auto si font-size < 16px sur input/textarea/select.
@@ -395,7 +397,8 @@ th {
     gap: 0.5rem;
     padding: 0.5rem 1.25rem;
     border-radius: var(--btn-radius);
-    font-size: var(--h4-size);
+    font-size: var(--btn-font-size);
+    line-height: var(--btn-line-height);
     font-weight: var(--h4-weight);
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -414,7 +417,8 @@ th {
     gap: 0.5rem;
     padding: 0.5rem 1.25rem;
     border-radius: var(--btn-radius);
-    font-size: var(--h4-size);
+    font-size: var(--btn-font-size);
+    line-height: var(--btn-line-height);
     font-weight: var(--h4-weight);
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -433,7 +437,8 @@ th {
     gap: 0.5rem;
     padding: 0.5rem 1.25rem;
     border-radius: var(--btn-radius);
-    font-size: var(--h4-size);
+    font-size: var(--btn-font-size);
+    line-height: var(--btn-line-height);
     font-weight: var(--h4-weight);
     text-transform: uppercase;
     letter-spacing: 0.1em;

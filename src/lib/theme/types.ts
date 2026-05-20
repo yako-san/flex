@@ -31,11 +31,13 @@ export type WorkshopTheme = {
   dark?: string;
   'overlay-step'?: string;
 
-  // Boutons — radius pill + hauteurs des 3 variantes.
+  // Boutons — radius pill + hauteurs des 3 variantes + typo dans le pill.
   'btn-radius'?: string;
   'btn-h-sm'?: string;
   'btn-h-md'?: string;
   'btn-h-lg'?: string;
+  'btn-font-size'?: string;
+  'btn-line-height'?: string;
 
   // Statuts vélo (bg + fg)
   'st-rv-bg'?: string;        'st-rv-fg'?: string;
@@ -98,8 +100,11 @@ export function isValidStepValue(v: unknown): v is string {
 // Clés qui acceptent une taille / un poids / une casse / un step au lieu d'une couleur.
 const SIZE_KEYS   = new Set([
   'h1-size', 'h2-size', 'h3-size', 'h4-size', 'h5-size',
-  'btn-radius', 'btn-h-sm', 'btn-h-md', 'btn-h-lg',
+  'btn-radius', 'btn-h-sm', 'btn-h-md', 'btn-h-lg', 'btn-font-size',
 ]);
+// Multiplicateurs unitless (line-height) : 1, 1.2, 1.5, etc.
+const LINE_HEIGHT_KEYS = new Set(['btn-line-height']);
+const LINE_HEIGHT_RE = /^\d(\.\d{1,2})?$/;
 const WEIGHT_KEYS = new Set(['h1-weight', 'h2-weight', 'h3-weight', 'h4-weight', 'h5-weight']);
 const CAPS_KEYS   = new Set(['h1-caps', 'h2-caps', 'h3-caps', 'h4-caps', 'h5-caps']);
 const STEP_KEYS   = new Set(['overlay-step']);
@@ -115,6 +120,7 @@ export function sanitizeTheme(raw: unknown): WorkshopTheme {
       : CAPS_KEYS.has(k) ? isValidCapsValue(v)
       : SIZE_KEYS.has(k) ? isValidSizeValue(v)
       : STEP_KEYS.has(k) ? isValidStepValue(v)
+      : LINE_HEIGHT_KEYS.has(k) ? (typeof v === 'string' && LINE_HEIGHT_RE.test(v))
       : isValidColorValue(v);
     if (!ok) continue;
     out[k] = v as string;

@@ -21,7 +21,7 @@ const DEFAULTS: Required<Pick<WorkshopTheme,
   'h4-size' | 'h4-weight' | 'h4-caps' | 'h4-color' |
   'h5-size' | 'h5-weight' | 'h5-caps' | 'h5-color' |
   'app-bg' | 'app-bg-light' | 'overlay-step' |
-  'btn-radius' | 'btn-h-sm' | 'btn-h-md' | 'btn-h-lg'
+  'btn-radius' | 'btn-h-sm' | 'btn-h-md' | 'btn-h-lg' | 'btn-font-size' | 'btn-line-height'
 >> = {
   jaune: '#fff056', brun: '#806642', vert: '#62e335', rouge: '#d92020', dark: '#1a1a1a',
   'h1-size': '50px', 'h1-weight': '300', 'h1-caps': 'none',       'h1-color': '#fff056',
@@ -31,6 +31,7 @@ const DEFAULTS: Required<Pick<WorkshopTheme,
   'h5-size': '11px', 'h5-weight': '600', 'h5-caps': 'lowercase',  'h5-color': '#999999',
   'app-bg': '#7e7e7e', 'app-bg-light': '#cccccc', 'overlay-step': '0.20',
   'btn-radius': '30px', 'btn-h-sm': '32px', 'btn-h-md': '38px', 'btn-h-lg': '44px',
+  'btn-font-size': '14px', 'btn-line-height': '1',
 };
 
 export default async function TokensPage({ params }: Props) {
