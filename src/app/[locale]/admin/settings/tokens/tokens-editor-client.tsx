@@ -187,6 +187,26 @@ export function TokensEditorClient({ defaults, initial }: Props) {
           <p className="mt-1.5 text-[10px] leading-snug text-white/50">
             Light empile du blanc, dark empile du noir. ×4 niveaux + base = 5 paliers.
           </p>
+
+          {/* Documentation du système 3 couches additif. Les classes
+              CSS correspondantes sont définies dans `src/app/globals.css`. */}
+          <div className="mt-4 rounded-xl bg-black/20 p-3 text-[11px] leading-relaxed text-white/70">
+            <p className="mb-2 font-semibold uppercase tracking-wider text-white/85">
+              Système 3 couches
+            </p>
+            <ul className="space-y-1 font-mono text-[10px]">
+              <li><span className="text-[var(--jaune)]">a</span> · page bg ·{' '}
+                <code className="text-white">bg-[var(--app-bg)]</code></li>
+              <li><span className="text-[var(--jaune)]">b</span> · panneau · a + 20% ·{' '}
+                <code className="text-white">.page-block-bg</code></li>
+              <li><span className="text-[var(--jaune)]">c</span> · bloc-contenu · b + 20% ·{' '}
+                <code className="text-white">.bloc-contenu</code></li>
+            </ul>
+            <p className="mt-2 text-[10px] opacity-80">
+              Dark : overlay = noir 20%. Light : overlay = blanc 20%. Flip auto via{' '}
+              <code>--overlay-layer</code>.
+            </p>
+          </div>
         </Section>
 
         <Section title="Boutons" onReset={() => resetSection('buttons')}>

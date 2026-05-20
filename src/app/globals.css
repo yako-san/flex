@@ -273,20 +273,39 @@ body.light-mode [role="radiogroup"] button[role="radio"]:hover:not([aria-checked
   color: rgba(0, 0, 0, 0.85);
 }
 
-/* Bloc-contenu + KPI cards (composés sur `--overlay-dark-20`) : en
-   light, les overlays restent sombres pour garder le contraste avec
-   les cards blanches/jaunes dessus — pattern V1 « strates additives ».
-   Le texte blanc-alpha reste lisible sur ces surfaces dans les 2 modes. */
+/* ============================================================
+ * Système 3 couches additif — pattern V1 « strates ».
+ *
+ *   a (page-bg)        = var(--app-bg)           — fond global
+ *   b (page-block-bg)  = a + overlay 20%         — panneau principal
+ *   c (bloc-contenu)   = b + overlay 20%         — bloc contenu sous PageHeader
+ *
+ * Dark mode : overlay = noir 20% (assombrit chaque couche).
+ * Light mode : overlay = blanc 20% (éclaircit chaque couche).
+ *
+ * Le mix est géré via la variable `--overlay-layer` qui flip
+ * automatiquement selon `body.light-mode`. Identique en classes :
+ *
+ *   <div className="bg-[var(--app-bg)]">           {/* a *\/}
+ *     <div className="page-block-bg">              {/* b *\/}
+ *       <div className="bloc-contenu">             {/* c *\/}
+ * ============================================================ */
+:root           { --overlay-layer: rgba(0,0,0,0.20); }
+body.light-mode { --overlay-layer: rgba(255,255,255,0.20); }
 
-/* --- « Bloc contenu » V1 ----------------------------------------- */
-/* Wrapper noir 20% supplémentaire sous le PageHeader qui encadre
-   TOUT le contenu fonctionnel d'une page admin (cartes, tables,
-   accordéons). Présent dans toutes les pages V1 — perdu en V2 pendant
-   le port initial. Se superpose au panneau principal qui est aussi
-   `bg-black/20` (cf. layout admin), créant un contraste subtil qui
-   structure la page : panneau → header → bloc contenu → cards. */
+.page-block-bg { background-color: var(--overlay-layer); }
+
+/* Couleur opaque équivalente à la couche `b` (panneau) — `--app-bg` +
+   overlay 20% empilé. Utilisée par les plaques du PageHeader pour
+   matcher visuellement le panneau sur lequel elles flottent. */
+.bg-layer-b {
+  background-image:
+    linear-gradient(var(--overlay-layer), var(--overlay-layer));
+  background-color: var(--app-bg);
+}
+
 .bloc-contenu {
-  background-color: var(--overlay-dark-20);
+  background-color: var(--overlay-layer);
   border-radius: 30px;
   margin: 16px 20px 20px;
 }
