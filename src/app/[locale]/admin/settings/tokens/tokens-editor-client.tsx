@@ -78,6 +78,11 @@ export function TokensEditorClient({ defaults, initial }: Props) {
     }
   }, [tokens]);
 
+  // `app-bg-light` ne peut pas être appliqué simplement via `:root`
+  // (la production le route vers `body.light-mode`). On émet une règle
+  // CSS dynamique pour que le live preview marche dans les 2 modes.
+  const lightBg = tokens['app-bg-light'];
+
   function update(key: string, value: string) {
     setTokens((t) => ({ ...t, [key]: value }));
   }
@@ -133,6 +138,11 @@ export function TokensEditorClient({ defaults, initial }: Props) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[420px_1fr]">
+      {/* Live override de --app-bg en light mode (le mode dark utilise
+          directement --app-bg de :root, déjà set par le useEffect). */}
+      {lightBg ? (
+        <style>{`body.light-mode { --app-bg: ${lightBg}; }`}</style>
+      ) : null}
       {/* ===== EDITOR PANEL ===== */}
       <aside className="rounded-3xl bg-black/20 p-[18px]">
         <Section title="Couleurs signature" onReset={() => resetSection('colors')}>
@@ -322,6 +332,20 @@ function Section({
 function ColorRow({
   label, varName, value, onChange,
 }: { label: string; varName: string; value: string; onChange: (v: string) => void }) {
+  // État local du champ texte : permet à l'utilisateur de taper librement
+  // (ex. « #ccc » incomplet) sans que onChange annule sa frappe. La
+  // valeur n'est propagée au parent qu'au blur (ou Enter) si elle est
+  // valide. Sync depuis `value` quand le parent met à jour (ex. reset).
+  const [draft, setDraft] = React.useState(value.toUpperCase());
+  React.useEffect(() => { setDraft(value.toUpperCase()); }, [value]);
+
+  function commit(raw: string) {
+    let v = raw.trim();
+    if (!v.startsWith('#')) v = '#' + v;
+    if (/^#[0-9A-Fa-f]{6}$/.test(v)) onChange(v.toLowerCase());
+    else setDraft(value.toUpperCase()); // rejette → restaure
+  }
+
   return (
     <div
       className="mb-2 grid items-center"
@@ -342,11 +366,11 @@ function ColorRow({
       </span>
       <input
         type="text"
-        value={value.toUpperCase()}
-        onChange={(e) => {
-          let v = e.currentTarget.value.trim();
-          if (!v.startsWith('#')) v = '#' + v;
-          onChange(/^#[0-9A-Fa-f]{6}$/.test(v) ? v.toLowerCase() : value);
+        value={draft}
+        onChange={(e) => setDraft(e.currentTarget.value)}
+        onBlur={(e) => commit(e.currentTarget.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') (e.currentTarget as HTMLInputElement).blur();
         }}
         className="w-full rounded-lg border-0 bg-black/25 px-2.5 py-2 font-mono text-[12px] uppercase tabular-nums text-white"
       />
@@ -440,7 +464,7 @@ function SliderRow({
 function PreviewPalette({ tokens }: { tokens: Record<string, string> }) {
   return (
     <div className="rounded-2xl bg-white/60 p-[18px] text-[var(--dark)]">
-      <h3 className="m-0 mb-3 text-[11px] uppercase tracking-[0.08em] text-black/55">
+      <h3 className="m-0 mb-3 text-[11px] uppercase text-black/55">
         Aperçu · palette
       </h3>
       <div className="grid grid-cols-5 gap-3">
@@ -474,7 +498,7 @@ function PreviewTypeScale({ tokens }: { tokens: Record<string, string> }) {
   };
   return (
     <div className="rounded-2xl bg-white/60 p-[18px] text-[var(--dark)]">
-      <h3 className="m-0 mb-3 text-[11px] uppercase tracking-[0.08em] text-black/55">
+      <h3 className="m-0 mb-3 text-[11px] uppercase text-black/55">
         Aperçu · échelle typographique
       </h3>
       <div>
@@ -509,7 +533,7 @@ function PreviewRails({ tokens }: { tokens: Record<string, string> }) {
   const step = parseFloat(tokens['overlay-step'] ?? '0.20') || 0.20;
   return (
     <div className="rounded-2xl bg-white/60 p-[18px] text-[var(--dark)]">
-      <h3 className="m-0 mb-3 text-[11px] uppercase tracking-[0.08em] text-black/55">
+      <h3 className="m-0 mb-3 text-[11px] uppercase text-black/55">
         Aperçu · gris système
       </h3>
       {(['light', 'dark'] as const).map((mode) => {
@@ -564,7 +588,7 @@ function PreviewButtons({ tokens }: { tokens: Record<string, string> }) {
   ];
   return (
     <div className="rounded-2xl bg-white/60 p-[18px] text-[var(--dark)]">
-      <h3 className="m-0 mb-3 text-[11px] uppercase tracking-[0.08em] text-black/55">
+      <h3 className="m-0 mb-3 text-[11px] uppercase text-black/55">
         Aperçu · boutons
       </h3>
       <div className="flex flex-col gap-3">

@@ -13,6 +13,7 @@ import {
   DashboardIcon,
   QuestionMarkCircleIcon,
 } from '@/components/icons';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 export type SidebarItem = {
   href: string;
@@ -326,14 +327,17 @@ export function Sidebar({
         ) : null}
       </aside>
 
-      {/* Popover logo */}
+      {/* Popover logo — wrapper invisible avec `padding-left: 16px` qui
+          comble le gap visuel sidebar↔popover AVEC une zone hover
+          continue (avant : `left: calc(100% + 16px)` créait un trou de
+          16px où le mouseleave fermait la popover en cours de trajet). */}
       {popoverItems.length > 0 ? (
         <div
-          className="absolute z-50 flex flex-col gap-0.5 rounded-2xl bg-white p-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)]"
+          className="absolute z-50"
           style={{
             top: 20,
-            left: `calc(100% + 16px)`,
-            width: 200,
+            left: '100%',
+            paddingLeft: 16,
             opacity: popoverOpen ? 1 : 0,
             pointerEvents: popoverOpen ? 'auto' : 'none',
             transform: popoverOpen ? 'translateX(0)' : 'translateX(-8px)',
@@ -341,29 +345,41 @@ export function Sidebar({
           }}
           onMouseEnter={() => setPopoverOpen(true)}
           onMouseLeave={() => setPopoverOpen(false)}
-          role="menu"
-          aria-label="Menu logo"
-          aria-hidden={!popoverOpen}
         >
-          {popoverItems.map((p) => {
-            const Icon = p.icon;
-            return (
-              <Link
-                key={p.href}
-                href={p.href as never}
-                role="menuitem"
-                className="flex items-center gap-3 rounded-[10px] px-3.5 py-2 text-[13px] font-medium text-[var(--dark)] no-underline transition-colors hover:bg-[var(--gris-fond)]"
-              >
-                <Icon
-                  className="h-[18px] w-[18px] shrink-0"
-                  style={{ color: 'rgba(0,0,0,0.55)' }}
-                  strokeWidth={1.5}
-                  aria-hidden
-                />
-                {p.label}
-              </Link>
-            );
-          })}
+          <div
+            className="flex flex-col gap-0.5 rounded-2xl bg-white p-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)]"
+            style={{ width: 200 }}
+            role="menu"
+            aria-label="Menu logo"
+            aria-hidden={!popoverOpen}
+          >
+            {popoverItems.map((p) => {
+              const Icon = p.icon;
+              return (
+                <Link
+                  key={p.href}
+                  href={p.href as never}
+                  role="menuitem"
+                  className="flex items-center gap-3 rounded-[10px] px-3.5 py-2 text-[13px] font-medium text-[var(--dark)] no-underline transition-colors hover:bg-[var(--gris-fond)]"
+                >
+                  <Icon
+                    className="h-[18px] w-[18px] shrink-0"
+                    style={{ color: 'rgba(0,0,0,0.55)' }}
+                    strokeWidth={1.5}
+                    aria-hidden
+                  />
+                  {p.label}
+                </Link>
+              );
+            })}
+
+            {/* Séparateur + toggle dark/light en bas de menu. */}
+            <hr aria-hidden className="my-1 border-0 border-t border-[var(--gris-bord)]" />
+            <div className="flex items-center justify-between px-3.5 py-2 text-[13px] font-medium text-[var(--dark)]">
+              <span>Thème</span>
+              <ThemeToggle />
+            </div>
+          </div>
         </div>
       ) : null}
     </div>
