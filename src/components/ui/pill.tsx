@@ -8,7 +8,10 @@ import { cn } from '@/lib/utils';
  * peut surcharger sans rebuild.
  */
 const pillVariants = cva(
-  'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap',
+  // `leading-none` (line-height: 1) + `inline-flex items-center` garantit
+  // que le glyphe est optiquement centré dans la pill (sinon le line-box
+  // par défaut décentre vers le haut).
+  'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap leading-none',
   {
     variants: {
       variant: {

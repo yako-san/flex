@@ -304,6 +304,27 @@ body.light-mode { --overlay-layer: rgba(255,255,255,0.20); }
   background-color: var(--app-bg);
 }
 
+/* ============================================================
+ * Pattern table V1 — thead lowercase + zebra blanc alpha.
+ * Source : `docs/design-system/preview/type-table-pattern.html`.
+ * Usage : <table className="ds-table">.
+ * ============================================================ */
+.ds-table              { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ds-table thead th     {
+  font-size: var(--th-size);
+  font-weight: var(--th-weight);
+  text-transform: lowercase;
+  text-align: left;
+  padding: 8px 12px;
+  color: var(--text-secondary-60);
+  border-bottom: 1px solid var(--gris-bord);
+  background: rgba(255,255,255,0.5);
+}
+.ds-table tbody td                  { padding: 8px 12px; }
+.ds-table tbody tr:nth-child(even)  { background: rgba(255,255,255,0.70); }
+.ds-table tbody tr:nth-child(odd)   { background: rgba(255,255,255,0.85); }
+.ds-table tbody tr:hover            { background: rgba(255,255,255,0.95); }
+
 .bloc-contenu {
   background-color: var(--overlay-layer);
   border-radius: 30px;
