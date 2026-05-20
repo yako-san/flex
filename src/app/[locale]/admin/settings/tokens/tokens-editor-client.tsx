@@ -15,12 +15,23 @@ type Props = {
 const COLOR_KEYS: TokenKey[] = ['jaune', 'brun', 'vert', 'rouge', 'dark'];
 const TYPE_LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5'] as const;
 const GREY_KEYS: TokenKey[] = ['app-bg', 'app-bg-light'];
-const BUTTON_KEYS: TokenKey[] = ['btn-radius', 'btn-h-sm', 'btn-h-md', 'btn-h-lg'];
+const BUTTON_SIZE_KEYS: TokenKey[] = ['btn-radius', 'btn-h-sm', 'btn-h-md', 'btn-h-lg', 'btn-font-size'];
+const BUTTON_KEYS: TokenKey[] = [...BUTTON_SIZE_KEYS, 'btn-line-height'];
 const BUTTON_LABELS: Record<string, string> = {
   'btn-radius': 'Rayon (pill)',
   'btn-h-sm': 'Hauteur S',
   'btn-h-md': 'Hauteur M',
   'btn-h-lg': 'Hauteur L',
+  'btn-font-size': 'Taille texte',
+  'btn-line-height': 'Hauteur baseline',
+};
+const BUTTON_RANGES: Record<string, { min: number; max: number; step: number }> = {
+  'btn-radius':      { min: 0,    max: 40,  step: 1    },
+  'btn-h-sm':        { min: 24,   max: 64,  step: 1    },
+  'btn-h-md':        { min: 24,   max: 64,  step: 1    },
+  'btn-h-lg':        { min: 24,   max: 64,  step: 1    },
+  'btn-font-size':   { min: 10,   max: 20,  step: 1    },
+  'btn-line-height': { min: 0.8,  max: 2,   step: 0.05 },
 };
 const CAPS_OPTIONS = [
   { v: 'none', l: 'Aa' },
@@ -179,24 +190,40 @@ export function TokensEditorClient({ defaults, initial }: Props) {
         </Section>
 
         <Section title="Boutons" onReset={() => resetSection('buttons')}>
-          {BUTTON_KEYS.map((k) => (
-            <PxRow
-              key={k as string}
-              label={BUTTON_LABELS[k as string] ?? (k as string)}
-              varName={k as string}
-              value={tokens[k as string] ?? ''}
-              min={k === 'btn-radius' ? 0 : 24}
-              max={k === 'btn-radius' ? 40 : 64}
-              onChange={(v) => update(k as string, v)}
-            />
-          ))}
+          {BUTTON_KEYS.map((k) => {
+            const ks = k as string;
+            const range = BUTTON_RANGES[ks] ?? { min: 0, max: 100, step: 1 };
+            const isUnitless = ks === 'btn-line-height';
+            return (
+              <SliderPxRow
+                key={ks}
+                label={BUTTON_LABELS[ks] ?? ks}
+                varName={ks}
+                value={tokens[ks] ?? ''}
+                min={range.min} max={range.max} step={range.step}
+                unit={isUnitless ? '' : 'px'}
+                onChange={(v) => update(ks, v)}
+              />
+            );
+          })}
         </Section>
 
         <footer className="flex flex-wrap items-center justify-end gap-2 pt-3">
+          {/* Hauteur uniforme `--btn-h-md`, radius `--btn-radius`, typo
+              `--btn-font-size` × `--btn-line-height` — tout pilotable via
+              les tokens de la section Boutons. */}
           <button
             type="button"
             onClick={handleExport}
-            className="rounded-full px-3 py-2 text-[12px] text-white/70 hover:text-white"
+            className="inline-flex items-center justify-center px-4 text-white/70 hover:text-white"
+            style={{
+              height: 'var(--btn-h-md)',
+              borderRadius: 'var(--btn-radius)',
+              fontSize: 'var(--btn-font-size)',
+              lineHeight: 'var(--btn-line-height)',
+              background: 'transparent',
+              border: 0,
+            }}
           >
             Exporter JSON
           </button>
@@ -204,7 +231,15 @@ export function TokensEditorClient({ defaults, initial }: Props) {
             type="button"
             onClick={handleResetAll}
             disabled={pending}
-            className="rounded-full border-2 border-white/50 px-4 py-2 text-[11px] font-black uppercase tracking-[0.1em] text-white disabled:opacity-50"
+            className="inline-flex items-center justify-center px-5 font-black uppercase tracking-[0.1em] text-white disabled:opacity-50"
+            style={{
+              height: 'var(--btn-h-md)',
+              borderRadius: 'var(--btn-radius)',
+              fontSize: 'var(--btn-font-size)',
+              lineHeight: 'var(--btn-line-height)',
+              background: 'transparent',
+              border: '2px solid rgba(255,255,255,0.5)',
+            }}
           >
             Tout réinitialiser
           </button>
@@ -212,7 +247,15 @@ export function TokensEditorClient({ defaults, initial }: Props) {
             type="button"
             onClick={handleSave}
             disabled={pending}
-            className="rounded-full bg-[var(--jaune)] px-5 py-2 text-[12px] font-black uppercase tracking-[0.1em] text-black disabled:opacity-50"
+            className="inline-flex items-center justify-center px-5 font-black uppercase tracking-[0.1em] text-black disabled:opacity-50"
+            style={{
+              height: 'var(--btn-h-md)',
+              borderRadius: 'var(--btn-radius)',
+              fontSize: 'var(--btn-font-size)',
+              lineHeight: 'var(--btn-line-height)',
+              background: 'var(--jaune)',
+              border: 0,
+            }}
           >
             {pending ? 'Enregistrement…' : 'Enregistrer'}
           </button>
@@ -238,11 +281,11 @@ function Section({
   title, onReset, children,
 }: { title: string; onReset: () => void; children: React.ReactNode }) {
   return (
-    <section className="border-b border-white/10 py-[14px] first:pt-0 last:border-b-0">
+    <section className="border-b-2 border-white/10 py-[14px] first:pt-0 last:border-b-0">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="m-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
-          {title}
-        </h2>
+        {/* H3 blanc — matche les tokens --h3-size / --h3-weight / --h3-caps
+            définis par l'utilisateur, on force juste la couleur. */}
+        <h3 className="text-white">{title}</h3>
         <button
           type="button"
           onClick={onReset}
@@ -490,6 +533,8 @@ function PreviewRails({ tokens }: { tokens: Record<string, string> }) {
 
 function PreviewButtons({ tokens }: { tokens: Record<string, string> }) {
   const radius = tokens['btn-radius'] || '30px';
+  const fontSize = tokens['btn-font-size'] || '14px';
+  const lineHeight = tokens['btn-line-height'] || '1';
   const jaune = tokens['jaune'] || '#fff056';
   const dark = tokens['dark'] || '#1a1a1a';
   const sizes: Array<{ key: string; label: string }> = [
@@ -514,7 +559,7 @@ function PreviewButtons({ tokens }: { tokens: Record<string, string> }) {
                 type="button"
                 style={{
                   height: h, borderRadius: radius, background: jaune, color: '#000',
-                  padding: '0 18px', fontSize: 13, fontWeight: 900,
+                  padding: '0 18px', fontSize, lineHeight, fontWeight: 900,
                   textTransform: 'uppercase', letterSpacing: '0.1em', border: 0,
                 }}
               >
@@ -524,7 +569,7 @@ function PreviewButtons({ tokens }: { tokens: Record<string, string> }) {
                 type="button"
                 style={{
                   height: h, borderRadius: radius, background: 'transparent', color: dark,
-                  padding: '0 18px', fontSize: 13, fontWeight: 900,
+                  padding: '0 18px', fontSize, lineHeight, fontWeight: 900,
                   textTransform: 'uppercase', letterSpacing: '0.1em',
                   border: `2px solid ${dark}80`,
                 }}
@@ -539,25 +584,30 @@ function PreviewButtons({ tokens }: { tokens: Record<string, string> }) {
   );
 }
 
-function PxRow({
-  label, varName, value, min, max, onChange,
-}: { label: string; varName: string; value: string; min: number; max: number; onChange: (v: string) => void }) {
-  const num = parseInt(value.replace(/[^\d]/g, ''), 10) || 0;
+function SliderPxRow({
+  label, varName, value, min, max, step, unit, onChange,
+}: {
+  label: string; varName: string; value: string;
+  min: number; max: number; step: number; unit: string;
+  onChange: (v: string) => void;
+}) {
+  const num = parseFloat(value.replace(unit, '')) || 0;
+  const display = unit === 'px' ? `${Math.round(num)}px` : num.toFixed(2);
   return (
     <div
       className="mb-2 grid items-center"
-      style={{ gridTemplateColumns: '100px 1fr 60px 90px', gap: 10 }}
+      style={{ gridTemplateColumns: '110px 1fr 60px 110px', gap: 10 }}
     >
       <label className="text-[11px] lowercase font-semibold text-white/70">{label}</label>
       <input
         type="range"
-        min={min} max={max} step={1}
+        min={min} max={max} step={step}
         value={num}
-        onChange={(e) => onChange(`${e.currentTarget.value}px`)}
+        onChange={(e) => onChange(`${e.currentTarget.value}${unit}`)}
         className="h-1 w-full appearance-none rounded-full bg-white/20 outline-none accent-[var(--jaune)]"
       />
       <span className="text-right font-mono text-[11px] font-bold text-[var(--jaune)]">
-        {num}px
+        {display}
       </span>
       <span className="text-right font-mono text-[10px] text-white/45">--{varName}</span>
     </div>
