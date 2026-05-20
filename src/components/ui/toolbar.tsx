@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { PlusIcon } from '@/components/icons';
 
 /**
  * ToolbarBlock — Bloc foncé pill contenant les boutons de toolbar V1.
@@ -102,10 +103,14 @@ export function AddButton({
     textDecoration: 'none',
   };
 
+  // Icône SVG dead-center (mathématiquement) — remplace le glyphe `+`
+  // de Helvetica qui s'asseyait optiquement haut dans le pill.
+  const icon = <PlusIcon className="h-5 w-5" strokeWidth={2.5} aria-hidden />;
+
   if (href && !disabled) {
     return (
       <a href={href} style={style} title={title} aria-label={title}>
-        <span style={{ lineHeight: 1 }}>+</span>
+        {icon}
       </a>
     );
   }
@@ -119,7 +124,7 @@ export function AddButton({
       title={disabled ? 'Action indisponible' : title}
       aria-label={title}
     >
-      <span style={{ position: 'relative', top: '-1px' }}>+</span>
+      {icon}
     </button>
   );
 }
