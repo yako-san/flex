@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Pill } from '@/components/ui/pill';
 import { VELO_STATUS_COLORS } from '@/lib/velo/status-labels';
 import { AddItemForm } from './add-item-form';
+import { BdtAddItemsButton } from './bdt-add-items-button';
 import { RemoveItemButton } from './remove-item-button';
 import { TaskStatusButton } from './task-status-button';
 import { AvanceFragment, NotesFragment, RemisesFragment } from './workflow-fragments';
@@ -64,12 +65,12 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
     prisma.service.findMany({
       where: { workshopId: workshop.id, deletedAt: null },
       orderBy: { labelCanonical: 'asc' },
-      select: { id: true, labelCanonical: true, prix: true, legacyCode: true },
+      select: { id: true, labelCanonical: true, prix: true, legacyCode: true, categorie: true, categoriePrio: true },
     }),
     prisma.piece.findMany({
       where: { workshopId: workshop.id, deletedAt: null },
       orderBy: { nomCanonical: 'asc' },
-      select: { id: true, nomCanonical: true, sku: true, prixVente: true },
+      select: { id: true, nomCanonical: true, sku: true, prixVente: true, categorie: true, groupe: true },
     }),
     prisma.forfait.findMany({
       where: { workshopId: workshop.id, deletedAt: null },
@@ -108,14 +109,26 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
   const mecaMec = findMecano(bdc.velo.mecaMecanoId);
   const ctrlMec = findMecano(bdc.velo.ctrlMecanoId);
 
-  const serviceOptions = services.map((s) => ({
+  // Pour le modal V1 : SelectableItem inclut groupe (sous-catégorie) +
+  // categorie (haut niveau) + prixUnit pour affichage à droite de la ligne.
+  const serviceItems = services.map((s) => ({
     id: s.id,
-    label: `${s.legacyCode ?? '—'} · ${s.labelCanonical} · ${Number(s.prix).toFixed(2)}$`,
+    label: s.labelCanonical,
+    groupe: s.categoriePrio,
+    categorie: s.categorie,
+    prixUnit: Number(s.prix),
   }));
-  const pieceOptions = pieces.map((p) => ({
+  const pieceItems = pieces.map((p) => ({
     id: p.id,
-    label: `${p.sku ?? '—'} · ${p.nomCanonical} · ${Number(p.prixVente).toFixed(2)}$`,
+    label: `${p.sku ? `${p.sku} · ` : ''}${p.nomCanonical}`,
+    groupe: p.groupe,
+    categorie: p.categorie,
+    prixUnit: Number(p.prixVente),
   }));
+  const allCategories = Array.from(new Set([
+    ...serviceItems.map((s) => s.categorie),
+    ...pieceItems.map((p) => p.categorie),
+  ].filter((c): c is string => Boolean(c)))).sort();
   const forfaitOptions = forfaits.map((f) => ({
     id: f.id,
     label: `${f.legacyCode ?? '—'} · ${f.labelCanonical} · ${Number(f.prix).toFixed(2)}$`,
@@ -229,12 +242,22 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
               : null
           }
           addForm={
-            <AddItemForm
-              bdcId={bdc.id}
-              services={serviceOptions}
-              pieces={[]}
-              forfaits={forfaitOptions}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <BdtAddItemsButton
+                bdcId={bdc.id}
+                services={serviceItems}
+                pieces={pieceItems}
+                categories={allCategories}
+                initialKind="SERVICE"
+                label="Ajouter un service"
+              />
+              {/* Forfaits — fallback via l'ancien AddItemForm (le modal V1
+                  ne gère pas les forfaits, conservés ici pour ne rien
+                  regresser). */}
+              {forfaitOptions.length > 0 ? (
+                <AddItemForm bdcId={bdc.id} services={[]} pieces={[]} forfaits={forfaitOptions} />
+              ) : null}
+            </div>
           }
         >
           {itemsServices.length === 0 ? (
@@ -272,11 +295,13 @@ export default async function BdtDetailPage({ params, searchParams }: Props) {
               : null
           }
           addForm={
-            <AddItemForm
+            <BdtAddItemsButton
               bdcId={bdc.id}
-              services={[]}
-              pieces={pieceOptions}
-              forfaits={[]}
+              services={serviceItems}
+              pieces={pieceItems}
+              categories={allCategories}
+              initialKind="PIECE"
+              label="Ajouter une pièce"
             />
           }
         >

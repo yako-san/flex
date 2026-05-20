@@ -285,6 +285,113 @@ export async function addBdtItemAction(
 }
 
 // =============================================================================
+// Ajout en masse (modal V1 « Ajouter des services/pièces » avec sélection
+// multiple via checkboxes). Wrappe la même logique que `addBdtItemAction`
+// dans une seule transaction + un seul recalcul de totaux à la fin.
+// =============================================================================
+
+export type AddBdtItemsBulkArgs = {
+  bdcId: string;
+  kind: 'SERVICE' | 'PIECE';
+  ids: string[];
+};
+export type AddBdtItemsBulkResult = { ok: true; added: number } | { ok: false; error: string };
+
+export async function addBdtItemsBulkAction(
+  args: AddBdtItemsBulkArgs,
+): Promise<AddBdtItemsBulkResult> {
+  const { userId } = await auth();
+  if (!userId) return { ok: false, error: 'Non authentifié' };
+  const workshop = await getActiveWorkshop();
+  if (!workshop) return { ok: false, error: 'Aucun workshop actif' };
+
+  if (!args.ids?.length) return { ok: false, error: 'Aucun item sélectionné' };
+
+  let added = 0;
+  try {
+    await prisma.$transaction(async (tx) => {
+      const bdc = await tx.bdc.findFirst({
+        where: { id: args.bdcId, workshopId: workshop.id, deletedAt: null },
+      });
+      if (!bdc) throw new Error('BDT introuvable');
+
+      const last = await tx.bdcItem.findFirst({
+        where: { bdcId: args.bdcId },
+        orderBy: { position: 'desc' },
+        select: { position: true },
+      });
+      let position = (last?.position ?? 0) + 1;
+
+      for (const refId of args.ids) {
+        const itemId = generateId('bdci');
+        const qty = 1;
+
+        if (args.kind === 'SERVICE') {
+          const svc = await tx.service.findFirst({
+            where: { id: refId, workshopId: workshop.id, deletedAt: null },
+          });
+          if (!svc) continue;
+          const unit = new Decimal(svc.prix.toString());
+          await tx.bdcItem.create({
+            data: {
+              id: itemId,
+              workshopId: workshop.id,
+              bdcId: args.bdcId,
+              kind: 'SERVICE',
+              position: position++,
+              serviceId: refId,
+              labelSnapshot: svc.labelCanonical,
+              unitPriceSnapshot: new Prisma.Decimal(unit.toString()),
+              taxableSnapshot: svc.taxable,
+              qty: new Prisma.Decimal(qty),
+              total: new Prisma.Decimal(unit.times(qty).toString()),
+            },
+          });
+        } else {
+          const piece = await tx.piece.findFirst({
+            where: { id: refId, workshopId: workshop.id, deletedAt: null },
+          });
+          if (!piece) continue;
+          const unit = new Decimal(piece.prixVente.toString());
+          await tx.bdcItem.create({
+            data: {
+              id: itemId,
+              workshopId: workshop.id,
+              bdcId: args.bdcId,
+              kind: 'PIECE',
+              position: position++,
+              pieceId: refId,
+              labelSnapshot: piece.nomCanonical,
+              unitPriceSnapshot: new Prisma.Decimal(unit.toString()),
+              taxableSnapshot: piece.taxable,
+              qty: new Prisma.Decimal(qty),
+              total: new Prisma.Decimal(unit.times(qty).toString()),
+            },
+          });
+          await recordStockMovement(tx, {
+            workshopId: workshop.id,
+            pieceId: refId,
+            type: 'RESERVATION',
+            delta: qty,
+            bdcItemId: itemId,
+            reason: 'Réservation par ajout bulk modal',
+            createdById: userId,
+          });
+        }
+        added++;
+      }
+
+      await recalcBdtTotals(tx, args.bdcId);
+    });
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Erreur inconnue' };
+  }
+
+  revalidatePath(`/[locale]/admin/bdcs/${args.bdcId}`, 'page');
+  return { ok: true, added };
+}
+
+// =============================================================================
 // Suppression d'item
 // =============================================================================
 
