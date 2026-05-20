@@ -18,52 +18,52 @@
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/fonts/HelveticaNeueLTStd-Th.otf") format("opentype");
-  font-weight: 100; font-style: normal; font-display: swap;
+  font-weight: 100; font-style: normal; font-display: swap; ascent-override: 84%; descent-override: 22%; line-gap-override: 0%;
 }
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/fonts/HelveticaNeueLTStd-Lt.otf") format("opentype");
-  font-weight: 300; font-style: normal; font-display: swap;
+  font-weight: 300; font-style: normal; font-display: swap; ascent-override: 84%; descent-override: 22%; line-gap-override: 0%;
 }
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/fonts/HelveticaNeueLTStd-LtIt.otf") format("opentype");
-  font-weight: 300; font-style: italic; font-display: swap;
+  font-weight: 300; font-style: italic; font-display: swap; ascent-override: 84%; descent-override: 22%; line-gap-override: 0%;
 }
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/fonts/HelveticaNeueLTStd-Roman.otf") format("opentype");
-  font-weight: 400; font-style: normal; font-display: swap;
+  font-weight: 400; font-style: normal; font-display: swap; ascent-override: 84%; descent-override: 22%; line-gap-override: 0%;
 }
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/fonts/HelveticaNeueLTStd-It.otf") format("opentype");
-  font-weight: 400; font-style: italic; font-display: swap;
+  font-weight: 400; font-style: italic; font-display: swap; ascent-override: 84%; descent-override: 22%; line-gap-override: 0%;
 }
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/fonts/HelveticaNeueLTStd-Md.otf") format("opentype");
-  font-weight: 500; font-style: normal; font-display: swap;
+  font-weight: 500; font-style: normal; font-display: swap; ascent-override: 84%; descent-override: 22%; line-gap-override: 0%;
 }
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/fonts/HelveticaNeueLTStd-MdIt.otf") format("opentype");
-  font-weight: 500; font-style: italic; font-display: swap;
+  font-weight: 500; font-style: italic; font-display: swap; ascent-override: 84%; descent-override: 22%; line-gap-override: 0%;
 }
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/fonts/HelveticaNeueLTStd-Bd.otf") format("opentype");
-  font-weight: 700; font-style: normal; font-display: swap;
+  font-weight: 700; font-style: normal; font-display: swap; ascent-override: 84%; descent-override: 22%; line-gap-override: 0%;
 }
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/fonts/HelveticaNeueLTStd-BdIt.otf") format("opentype");
-  font-weight: 700; font-style: italic; font-display: swap;
+  font-weight: 700; font-style: italic; font-display: swap; ascent-override: 84%; descent-override: 22%; line-gap-override: 0%;
 }
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/fonts/HelveticaNeueLTStd-Blk.otf") format("opentype");
-  font-weight: 900; font-style: normal; font-display: swap;
+  font-weight: 900; font-style: normal; font-display: swap; ascent-override: 84%; descent-override: 22%; line-gap-override: 0%;
 }
 
 /* --- Tokens partagés (palette par défaut atelier yako-cyclo) ------- */
