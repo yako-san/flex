@@ -50,6 +50,11 @@ export function ToolbarBtn({
         fontWeight: 600,
         cursor: 'pointer',
         whiteSpace: 'nowrap',
+        // Force centrage vertical du texte : flex au lieu du line-box.
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        lineHeight: 1,
       }}
       onMouseEnter={e => {
         if (!active) (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.60)';
@@ -100,7 +105,7 @@ export function AddButton({
   if (href && !disabled) {
     return (
       <a href={href} style={style} title={title} aria-label={title}>
-        <span style={{ position: 'relative', top: '-1px' }}>+</span>
+        <span style={{ lineHeight: 1 }}>+</span>
       </a>
     );
   }
@@ -183,6 +188,7 @@ export function SearchInput({
         fontSize: '13px',
         padding: '0 16px',
         outline: 'none',
+        lineHeight: 1,
       }}
     />
   );

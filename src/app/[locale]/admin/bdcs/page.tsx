@@ -277,7 +277,7 @@ export default async function BdcsPage({ params, searchParams }: Props) {
                         fontSize: 9,
                         fontWeight: 700,
                         letterSpacing: '0.06em',
-                        lineHeight: 1.2,
+                        lineHeight: 1,
                       }}
                     >
                       {label}

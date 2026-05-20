@@ -84,7 +84,7 @@ export default async function ServicesPage({ params, searchParams }: Props) {
                 Aucun forfait.
               </p>
             ) : (
-              <table className="w-full text-xs">
+              <table className="ds-table">
                 <thead className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
                   <tr>
                     <th className="px-3 py-1.5 text-left">Code</th>
@@ -140,7 +140,7 @@ export default async function ServicesPage({ params, searchParams }: Props) {
                   <div className="bg-[var(--gris-fond)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--text-secondary-60)]">
                     {cat} <span className="ml-2 font-normal opacity-60">({list.length})</span>
                   </div>
-                  <table className="w-full text-xs">
+                  <table className="ds-table">
                     <tbody>
                       {list.map((s) => (
                         <tr key={s.id} className="odd:bg-white/85 even:bg-white/70 border-t border-black/5 hover:bg-[var(--gris-fond)]">

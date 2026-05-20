@@ -211,7 +211,7 @@ export default async function PiecesPage({ params, searchParams }: Props) {
                     </span>
                   </summary>
                   <div className="bg-white/85">
-                    <table className="w-full text-xs">
+                    <table className="ds-table">
                       <thead className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-secondary-60)]">
                         <tr>
                           <th className="px-3 py-1.5 text-left">Code</th>
